@@ -3,11 +3,17 @@
 # mining.py
 # Created by Stephen White
 # Date: 1/22/2019
-# Purpose: This script will provide the necessary functionality to download json files
-#          from GitHub's api.
+# Purpose: This script will provide the necessary functionality to store json data
+#          from GitHub's API into the MongoDB database of our choosing 
 
+from pymongo import MongoClient
 from github import Github
 import json
+
+
+client = MongoClient('localhost', 27017)
+db = client.backend_db
+pull_requests = db.pullRequests
 
 github_accounts = {
         0: ['Githubfake01', '5RNsya*z#&aA'],
@@ -21,27 +27,12 @@ github_accounts = {
     }
 
 
-g = Github("Swhite9478", "$Aphira911")
+g = Github("Githubfake01", "5RNsya*z#&aA")
 
 repo = g.get_repo("google/gumbo-parser")
 pulls = repo.get_pulls(state='all', sort='created', base='master')
 
+raw_json = repo.get_pull(pulls[0].number).raw_data
 
-print(repo.get_pull(pulls[0].number).raw_data)
+pull_requests.update(raw_json, raw_json, upsert=True)
 
-
-
-# repo = g.get_user().get_repos()[7]
-# pull_requests = repo.get_pulls()
-# print(repo.name, '\n')
-# # print(repo.raw_data)
-# for pull in pull_requests:
-#     print(pull.number)
-
-
-# for repo in g.get_user().get_repos():
-#     print(repo.name)
-#     # repo.edit(has_wiki=False)
-#     # to see all the available attributes and methods
-#     # print(dir(repo))
-#     print('\t', repo.raw_data)
