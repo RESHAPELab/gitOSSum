@@ -17,11 +17,12 @@ class TestMiner(unittest.TestCase):
 
     # Test that we can remove all repos from the repos collection 
     def test_delete_all_from_repos_collection(self):
-
+        print()
         delete_all_repos_from_repo_collection()
-        number_of_repos = REPOS_COLLECTION.count()
+        number_of_repos = REPOS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, 0)
- 
+
+
  
  
 if __name__ == '__main__':

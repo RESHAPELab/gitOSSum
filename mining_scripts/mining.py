@@ -24,6 +24,7 @@ g = Github("Githubfake01", "5RNsya*z#&aA", per_page=100) # authorization for the
 
 # Function that will delete all repos from the repos collection of the mongodb database
 def delete_all_repos_from_repo_collection():
+    repos.delete_many({})
     return
 
 # Wrapper function that will perform all mining steps necessary when
