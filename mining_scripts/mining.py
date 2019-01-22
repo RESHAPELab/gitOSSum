@@ -16,10 +16,18 @@ db = client.backend_db
 repos = db.repos
 pull_requests = db.pullRequests
 g = Github("Githubfake01", "5RNsya*z#&aA", per_page=100)
-repo_name = "google/gumbo-parser"
+repo_name = "Swhite9478/Github-Mining-Tool"
 pygit_repo = g.get_repo(repo_name)
 
 # To find a specific repo: db.pullRequests.find({"url":{$regex: repo}})
+
+
+# Method to download a repo's main json and place it in the 
+# db.repos collection for future parsing 
+def mine_repo_page(repo):
+    pygit_repo = g.get_repo(repo_name)
+    repos.update(pygit_repo.raw_data, pygit_repo.raw_data, upsert=True)
+    return 
 
 
 # Method to download all pull requests of a given repo and 
@@ -45,5 +53,7 @@ def find_all_repo_pulls(repo):
         print(pull)
     return pulls
 
-mine_pulls_from_repo(repo_name)
+
+mine_repo_page(repo_name)
+# mine_pulls_from_repo(repo_name)
 # find_all_repo_pulls(repo_name)
