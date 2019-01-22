@@ -14,25 +14,32 @@ import json
 client = MongoClient('localhost', 27017)
 db = client.backend_db
 pull_requests = db.pullRequests
-
-github_accounts = {
-        0: ['Githubfake01', '5RNsya*z#&aA'],
-        1: ['GithubFake02', '9dJeg^Bp^g63'],
-	    2: ['Github-Fake03', '2A$p3$zy%aaD'],
-	    3: ['GithubFake04', '4Yg3&MQN9x%F'],
-        4: ['GithubFake05', 'Cm82$$bFa!xb'],
-        5: ['GithubFake06', '2t*u2Y8P^tTk'],
-        6: ['GithubFake07', 'Hk1233**012'],
-        7: ['GithubFake08', 'PO11sd*^%$']
-    }
-
-
 g = Github("Githubfake01", "5RNsya*z#&aA")
+repo = g.get_repo("Swhite9478/Github-Mining-Tool")
 
-repo = g.get_repo("google/gumbo-parser")
-pulls = repo.get_pulls(state='all', sort='created', base='master')
+# To find a specific repo: db.pullRequests.find({"url":{$regex: repo}})
 
-raw_json = repo.get_pull(pulls[0].number).raw_data
+# Method to download all pull requests of a given repo and 
+# put them within the db.pullRequests collection 
+def mine_pulls_from_repo(repo):
 
-pull_requests.update(raw_json, raw_json, upsert=True)
+    # Retrieve all pull request numbers associated with this repo 
+    pulls = repo.get_pulls(state='all', sort='created', base='master')
 
+    raw_json = repo.get_pull(pulls[0].number).raw_data
+
+    pull_requests.update(raw_json, raw_json, upsert=True)
+
+
+# Helper method to find and return all pull request json files 
+# belonging to a specific repo 
+def find_all_repo_pulls(repo):
+    print(repo)
+    pulls = pull_requests.find({"url": {"$regex": repo}})
+    for pull in pulls:
+        print(pull)
+    return pulls
+    
+# mine_pulls_from_repo(repo)
+
+find_all_repo_pulls(repo.full_name)
