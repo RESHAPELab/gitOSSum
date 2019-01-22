@@ -37,7 +37,13 @@ class TestMiner(unittest.TestCase):
         number_of_repos = REPOS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, 0)
 
- 
+    def test_mining_same_repo_page_twice_doesnt_count_as_two_entries(self):
+        print()
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO)
+        number_of_repos = REPOS_COLLECTION.count_documents({})
+        self.assertEqual(number_of_repos, 1)
  
 if __name__ == '__main__':
     unittest.main()
