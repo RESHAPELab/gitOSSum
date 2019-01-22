@@ -46,7 +46,7 @@ def mine_and_store_all_repo_data(repo_name):
 # Method to download a repo's main json and place it in the 
 # db.repos collection for future parsing 
 def mine_repo_page(pygit_repo):
-    repos.update(pygit_repo.raw_data, pygit_repo.raw_data, upsert=True)
+    repos.update_one(pygit_repo.raw_data, {"$set": pygit_repo.raw_data}, upsert=True)
     return 
 
 
