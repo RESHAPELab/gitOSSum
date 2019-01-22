@@ -19,7 +19,7 @@ class TestMiner(unittest.TestCase):
     def test_delete_all_from_repos_collection(self):
 
         delete_all_repos_from_repo_collection()
-        number_of_repos = len(REPOS_COLLECTION.find({}))
+        number_of_repos = REPOS_COLLECTION.count()
         self.assertEqual(number_of_repos, 0)
  
  

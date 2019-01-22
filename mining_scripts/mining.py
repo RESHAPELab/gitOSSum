@@ -22,6 +22,10 @@ g = Github("Githubfake01", "5RNsya*z#&aA", per_page=100) # authorization for the
 
 
 
+# Function that will delete all repos from the repos collection of the mongodb database
+def delete_all_repos_from_repo_collection():
+    return
+
 # Wrapper function that will perform all mining steps necessary when
 # provided with the repository name
 def mine_and_store_all_repo_data(repo_name):
@@ -56,8 +60,6 @@ def mine_pulls_from_repo(pygit_repo):
         pull_requests.update(pull.raw_data, pull.raw_data, upsert=True)
 
     return 
-
-
 
 
 # Helper method to find a specific repo's main api page json 
