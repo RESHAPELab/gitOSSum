@@ -20,7 +20,6 @@ pull_requests = db.pullRequests # collection for storing all pull requests for a
 
 g = Github("Githubfake01", "5RNsya*z#&aA", per_page=100) # authorization for the github API 
 
-TEST_REPO = "swhite9478/github-mining-tool" # repo for testing purposes 
 
 
 # Wrapper function that will perform all mining steps necessary when
@@ -59,6 +58,8 @@ def mine_pulls_from_repo(pygit_repo):
     return 
 
 
+
+
 # Helper method to find a specific repo's main api page json 
 def find_repo_main_page(repo_name):
     # Use pygit to eliminate any problems with users not spelling the repo name
@@ -79,8 +80,3 @@ def find_all_repo_pulls(repo_name):
     pulls = pull_requests.find({"url": {"$regex": pygit_repo.full_name}})
 
     return pulls
-
-
-mine_and_store_all_repo_data(TEST_REPO)
-# find_repo_main_page(TEST_REPO)
-# find_all_repo_pulls(TEST_REPO)
