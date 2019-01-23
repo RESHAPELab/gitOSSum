@@ -85,10 +85,14 @@ def find_repo_main_page(repo_name):
     return repos.find_one({"full_name":pygit_repo.full_name})
 
 
-# Method to retrieve every pull request
+# Method to retrieve all repos in the repo collection
+def get_all_repos():
+    return repos.find({})
+
+# Method to retrieve every pull request in the pullRequest collection
 def get_all_pull_requests():
-    pulls = pull_requests.find({})
-    return pulls
+    return pull_requests.find({})
+     
 
 
 # Helper method to find and return a list of all pull request json files 

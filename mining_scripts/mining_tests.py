@@ -86,6 +86,75 @@ class TestMiner(unittest.TestCase):
        number_of_repos = REPOS_COLLECTION.count_documents({})
        self.assertEqual(number_of_repos, 2)
 
+    def test_can_find_all_repos_1(self):
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        repos = get_all_repos()
+        count = 0
+        for repo in repos:
+            count += 1
+        self.assertEqual(count, 1)
+
+    def test_can_find_all_repos_2(self):
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO_2)
+        repos = get_all_repos()
+        count = 0
+        for repo in repos:
+            count += 1
+        self.assertEqual(count, 2)
+
+    def test_can_find_all_repos_3(self):
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO_2)
+        mine_repo_page(PYGIT_TEST_REPO_3)
+        repos = get_all_repos()
+        count = 0
+        for repo in repos:
+            count += 1
+        self.assertEqual(count, 3)
+
+    def test_can_find_all_repos_4(self):
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO_2)
+        mine_repo_page(PYGIT_TEST_REPO_3)
+        delete_specific_repo_from_repo_collection(TEST_REPO_3)
+        repos = get_all_repos()
+        count = 0
+        for repo in repos:
+            count += 1
+        self.assertEqual(count, 2)
+
+    def test_can_find_all_repos_5(self):
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO_2)
+        mine_repo_page(PYGIT_TEST_REPO_3)
+        delete_specific_repo_from_repo_collection(TEST_REPO_3)
+        delete_specific_repo_from_repo_collection(TEST_REPO_2)
+        repos = get_all_repos()
+        count = 0
+        for repo in repos:
+            count += 1
+        self.assertEqual(count, 1)
+
+    def test_can_find_all_repos_6(self):
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO_2)
+        mine_repo_page(PYGIT_TEST_REPO_3)
+        delete_specific_repo_from_repo_collection(TEST_REPO_3)
+        delete_specific_repo_from_repo_collection(TEST_REPO_2)
+        delete_specific_repo_from_repo_collection(TEST_REPO)
+        repos = get_all_repos()
+        count = 0
+        for repo in repos:
+            count += 1
+        self.assertEqual(count, 0)
+
     def test_find_repo_main_page(self):
         delete_all_repos_from_repo_collection()
         mine_repo_page(PYGIT_TEST_REPO)
