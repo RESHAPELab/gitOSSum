@@ -139,6 +139,14 @@ class TestMiner(unittest.TestCase):
         number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
         self.assertEqual(number_pull_requests, 5)
 
+    def test_mining_pull_requests_twice_from_repo_doesnt_count_as_separate_entries(self):
+        print()
+        delete_all_pulls_from_pull_request_collection()
+        mine_pulls_from_repo(PYGIT_TEST_REPO)
+        mine_pulls_from_repo(PYGIT_TEST_REPO)
+        number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
+        self.assertEqual(number_pull_requests, 5)
+
 
 
  
