@@ -61,6 +61,16 @@ class TestMiner(unittest.TestCase):
         number_of_repos = REPOS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, 1)
 
+    def test_find_repo_main_page(self):
+        print()
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        test_repo_found = find_repo_main_page(TEST_REPO)
+        self.assertEqual(test_repo_found["full_name"], PYGIT_TEST_REPO.full_name)
+
+
+
+
  
 if __name__ == '__main__':
     unittest.main()
