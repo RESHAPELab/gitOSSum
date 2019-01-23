@@ -24,6 +24,12 @@ class TestMiner(unittest.TestCase):
     def test_pygit_test_repo_not_none(self):
         self.assertIsNotNone(PYGIT_TEST_REPO)
 
+    def test_pygit_test_repo_2_not_none(self):
+        self.assertIsNotNone(PYGIT_TEST_REPO_2)
+    
+    def test_pygit_test_repo_3_not_none(self):
+        self.assertIsNotNone(PYGIT_TEST_REPO_3)
+
     # Test that we can remove all repos from the repos collection 
     def test_delete_all_from_repos_collection(self):
         delete_all_repos_from_repo_collection()
