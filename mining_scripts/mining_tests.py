@@ -78,7 +78,12 @@ class TestMiner(unittest.TestCase):
         pygit_test_repo_created_at = tuple(int(num) for num in (re.split('-| |:', str(PYGIT_TEST_REPO.created_at))))
         self.assertEqual(created_at, pygit_test_repo_created_at)
 
-
+    def test_find_repo_main_page_owner_login_attribute(self):
+        print()
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        test_repo_found = find_repo_main_page(TEST_REPO)
+        self.assertEqual(test_repo_found['owner']['login'], PYGIT_TEST_REPO.owner.login)
 
  
 if __name__ == '__main__':
