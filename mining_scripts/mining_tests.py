@@ -15,7 +15,10 @@ GITHUB = Github("Githubfake01", "5RNsya*z#&aA", per_page=100) # authorization fo
 PYGIT_TEST_REPO = GITHUB.get_repo(TEST_REPO) # Pygit's interpretation of the repo 
 PYGIT_TEST_REPO_2 = GITHUB.get_repo(TEST_REPO_2)
 PYGIT_TEST_REPO_3 = GITHUB.get_repo(TEST_REPO_3)
-
+TEST_REPO_NUMBER_OF_PULLS = PYGIT_TEST_REPO.get_pulls('all').totalCount
+TEST_REPO_2_NUMBER_OF_PULLS = PYGIT_TEST_REPO_2.get_pulls('all').totalCount
+TEST_REPO_3_NUMBER_OF_PULLS = PYGIT_TEST_REPO_3.get_pulls('all').totalCount
+ZERO, ONE, TWO, THREE = 0, 1, 2, 3
 
 
 # Class to unit test the mining.py functionality 
@@ -34,33 +37,33 @@ class TestMiner(unittest.TestCase):
     def test_delete_all_from_repos_collection(self):
         delete_all_repos_from_repo_collection()
         number_of_repos = REPOS_COLLECTION.count_documents({})
-        self.assertEqual(number_of_repos, 0)
+        self.assertEqual(number_of_repos, ZERO)
 
     def test_delete_all_from_repos_collection_twice(self):
         delete_all_repos_from_repo_collection()
         delete_all_repos_from_repo_collection()
         number_of_repos = REPOS_COLLECTION.count_documents({})
-        self.assertEqual(number_of_repos, 0)
+        self.assertEqual(number_of_repos, ZERO)
 
     def test_can_mine_one_repo_and_store_in_database(self):
         delete_all_repos_from_repo_collection()
         mine_repo_page(PYGIT_TEST_REPO)
         number_of_repos = REPOS_COLLECTION.count_documents({})
-        self.assertEqual(number_of_repos, 1)
+        self.assertEqual(number_of_repos, ONE)
 
     def test_can_mine_one_repo_and_remove_from_database(self):
         delete_all_repos_from_repo_collection()
         mine_repo_page(PYGIT_TEST_REPO)
         delete_all_repos_from_repo_collection()
         number_of_repos = REPOS_COLLECTION.count_documents({})
-        self.assertEqual(number_of_repos, 0)
+        self.assertEqual(number_of_repos, ZERO)
 
     def test_mining_same_repo_page_twice_doesnt_count_as_two_entries(self):
         delete_all_repos_from_repo_collection()
         mine_repo_page(PYGIT_TEST_REPO)
         mine_repo_page(PYGIT_TEST_REPO)
         number_of_repos = REPOS_COLLECTION.count_documents({})
-        self.assertEqual(number_of_repos, 1)
+        self.assertEqual(number_of_repos, ONE)
 
     def test_mining_same_repo_page_three_times_doesnt_count_as_three_entries(self):
         delete_all_repos_from_repo_collection()
@@ -68,14 +71,14 @@ class TestMiner(unittest.TestCase):
         mine_repo_page(PYGIT_TEST_REPO)
         mine_repo_page(PYGIT_TEST_REPO)
         number_of_repos = REPOS_COLLECTION.count_documents({})
-        self.assertEqual(number_of_repos, 1)
+        self.assertEqual(number_of_repos, ONE)
 
     def test_can_mine_two_repo_pages(self):
        delete_all_repos_from_repo_collection()
        mine_repo_page(PYGIT_TEST_REPO)
        mine_repo_page(PYGIT_TEST_REPO_2)
        number_of_repos = REPOS_COLLECTION.count_documents({})
-       self.assertEqual(number_of_repos, 2)
+       self.assertEqual(number_of_repos, TWO)
 
     def test_mining_two_repo_pages_twice_doesnt_count_as_four_entries(self):
        delete_all_repos_from_repo_collection()
@@ -84,26 +87,26 @@ class TestMiner(unittest.TestCase):
        mine_repo_page(PYGIT_TEST_REPO)
        mine_repo_page(PYGIT_TEST_REPO_2)
        number_of_repos = REPOS_COLLECTION.count_documents({})
-       self.assertEqual(number_of_repos, 2)
+       self.assertEqual(number_of_repos, TWO)
 
     def test_can_find_all_repos_1(self):
         delete_all_repos_from_repo_collection()
         mine_repo_page(PYGIT_TEST_REPO)
         repos = get_all_repos()
-        count = 0
+        count = ZERO
         for repo in repos:
-            count += 1
-        self.assertEqual(count, 1)
+            count += ONE
+        self.assertEqual(count, ONE)
 
     def test_can_find_all_repos_2(self):
         delete_all_repos_from_repo_collection()
         mine_repo_page(PYGIT_TEST_REPO)
         mine_repo_page(PYGIT_TEST_REPO_2)
         repos = get_all_repos()
-        count = 0
+        count = ZERO
         for repo in repos:
-            count += 1
-        self.assertEqual(count, 2)
+            count += ONE
+        self.assertEqual(count, TWO)
 
     def test_can_find_all_repos_3(self):
         delete_all_repos_from_repo_collection()
@@ -111,10 +114,10 @@ class TestMiner(unittest.TestCase):
         mine_repo_page(PYGIT_TEST_REPO_2)
         mine_repo_page(PYGIT_TEST_REPO_3)
         repos = get_all_repos()
-        count = 0
+        count = ZERO
         for repo in repos:
-            count += 1
-        self.assertEqual(count, 3)
+            count += ONE
+        self.assertEqual(count, THREE)
 
     def test_can_find_all_repos_4(self):
         delete_all_repos_from_repo_collection()
@@ -123,10 +126,10 @@ class TestMiner(unittest.TestCase):
         mine_repo_page(PYGIT_TEST_REPO_3)
         delete_specific_repo_from_repo_collection(TEST_REPO_3)
         repos = get_all_repos()
-        count = 0
+        count = ZERO
         for repo in repos:
-            count += 1
-        self.assertEqual(count, 2)
+            count += ONE
+        self.assertEqual(count, TWO)
 
     def test_can_find_all_repos_5(self):
         delete_all_repos_from_repo_collection()
@@ -136,10 +139,10 @@ class TestMiner(unittest.TestCase):
         delete_specific_repo_from_repo_collection(TEST_REPO_3)
         delete_specific_repo_from_repo_collection(TEST_REPO_2)
         repos = get_all_repos()
-        count = 0
+        count = ZERO
         for repo in repos:
-            count += 1
-        self.assertEqual(count, 1)
+            count += ONE
+        self.assertEqual(count, ONE)
 
     def test_can_find_all_repos_6(self):
         delete_all_repos_from_repo_collection()
@@ -150,10 +153,10 @@ class TestMiner(unittest.TestCase):
         delete_specific_repo_from_repo_collection(TEST_REPO_2)
         delete_specific_repo_from_repo_collection(TEST_REPO)
         repos = get_all_repos()
-        count = 0
+        count = ZERO
         for repo in repos:
-            count += 1
-        self.assertEqual(count, 0)
+            count += ONE
+        self.assertEqual(count, ZERO)
 
     def test_find_repo_main_page(self):
         delete_all_repos_from_repo_collection()
@@ -181,7 +184,7 @@ class TestMiner(unittest.TestCase):
         mine_repo_page(PYGIT_TEST_REPO_2)
         delete_specific_repo_from_repo_collection(TEST_REPO)
         number_of_repos = REPOS_COLLECTION.count_documents({})
-        self.assertEqual(number_of_repos, 1)
+        self.assertEqual(number_of_repos, ONE)
 
     def test_can_find_and_delete_specifc_repo_from_repo_collection_2(self):
         delete_all_repos_from_repo_collection()
@@ -194,27 +197,27 @@ class TestMiner(unittest.TestCase):
     def test_can_delete_all_from_pull_requests_collection(self):
         delete_all_pulls_from_pull_request_collection()
         number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
-        self.assertEqual(number_pull_requests, 0)
+        self.assertEqual(number_pull_requests, ZERO)
 
     def test_can_mine_pull_requests_from_repo(self):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
-        self.assertEqual(number_pull_requests, 5)
+        self.assertEqual(number_pull_requests, TEST_REPO_NUMBER_OF_PULLS)
 
     def test_mining_pull_requests_twice_from_repo_doesnt_count_as_separate_entries(self):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
-        self.assertEqual(number_pull_requests, 5)
+        self.assertEqual(number_pull_requests, TEST_REPO_NUMBER_OF_PULLS)
 
     def test_can_mine_two_separate_repos_pull_requests(self):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         mine_pulls_from_repo(PYGIT_TEST_REPO_3)
         number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
-        total_prs =PYGIT_TEST_REPO.get_pulls('all').totalCount + PYGIT_TEST_REPO_3.get_pulls('all').totalCount
+        total_prs = TEST_REPO_NUMBER_OF_PULLS + TEST_REPO_3_NUMBER_OF_PULLS
         self.assertEqual(number_pull_requests, total_prs)
 
     def test_can_find_pulls_belonging_to_specific_repo(self):
@@ -222,49 +225,48 @@ class TestMiner(unittest.TestCase):
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         mine_pulls_from_repo(PYGIT_TEST_REPO_3)
         pulls = find_all_pull_requests_from_a_specific_repo(TEST_REPO)
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        self.assertEqual(counter, PYGIT_TEST_REPO.get_pulls('all').totalCount)
+            counter += ONE
+        self.assertEqual(counter, TEST_REPO_NUMBER_OF_PULLS)
 
     def test_can_find_pulls_belonging_to_specific_repo_2(self):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         mine_pulls_from_repo(PYGIT_TEST_REPO_3)
         pulls = find_all_pull_requests_from_a_specific_repo(TEST_REPO_3)
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        self.assertEqual(counter, PYGIT_TEST_REPO_3.get_pulls('all').totalCount)
+            counter += ONE
+        self.assertEqual(counter, TEST_REPO_3_NUMBER_OF_PULLS)
 
     def test_can_find_all_pulls_1(self):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         pulls = get_all_pull_requests()
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        self.assertEqual(counter, PYGIT_TEST_REPO.get_pulls('all').totalCount)
+            counter += ONE
+        self.assertEqual(counter, TEST_REPO_NUMBER_OF_PULLS)
 
     def test_can_find_all_pulls_2(self):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO_2)
         pulls = get_all_pull_requests()
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        self.assertEqual(counter, PYGIT_TEST_REPO_2.get_pulls('all').totalCount)
+            counter += ONE
+        self.assertEqual(counter, TEST_REPO_2_NUMBER_OF_PULLS)
 
     def test_can_find_all_pulls_3(self):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         mine_pulls_from_repo(PYGIT_TEST_REPO_2)
         pulls = get_all_pull_requests()
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        real_number_of_pulls = PYGIT_TEST_REPO.get_pulls('all').totalCount + \
-                               PYGIT_TEST_REPO_2.get_pulls('all').totalCount
+            counter += ONE
+        real_number_of_pulls = TEST_REPO_NUMBER_OF_PULLS + TEST_REPO_2_NUMBER_OF_PULLS
         self.assertEqual(counter, real_number_of_pulls)
 
 
@@ -274,10 +276,10 @@ class TestMiner(unittest.TestCase):
         mine_pulls_from_repo(PYGIT_TEST_REPO_3)
         delete_specifc_repos_pull_requests(TEST_REPO_3)
         pulls = get_all_pull_requests()
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        real_number_of_pulls = PYGIT_TEST_REPO.get_pulls('all').totalCount
+            counter += ONE
+        real_number_of_pulls = TEST_REPO_NUMBER_OF_PULLS
         self.assertEqual(counter, real_number_of_pulls)
 
     def test_can_find_and_delete_specifc_repos_pull_requests_2(self):
@@ -286,11 +288,10 @@ class TestMiner(unittest.TestCase):
         mine_pulls_from_repo(PYGIT_TEST_REPO_3)
         delete_specifc_repos_pull_requests(TEST_REPO)
         pulls = get_all_pull_requests()
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        real_number_of_pulls = PYGIT_TEST_REPO_3.get_pulls('all').totalCount
-        self.assertEqual(counter, real_number_of_pulls)
+            counter += ONE
+        self.assertEqual(counter, TEST_REPO_3_NUMBER_OF_PULLS)
 
     def test_can_find_and_delete_specifc_repos_pull_requests_3(self):
         delete_all_pulls_from_pull_request_collection()
@@ -299,10 +300,10 @@ class TestMiner(unittest.TestCase):
         delete_specifc_repos_pull_requests(TEST_REPO)
         delete_specifc_repos_pull_requests(TEST_REPO_3)
         pulls = get_all_pull_requests()
-        counter = 0
+        counter = ZERO
         for pull in pulls:
-            counter += 1
-        self.assertEqual(counter, 0)
+            counter += ONE
+        self.assertEqual(counter, ZERO)
  
 if __name__ == '__main__':
     unittest.main()
