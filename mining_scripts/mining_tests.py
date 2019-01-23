@@ -8,7 +8,7 @@ MONGO_CLIENT = MongoClient('localhost', 27017) # Where are we connecting
 DB = MONGO_CLIENT.backend_db # The specific mongo database we are working with 
 REPOS_COLLECTION = db.repos # collection for storing all of a repo's main api json information 
 PULL_REQUESTS_COLLECTION = db.pullRequests # collection for storing all pull requests for all repos 
-TEST_REPO = "swhite9478/OpenSourceDev" # repo for testing purposes 
+TEST_REPO = "Swhite9478/OpenSourceDev" # repo for testing purposes 
 TEST_REPO_2 = 'google/gumbo-parser'
 TEST_REPO_3 = 'Swhite9478/CS386-HoloLens-Project'
 GITHUB = Github("Githubfake01", "5RNsya*z#&aA", per_page=100) # authorization for the github API
@@ -311,6 +311,21 @@ class TestMiner(unittest.TestCase):
         number_of_pulls = PULL_REQUESTS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, ZERO)
         self.assertEqual(number_of_pulls, ZERO)
+
+    def test_can_delete_all_repos_and_pulls_for_specific_repo_in_one_call(self):
+        delete_all_contents_from_every_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO_3)
+        mine_pulls_from_repo(PYGIT_TEST_REPO)
+        mine_pulls_from_repo(PYGIT_TEST_REPO_3)
+        delete_all_contents_of_specific_repo_from_every_collection(TEST_REPO_3)
+        number_of_repos = REPOS_COLLECTION.count_documents({})
+        number_of_pulls = PULL_REQUESTS_COLLECTION.count_documents({})
+        self.assertEqual(number_of_repos, ONE)
+        self.assertEqual(find_repo_main_page(TEST_REPO)["full_name"], PYGIT_TEST_REPO.full_name)
+        self.assertEqual(find_all_pull_requests_from_a_specific_repo(TEST_REPO)[0]["user"]["login"], "Swhite9478")
+        self.assertEqual(find_all_pull_requests_from_a_specific_repo(TEST_REPO)[0]["head"]["repo"]["full_name"], TEST_REPO)
+        self.assertEqual(number_of_pulls, TEST_REPO_NUMBER_OF_PULLS)
  
 if __name__ == '__main__':
     unittest.main()

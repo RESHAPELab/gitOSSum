@@ -103,17 +103,27 @@ def find_all_pull_requests_from_a_specific_repo(repo_name):
 
     return pulls
 
+
 # Method to retrieve all repos in the repo collection
 def get_all_repos():
     return repos.find({})
+
 
 # Method to retrieve every pull request in the pullRequest collection
 def get_all_pull_requests():
     return pull_requests.find({})
      
 
+# Method to delete all json files from every collection 
 def delete_all_contents_from_every_collection():
     delete_all_repos_from_repo_collection()
     delete_all_pulls_from_pull_request_collection()
     return 
+
+
+# Method to delete all jsons belonging to a specific repo from every collection 
+def delete_all_contents_of_specific_repo_from_every_collection(repo_name):
+    delete_specific_repo_from_repo_collection(repo_name)
+    delete_specifc_repos_pull_requests(repo_name)
+    return
 
