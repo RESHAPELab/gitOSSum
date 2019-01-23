@@ -112,4 +112,8 @@ def get_all_pull_requests():
     return pull_requests.find({})
      
 
+def delete_all_contents_from_every_collection():
+    delete_all_repos_from_repo_collection()
+    delete_all_pulls_from_pull_request_collection()
+    return 
 
