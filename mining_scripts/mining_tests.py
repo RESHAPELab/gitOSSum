@@ -85,7 +85,6 @@ class TestMiner(unittest.TestCase):
        number_of_repos = REPOS_COLLECTION.count_documents({})
        self.assertEqual(number_of_repos, 2)
 
-
     def test_find_repo_main_page(self):
         print()
         delete_all_repos_from_repo_collection()
@@ -117,6 +116,15 @@ class TestMiner(unittest.TestCase):
         delete_specific_repo_from_repo_collection(TEST_REPO)
         number_of_repos = REPOS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, 1)
+
+    def test_can_find_and_delete_specifc_repo_from_repo_collection_2(self):
+        print()
+        delete_all_repos_from_repo_collection()
+        mine_repo_page(PYGIT_TEST_REPO)
+        mine_repo_page(PYGIT_TEST_REPO_2)
+        delete_specific_repo_from_repo_collection(TEST_REPO)
+        test_repo_found = find_repo_main_page(TEST_REPO_2)
+        self.assertEqual(test_repo_found['owner']['login'], PYGIT_TEST_REPO_2.owner.login)
 
 
     def test_can_delete_all_from_pull_requests_collection(self):
