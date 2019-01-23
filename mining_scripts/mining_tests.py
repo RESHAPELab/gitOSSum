@@ -157,6 +157,16 @@ class TestMiner(unittest.TestCase):
             counter += 1
         self.assertEqual(counter, 5)
 
+    def test_can_find_pulls_belonging_to_specific_repo_2(self):
+        delete_all_pulls_from_pull_request_collection()
+        mine_pulls_from_repo(PYGIT_TEST_REPO)
+        mine_pulls_from_repo(PYGIT_TEST_REPO_3)
+        pulls = find_all_repo_pulls(TEST_REPO_3)
+        counter = 0
+        for pull in pulls:
+            counter += 1
+        self.assertEqual(counter, 4)
+
  
 if __name__ == '__main__':
     unittest.main()
