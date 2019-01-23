@@ -49,6 +49,14 @@ def mine_repo_page(pygit_repo):
     repos.update_one(pygit_repo.raw_data, {"$set": pygit_repo.raw_data}, upsert=True)
     return 
 
+# Method to find a specific repo in the repos collection and delete it 
+def delete_specific_repo_from_repo_collection(repo_name):
+    pygit_repo = g.get_repo(repo_name)
+    repos.delete_one({"full_name":pygit_repo.full_name})
+    return
+
+
+
 
 # Method to remove all pull requests from the pull request collection 
 def delete_all_pulls_from_pull_request_collection():
