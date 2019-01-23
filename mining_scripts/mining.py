@@ -71,7 +71,7 @@ def mine_pulls_from_repo(pygit_repo):
 
     for pull in pulls:
         # Overwrite already existing instances of jsons 
-        pull_requests.update(pull.raw_data, pull.raw_data, upsert=True)
+        pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
 
     return 
 
