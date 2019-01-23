@@ -221,7 +221,7 @@ class TestMiner(unittest.TestCase):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         mine_pulls_from_repo(PYGIT_TEST_REPO_3)
-        pulls = find_all_repo_pulls(TEST_REPO)
+        pulls = find_all_pull_requests_from_a_specific_repo(TEST_REPO)
         counter = 0
         for pull in pulls:
             counter += 1
@@ -231,7 +231,7 @@ class TestMiner(unittest.TestCase):
         delete_all_pulls_from_pull_request_collection()
         mine_pulls_from_repo(PYGIT_TEST_REPO)
         mine_pulls_from_repo(PYGIT_TEST_REPO_3)
-        pulls = find_all_repo_pulls(TEST_REPO_3)
+        pulls = find_all_pull_requests_from_a_specific_repo(TEST_REPO_3)
         counter = 0
         for pull in pulls:
             counter += 1
@@ -267,6 +267,42 @@ class TestMiner(unittest.TestCase):
                                PYGIT_TEST_REPO_2.get_pulls('all').totalCount
         self.assertEqual(counter, real_number_of_pulls)
 
+
+    def test_can_find_and_delete_specifc_repos_pull_requests_1(self):
+        delete_all_pulls_from_pull_request_collection()
+        mine_pulls_from_repo(PYGIT_TEST_REPO)
+        mine_pulls_from_repo(PYGIT_TEST_REPO_3)
+        delete_specifc_repos_pull_requests(TEST_REPO_3)
+        pulls = get_all_pull_requests()
+        counter = 0
+        for pull in pulls:
+            counter += 1
+        real_number_of_pulls = PYGIT_TEST_REPO.get_pulls('all').totalCount
+        self.assertEqual(counter, real_number_of_pulls)
+
+    def test_can_find_and_delete_specifc_repos_pull_requests_2(self):
+        delete_all_pulls_from_pull_request_collection()
+        mine_pulls_from_repo(PYGIT_TEST_REPO)
+        mine_pulls_from_repo(PYGIT_TEST_REPO_3)
+        delete_specifc_repos_pull_requests(TEST_REPO)
+        pulls = get_all_pull_requests()
+        counter = 0
+        for pull in pulls:
+            counter += 1
+        real_number_of_pulls = PYGIT_TEST_REPO_3.get_pulls('all').totalCount
+        self.assertEqual(counter, real_number_of_pulls)
+
+    def test_can_find_and_delete_specifc_repos_pull_requests_3(self):
+        delete_all_pulls_from_pull_request_collection()
+        mine_pulls_from_repo(PYGIT_TEST_REPO)
+        mine_pulls_from_repo(PYGIT_TEST_REPO_3)
+        delete_specifc_repos_pull_requests(TEST_REPO)
+        delete_specifc_repos_pull_requests(TEST_REPO_3)
+        pulls = get_all_pull_requests()
+        counter = 0
+        for pull in pulls:
+            counter += 1
+        self.assertEqual(counter, 0)
  
 if __name__ == '__main__':
     unittest.main()

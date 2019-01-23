@@ -27,6 +27,7 @@ def delete_all_repos_from_repo_collection():
     repos.delete_many({})
     return
 
+
 # Wrapper function that will perform all mining steps necessary when
 # provided with the repository name
 def mine_and_store_all_repo_data(repo_name):
@@ -56,12 +57,31 @@ def delete_specific_repo_from_repo_collection(repo_name):
     return
 
 
-
-
 # Method to remove all pull requests from the pull request collection 
 def delete_all_pulls_from_pull_request_collection():
     pull_requests.delete_many({})
     return
+
+
+# Method to delete all pull requests belonging to a specific repo 
+# from the pullRequests collection 
+def delete_specifc_repos_pull_requests(repo_name):
+    pygit_repo = g.get_repo(repo_name)
+    pull_requests.delete_many({"url": {"$regex": pygit_repo.full_name}})
+    return
+
+
+# Helper method to find and return a list of all pull request json files 
+# belonging to a specific repo 
+def find_all_pull_requests_from_a_specific_repo(repo_name):
+    # Use pygit to eliminate any problems with users not spelling the repo name
+    # exactly as it is on the actual repo 
+    pygit_repo = g.get_repo(repo_name)
+
+    # Obtain a list of all the pull requests matching the repo's full name 
+    pulls = pull_requests.find({"url": {"$regex": pygit_repo.full_name}})
+
+    return pulls
 
 # Method to download all pull requests of a given repo and 
 # put them within the db.pullRequests collection 
@@ -95,14 +115,3 @@ def get_all_pull_requests():
      
 
 
-# Helper method to find and return a list of all pull request json files 
-# belonging to a specific repo 
-def find_all_repo_pulls(repo_name):
-    # Use pygit to eliminate any problems with users not spelling the repo name
-    # exactly as it is on the actual repo 
-    pygit_repo = g.get_repo(repo_name)
-
-    # Obtain a list of all the pull requests matching the repo's full name 
-    pulls = pull_requests.find({"url": {"$regex": pygit_repo.full_name}})
-
-    return pulls
