@@ -88,6 +88,11 @@ class TestMiner(unittest.TestCase):
         test_repo_found = find_repo_main_page(TEST_REPO)
         self.assertEqual(test_repo_found['owner']['login'], PYGIT_TEST_REPO.owner.login)
 
+    def test_can_delete_all_from_pull_requests_collection(self):
+        print()
+        delete_all_pulls_from_pull_request_collection()
+        number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
+        self.assertEqual(number_pull_requests, 0)
  
 if __name__ == '__main__':
     unittest.main()

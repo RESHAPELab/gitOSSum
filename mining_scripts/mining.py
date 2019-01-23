@@ -50,6 +50,11 @@ def mine_repo_page(pygit_repo):
     return 
 
 
+# Method to remove all pull requests from the pull request collection 
+def delete_all_pulls_from_pull_request_collection():
+    pull_requests.delete_many({})
+    return
+
 # Method to download all pull requests of a given repo and 
 # put them within the db.pullRequests collection 
 def mine_pulls_from_repo(pygit_repo):
