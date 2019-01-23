@@ -16,6 +16,9 @@ PYGIT_TEST_REPO = GITHUB.get_repo(TEST_REPO) # Pygit's interpretation of the rep
 # Class to unit test the mining.py functionality 
 class TestMiner(unittest.TestCase):
 
+    def test_pygit_test_repo_not_none(self):
+        self.assertIsNotNone(PYGIT_TEST_REPO)
+
     # Test that we can remove all repos from the repos collection 
     def test_delete_all_from_repos_collection(self):
         print()
