@@ -67,6 +67,14 @@ class TestMiner(unittest.TestCase):
         number_of_repos = REPOS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, 1)
 
+    def test_can_mine_two_repo_pages(self):
+       print()
+       delete_all_repos_from_repo_collection()
+       mine_repo_page(PYGIT_TEST_REPO)
+       mine_repo_page(PYGIT_TEST_REPO_2)
+       number_of_repos = REPOS_COLLECTION.count_documents({})
+       self.assertEqual(number_of_repos, 2)
+
 
     def test_find_repo_main_page(self):
         print()
