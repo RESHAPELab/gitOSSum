@@ -22,6 +22,13 @@ class TestMiner(unittest.TestCase):
         number_of_repos = REPOS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, 0)
 
+    def test_delete_all_from_repos_collection_twice(self):
+        print()
+        delete_all_repos_from_repo_collection()
+        delete_all_repos_from_repo_collection()
+        number_of_repos = REPOS_COLLECTION.count_documents({})
+        self.assertEqual(number_of_repos, 0)
+
     def test_can_mine_one_repo_and_store_in_database(self):
         print()
         delete_all_repos_from_repo_collection()
@@ -53,6 +60,7 @@ class TestMiner(unittest.TestCase):
         mine_repo_page(PYGIT_TEST_REPO)
         number_of_repos = REPOS_COLLECTION.count_documents({})
         self.assertEqual(number_of_repos, 1)
+
  
 if __name__ == '__main__':
     unittest.main()
