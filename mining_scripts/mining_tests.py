@@ -1,6 +1,7 @@
 from mining import *
-import re
 import unittest
+import config
+import re
 
 
 # Setup all variables for testing, ensure mongod is running in the background 
@@ -326,6 +327,10 @@ class TestMiner(unittest.TestCase):
         self.assertEqual(find_all_pull_requests_from_a_specific_repo(TEST_REPO)[0]["user"]["login"], "Swhite9478")
         self.assertEqual(find_all_pull_requests_from_a_specific_repo(TEST_REPO)[0]["head"]["repo"]["full_name"], TEST_REPO)
         self.assertEqual(number_of_pulls, TEST_REPO_NUMBER_OF_PULLS)
+    
+    def test_can_send_email(self):
+        success = send_confirmation_email(TEST_REPO, config.EMAIL_ADDRESS)
+        self.assertTrue(success)
  
 if __name__ == '__main__':
     unittest.main()

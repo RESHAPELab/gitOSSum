@@ -6,9 +6,11 @@
 # Purpose: This script will provide the necessary functionality to store json data
 #          from GitHub's API into the MongoDB database of our choosing 
 
-from pymongo import MongoClient
-from github import Github
-
+from pymongo import MongoClient # Import pymongo for interacting with MongoDB
+from github import Github # Import PyGithub for mining data
+from email.message import EmailMessage # Import the email modules we'll need
+import smtplib # Import smtplib for the actual sending function
+import config 
 
 client = MongoClient('localhost', 27017) # Where are we connecting
 
@@ -18,12 +20,35 @@ repos = db.repos # collection for storing all of a repo's main api json informat
 
 pull_requests = db.pullRequests # collection for storing all pull requests for all repos 
 
-g = Github("Githubfake01", "5RNsya*z#&aA", per_page=100) # authorization for the github API 
+g = Github(config.GITHUB_USERNAME, config.GITHUB_PASSWORD, per_page=100) # authorization for the github API 
+
+
+def send_confirmation_email(repo_name, email_address):
+    try:
+        server = smtplib.SMTP('smtp.gmail.com:587')
+        server.ehlo()
+        server.starttls()
+        server.login(config.EMAIL_ADDRESS, config.PASSWORD)
+        subj = 'Git-OSS-um %s Mining Request Complete!' % repo_name
+        msg = (
+        '''Hello, this is an automated message letting you know that your ''' + \
+        '''request to mine %s has been completed! Thank you for using our service!''' % repo_name + \
+        '''\n\nUntil next time,\n\nGit-OSS-um Team <3''')
+        message = "Subject: {}\n\n{}".format(subj, msg)
+        server.sendmail(config.EMAIL_ADDRESS, email_address, message)
+        return True 
+
+    except Exception as e:
+        return False 
+
+    finally:
+        server.quit() 
+
 
 
 # Wrapper function that will perform all mining steps necessary when
 # provided with the repository name
-def mine_and_store_all_repo_data(repo_name):
+def mine_and_store_all_repo_data(repo_name, **kwargs):  
     # Use pygit to eliminate any problems with users not spelling the repo name
     # exactly as it is on the actual repo 
     pygit_repo = g.get_repo(repo_name)
@@ -33,6 +58,18 @@ def mine_and_store_all_repo_data(repo_name):
 
     # mine and store all pulls for this repo 
     mine_pulls_from_repo(pygit_repo)
+
+    # send any emails as necessary
+    if "email" in kwargs:
+        # Iterate over a list of emails if thats what was provided 
+        if type(kwargs["email"]) is list:
+            for email_recipient in kwargs["email"]:
+                send_confirmation_email(repo_name, email_recipient)
+        
+        # Otherwise its just one single email
+        else:
+            send_confirmation_email(repo_name, kwargs["email"])
+
     return 
 
 
