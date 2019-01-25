@@ -2,7 +2,7 @@ import json
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db import IntegrityError
 from django.shortcuts import render
-from mining_app.mine import make_request
+from user_app.mine import make_request
 from pymongo import MongoClient
 import plotly
 import plotly.offline as opy
