@@ -1,0 +1,102 @@
+{% extends "base.html" %} {% block content %}
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    input[type=text],
+    select,
+    textarea {
+        width: 16%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: vertical;
+    }
+
+    label {
+        padding: 12px 12px 12px 0;
+        display: inline-block;
+    }
+
+    input[type=submit] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        float: right;
+    }
+
+    input[type=submit]:hover {
+        background-color: #45a049;
+    }
+
+    .container {
+        border-radius: 5px;
+        background-color: #f2f2f2;
+        padding: 20px;
+    }
+
+    .col-25 {
+        float: left;
+        width: 25%;
+        margin-top: 6px;
+    }
+
+    .col-75 {
+        float: left;
+        width: 75%;
+        margin-top: 6px;
+    }
+
+    /* Clear floats after the columns */
+
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
+
+    @media screen and (max-width: 600px) {
+        .col-25,
+        .col-75,
+        input[type=submit] {
+            width: 100%;
+            margin-top: 0;
+        }
+    }
+</style>
+
+<center>
+    {% if error %}
+    <h1>That Pull Request is Already in the Mining Requests Database... Try Again!</h1>
+
+    {% elif mongo_exists %}
+    <h1>That Pull Request is already in the MongoDB Database... Try Again!</h1>
+
+    {% elif invalid_repo_name %}
+    <h1>Invalid Repo Name. Must be of the form "repo/name"</h1>
+
+    {% else %}
+    <h1>Submit a Request to Mine Data!</h1>
+
+    {% endif %}
+
+    <hr>
+
+    <form method="POST"> {% csrf_token %}
+        <input type='text' name='repo_name' placeholder="repo/name">
+        <br>
+        <input type='number' name='pull_request_number' min='0' placeholder="#">
+        <br>
+        <button type='submit'>Save</button>
+    </form>
+
+</center>
+
+{% endblock content %}

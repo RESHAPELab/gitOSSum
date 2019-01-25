@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang=en>
+
+{% extends "base.html" %} {% block content %}
+
+<head>
+</head>
+
+{% if bool_item %}
+<h1><center>
+    All Pull Requests Have Been Deleted from the MongoDB Database!
+</center></h1>
+
+{% elif isEmpty %}
+<h1><center>
+    There is Nothing in the MongoDB Database to Delete Silly!
+</center></h1>
+
+{% endif %}
+
+<hr>
+
+{% endblock content %}
+
+</html>
