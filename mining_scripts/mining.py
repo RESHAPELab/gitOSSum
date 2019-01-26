@@ -8,9 +8,9 @@
 
 from pymongo import MongoClient # Import pymongo for interacting with MongoDB
 from github import Github # Import PyGithub for mining data
-from email.message import EmailMessage # Import the email modules we'll need
-import smtplib # Import smtplib for the actual sending function
+from send_email import * 
 import config 
+
 
 client = MongoClient('localhost', 27017) # Where are we connecting
 
@@ -20,30 +20,7 @@ repos = db.repos # collection for storing all of a repo's main api json informat
 
 pull_requests = db.pullRequests # collection for storing all pull requests for all repos 
 
-g = Github(config.GITHUB_USERNAME, config.GITHUB_PASSWORD, per_page=100) # authorization for the github API 
-
-
-def send_confirmation_email(repo_name, email_address):
-    try:
-        server = smtplib.SMTP('smtp.gmail.com:587')
-        server.ehlo()
-        server.starttls()
-        server.login(config.EMAIL_ADDRESS, config.PASSWORD)
-        subj = 'Git-OSS-um %s Mining Request Complete!' % repo_name
-        msg = (
-        '''Hello, this is an automated message letting you know that your ''' + \
-        '''request to mine %s has been completed! Thank you for using our service!''' % repo_name + \
-        '''\n\nUntil next time,\n\nGit-OSS-um Team <3''')
-        message = "Subject: {}\n\n{}".format(subj, msg)
-        server.sendmail(config.EMAIL_ADDRESS, email_address, message)
-        return True 
-
-    except Exception as e:
-        return False 
-
-    finally:
-        server.quit() 
-
+g = Github(config.GITHUB_TOKEN, per_page=100) # authorization for the github API 
 
 
 # Wrapper function that will perform all mining steps necessary when

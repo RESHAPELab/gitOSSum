@@ -1,3 +1,4 @@
+from send_email import * 
 from mining import *
 import unittest
 import config
