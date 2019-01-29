@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Five Pull Requests Have Just Been Mined!</h1>
+
+<hr>
+
+<h3>Here are the requests in JSON format:</h3>
+
+<pre>
+    {% for json_file in mined_jsons %} {{ json_file }}
+    <br> {% endfor %}
+</pre>
+
+<hr>
+
+<h3>Here is the extracted information that will be used by the front end for a graph:</h3>
+<p>
+    {% for addition_num in addition_list %} {{ addition_num }}
+    <br> {% endfor %}
+</p>    
+
+<hr>
+
+<h1>The JSON files have been put into the MongoDB Database!</h1>
+
+{% endblock content %}
