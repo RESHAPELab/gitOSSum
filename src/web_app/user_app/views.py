@@ -29,13 +29,13 @@ def mining_request_create_view(request):
     if request.method == 'POST':
         form = MiningRequestForm(request.POST)
         if form.is_valid():
-            messages.success(request, 'The form is valid.') 
-            
-            #     # Only create a database object if what is being passed matches our DB form
-        #     obj = MiningRequest.objects.create(
-        #         repo_name=form.cleaned_data.get('repo_name'),
-        #         email=form.cleaned_data.get("email")
-        #     )
+            messages.success(request, 'Your request has been submitted!') 
+
+                # Only create a database object if what is being passed matches our DB form
+            obj = MiningRequest.objects.create(
+                repo_name=form.cleaned_data.get('repo_name'),
+                email=form.cleaned_data.get("email")
+            )
 
         else:
             messages.error(request, 'The form is invalid.')

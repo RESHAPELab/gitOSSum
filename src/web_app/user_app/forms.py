@@ -14,11 +14,11 @@ class MiningRequestForm(forms.Form):
     def clean_repo_name(self):
         repo_name = self.cleaned_data['repo_name']  # This is the repo name we will be looking at 
         valid_repo = re.compile('^((\w+)[-]*)+/\w+$') # Regex that defines a proper repo name 
-        mining_requests = MiningRequest.objects.all() # Obtain all the mining requests
+        mining_requests = list(MiningRequest.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         mongo_repo = find_repo_main_page(repo_name)
         errors = [] # A list for holding validation errors 
 
-        print("\n\n",repo_name, "\n\n")
+        print("\n\n",mining_requests, "\n\n")
 
         # Repo must match regex
         if not valid_repo.fullmatch(repo_name):
