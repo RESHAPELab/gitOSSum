@@ -1,5 +1,6 @@
 {% extends "base.html" %} {% block content %}
 
+
 <style>
     * {
         box-sizing: border-box;
@@ -16,9 +17,11 @@
     }
 
     label {
-        padding: 12px 12px 12px 0;
         display: inline-block;
-    }
+        width: 140px;
+        text-align: right;
+    }​
+
 
     input[type=submit] {
         background-color: #4CAF50;
@@ -73,29 +76,44 @@
 </style>
 
 <center>
-    {% if error %}
-    <h1>That Pull Request is Already in the Mining Requests Database... Try Again!</h1>
-
-    {% elif mongo_exists %}
-    <h1>That Pull Request is already in the MongoDB Database... Try Again!</h1>
-
-    {% elif invalid_repo_name %}
-    <h1>Invalid Repo Name. Must be of the form "repo/name"</h1>
-
-    {% else %}
     <h1>Submit a Request to Mine Data!</h1>
-
-    {% endif %}
 
     <hr>
 
     <form method="POST"> {% csrf_token %}
+        <label>Repo Name</label>
         <input type='text' name='repo_name' placeholder="repo/name">
         <br>
-        <input type='number' name='pull_request_number' min='0' placeholder="#">
-        <br>
+        <label>Email (Optional)</label>
+        <input type='text' name='email' placeholder="me@email.com">
+        <br><br>
         <button type='submit'>Save</button>
     </form>
+    <br>
+
+    {% if empty_repo %}
+    <h4>You must supply a repo name.</h4>
+    {% endif %}
+
+    {% if repo_doesnt_exist %}
+    <h4>That repo does not exist on github. Enter a real repository name.</h4>
+    {% endif %}
+
+    {% if mongo_exists %}
+        <h4>That repo has already been mined.</h4>
+    {% endif %}
+
+    {% if request_error %}
+    <h4>That repo has already been requested.</h4>
+    {% endif %}
+
+    {% if invalid_repo_name %}
+        <h4>Enter a valid repository name of the form "repo/name".</h4>
+    {% endif %}
+
+    {% if email_error %}
+        <h4>Enter a valid email address.</h4>
+    {% endif %}
 
 </center>
 

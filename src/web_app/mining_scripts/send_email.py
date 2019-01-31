@@ -6,7 +6,7 @@
 # Purpose: This script will provide the necessary functionality send users
 #          and email from gitossum@gmail.com
 
-import config # for authentication purposes 
+import mining_scripts.config # for authentication purposes 
 import smtplib # Import smtplib for sending email 
 
 

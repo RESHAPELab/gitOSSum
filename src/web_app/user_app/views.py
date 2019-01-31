@@ -10,7 +10,8 @@ import plotly.graph_objs as go
 from django.views import View 
 from django.views.generic import TemplateView, ListView
 import re
-
+import mining_scripts.send_email
+from mining_scripts.mining import *
 from .models import *
 from .forms import MiningRequestCreateForm, AdminApprovalForm
 
@@ -22,45 +23,82 @@ valid_repo = re.compile('^((\w+)[-]*)+/\w+$')
 
 
 def mining_request_create_view(request):
-    # if request.method == 'GET':
-    #     print(request.GET)
+    context = {}
+    requests = MiningRequest.objects.all()
     
     if request.method == 'POST':
         try:
             form = MiningRequestCreateForm(request.POST)
+    
 
-            # Only create a database object if what is being passed matches our DB form
+            # If everything checks out ok, just make sure that the repo name 
+            # Matches the regex defined aboce
             if form.is_valid():
 
+                if form.cleaned_data.get('repo_name') is None:
+                    context.update({"empty_repo": True })
+
+                if form.cleaned_data.get('repo_name') in requests:
+                    context.update({"request_error": True })
+
                 if not valid_repo.fullmatch(form.cleaned_data.get('repo_name')):
-                    return render(request, "mining_requests/form.html", {"invalid_repo_name":True})
+                    context.update({"invalid_repo_name":True})
 
-                mongo_files = pull_requests.find()
-                for file in mongo_files:
-                    if file["base"]["repo"]["full_name"] == form.cleaned_data.get('repo_name') and \
-                    file["number"] == form.cleaned_data.get('pull_request_number'):
-                         return render(request, "mining_requests/form.html", {"mongo_exists": True})    
+                if isinstance(find_repo_main_page(form.cleaned_data.get('repo_name')), Exception):
+                    context.update({"repo_doesnt_exist": True})
+
+                # If the repo has already been mined...
+                elif find_repo_main_page(form.cleaned_data.get('repo_name')):
+                    context.update({"mongo_exists": True})
+
+                if not context is None:
+                    return render(request, "mining_requests/form.html", context)   
+
+            
+            # If we have an issue...
+            elif not form.is_valid():
+
+                if form.cleaned_data.get('repo_name') is None:
+                    context.update({"empty_repo": True })
+
+                # If a request has already been made to mine this repo 
+                if form.cleaned_data.get('repo_name') in requests:
+                    context.update({"request_error": True })
+
+                # If the repo name is incorrect
+                if not valid_repo.fullmatch(form.cleaned_data.get('repo_name')):
+                    context.update({"invalid_repo_name":True})
+
+                # If the email was incorrect 
+                if form.errors:
+                    context.update({"email_error": True})
+
+                # If the repo doesnt exist...
+                if isinstance(find_repo_main_page(form.cleaned_data.get('repo_name')), Exception):
+                    context.update({"repo_doesnt_exist": True})
+
+                # If the repo has already been mined...
+                elif find_repo_main_page(form.cleaned_data.get('repo_name')):
+                    context.update({"mongo_exists": True})
+                    
+                if not context is None:
+                    return render(request, "mining_requests/form.html", context)    
+
+    
+            # Only create a database object if what is being passed matches our DB form
+            obj = MiningRequest.objects.create(
+                repo_name=form.cleaned_data.get('repo_name'),
+                email=form.cleaned_data.get("email")
+            )
                 
+            # what was passed in was valid, so redirect to the mining requests page 
+            return HttpResponseRedirect("/mining_requests")
 
-
-                obj = MiningRequest.objects.create(
-                    repo_name=form.cleaned_data.get('repo_name'),
-                    pull_request_number=form.cleaned_data.get('pull_request_number')
-                )
-                
-                # what was passed in was valid, so redirect to the mining requests page 
-                return HttpResponseRedirect("/mining_requests")
-
-        
-            # if what is passed in is incorrect, log it
-            if form.errors:
-                print(form.errors)
         except IntegrityError as e:
             return render(request, "mining_requests/form.html", {"error": True})    
     
     # Handle the GET request by returning the form HTML page 
     template_name = 'mining_requests/form.html'
-    context = {}
     return render(request, template_name, context)
 
 def admin_approve_mining_requests(request):

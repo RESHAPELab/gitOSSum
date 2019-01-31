@@ -9,16 +9,14 @@ class RestaurantLocation(models.Model):
     updated      = models.DateTimeField(auto_now=True)
 
 class MiningRequest(models.Model):
-    repo_name               = models.CharField(max_length=120, null=False, blank=False)
-    pull_request_number     = models.IntegerField(null=False, blank=False)
+    repo_name               = models.CharField(max_length=240, null=False, blank=False)
+    email                   = models.EmailField(null=False, blank=True)
     timestamp               = models.DateTimeField(auto_now_add=True)
     updated                 = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        unique_together = ('repo_name', 'pull_request_number',)
 
     def __str__(self):
-        return f"{self.repo_name}, {self.pull_request_number}, {self.timestamp}, {self.updated}"
+        return f"{self.repo_name}, {self.email}, {self.timestamp}, {self.updated}"
 
 class AdminApproval(models.Model):
     approve_for_mining = models.BooleanField()
