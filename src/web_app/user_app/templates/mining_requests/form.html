@@ -1,120 +1,30 @@
 {% extends "base.html" %} {% block content %}
+{% load bootstrap3 %}
 
+<html>
 
-<style>
-    * {
-        box-sizing: border-box;
-    }
+<head>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    {% bootstrap_messages %}
+</head>
 
-    input[type=text],
-    select,
-    textarea {
-        width: 16%;
-        padding: 12px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        resize: vertical;
-    }
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-offset-3 col-sm-6">
+                <br><br><br>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    {% buttons %}
+                    <button type="submit" class="btn btn-success btn-block">Submit Request</button>
+                    {% endbuttons %}
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
 
-    label {
-        display: inline-block;
-        width: 140px;
-        text-align: right;
-    }​
-
-
-    input[type=submit] {
-        background-color: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        float: right;
-    }
-
-    input[type=submit]:hover {
-        background-color: #45a049;
-    }
-
-    .container {
-        border-radius: 5px;
-        background-color: #f2f2f2;
-        padding: 20px;
-    }
-
-    .col-25 {
-        float: left;
-        width: 25%;
-        margin-top: 6px;
-    }
-
-    .col-75 {
-        float: left;
-        width: 75%;
-        margin-top: 6px;
-    }
-
-    /* Clear floats after the columns */
-
-    .row:after {
-        content: "";
-        display: table;
-        clear: both;
-    }
-
-    /* Responsive layout - when the screen is less than 600px wide, make the two columns stack on top of each other instead of next to each other */
-
-    @media screen and (max-width: 600px) {
-        .col-25,
-        .col-75,
-        input[type=submit] {
-            width: 100%;
-            margin-top: 0;
-        }
-    }
-</style>
-
-<center>
-    <h1>Submit a Request to Mine Data!</h1>
-
-    <hr>
-
-    <form method="POST"> {% csrf_token %}
-        <label>Repo Name</label>
-        <input type='text' name='repo_name' placeholder="repo/name">
-        <br>
-        <label>Email (Optional)</label>
-        <input type='text' name='email' placeholder="me@email.com">
-        <br><br>
-        <button type='submit'>Save</button>
-    </form>
-    <br>
-
-    {% if empty_repo %}
-    <h4>You must supply a repo name.</h4>
-    {% endif %}
-
-    {% if repo_doesnt_exist %}
-    <h4>That repo does not exist on github. Enter a real repository name.</h4>
-    {% endif %}
-
-    {% if mongo_exists %}
-        <h4>That repo has already been mined.</h4>
-    {% endif %}
-
-    {% if request_error %}
-    <h4>That repo has already been requested.</h4>
-    {% endif %}
-
-    {% if invalid_repo_name %}
-        <h4>Enter a valid repository name of the form "repo/name".</h4>
-    {% endif %}
-
-    {% if email_error %}
-        <h4>Enter a valid email address.</h4>
-    {% endif %}
-
-</center>
-
+</html>
 {% endblock content %}

@@ -13,13 +13,13 @@ import re
 import mining_scripts.send_email
 from mining_scripts.mining import *
 from .models import *
-from .forms import MiningRequestCreateForm, AdminApprovalForm
+from .forms import MiningRequestForm, AdminApprovalForm
+from django.contrib import messages
 
 # MongoDB information 
 client = MongoClient('localhost', 27017)
 db = client.test_database
 pull_requests = db.pullRequests
-valid_repo = re.compile('^((\w+)[-]*)+/\w+$')
 
 
 def mining_request_create_view(request):
@@ -27,79 +27,27 @@ def mining_request_create_view(request):
     requests = MiningRequest.objects.all()
     
     if request.method == 'POST':
-        try:
-            form = MiningRequestCreateForm(request.POST)
-    
-
-            # If everything checks out ok, just make sure that the repo name 
-            # Matches the regex defined aboce
-            if form.is_valid():
-
-                if form.cleaned_data.get('repo_name') is None:
-                    context.update({"empty_repo": True })
-
-                if form.cleaned_data.get('repo_name') in requests:
-                    context.update({"request_error": True })
-
-                if not valid_repo.fullmatch(form.cleaned_data.get('repo_name')):
-                    context.update({"invalid_repo_name":True})
-
-                if isinstance(find_repo_main_page(form.cleaned_data.get('repo_name')), Exception):
-                    context.update({"repo_doesnt_exist": True})
-
-                # If the repo has already been mined...
-                elif find_repo_main_page(form.cleaned_data.get('repo_name')):
-                    context.update({"mongo_exists": True})
-
-                if not context is None:
-                    return render(request, "mining_requests/form.html", context)   
-
+        form = MiningRequestForm(request.POST)
+        if form.is_valid():
+            messages.success(request, 'The form is valid.') 
             
-            # If we have an issue...
-            elif not form.is_valid():
+            #     # Only create a database object if what is being passed matches our DB form
+        #     obj = MiningRequest.objects.create(
+        #         repo_name=form.cleaned_data.get('repo_name'),
+        #         email=form.cleaned_data.get("email")
+        #     )
 
-                if form.cleaned_data.get('repo_name') is None:
-                    context.update({"empty_repo": True })
+        else:
+            messages.error(request, 'The form is invalid.')
 
-                # If a request has already been made to mine this repo 
-                if form.cleaned_data.get('repo_name') in requests:
-                    context.update({"request_error": True })
+        
+        return render(request, 'mining_requests/form.html', {'form': form})
 
-                # If the repo name is incorrect
-                if not valid_repo.fullmatch(form.cleaned_data.get('repo_name')):
-                    context.update({"invalid_repo_name":True})
-
-                # If the email was incorrect 
-                if form.errors:
-                    context.update({"email_error": True})
-
-                # If the repo doesnt exist...
-                if isinstance(find_repo_main_page(form.cleaned_data.get('repo_name')), Exception):
-                    context.update({"repo_doesnt_exist": True})
-
-                # If the repo has already been mined...
-                elif find_repo_main_page(form.cleaned_data.get('repo_name')):
-                    context.update({"mongo_exists": True})
-                    
-                if not context is None:
-                    return render(request, "mining_requests/form.html", context)    
-
+    else:
+        form = MiningRequestForm()
+        return render(request, 'mining_requests/form.html', {'form': form})  
     
-            # Only create a database object if what is being passed matches our DB form
-            obj = MiningRequest.objects.create(
-                repo_name=form.cleaned_data.get('repo_name'),
-                email=form.cleaned_data.get("email")
-            )
-                
-            # what was passed in was valid, so redirect to the mining requests page 
-            return HttpResponseRedirect("/mining_requests")
-
-        except IntegrityError as e:
-            return render(request, "mining_requests/form.html", {"error": True})    
-    
-    # Handle the GET request by returning the form HTML page 
-    template_name = 'mining_requests/form.html'
-    return render(request, template_name, context)
+   
 
 def admin_approve_mining_requests(request):
 
