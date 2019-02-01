@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang=en>
+
+{% extends "base.html" %} {% block content %}
+<style>
+    li {
+        list-style-type: none;
+        margin: 100;
+        padding: 50;
+    }
+</style>
+
+<head>
+</head>
+
+<body>
+    <h1>Mined Repo Information</h1>
+    <hr>
+    <h4>
+        Repo Owner: {{ repo_owner }}
+        <br>
+        Repo Name: {{ repo_name }}
+    </h4>
+</body>
+
+{% endblock content %}
+
+</html>

@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.views.generic import TemplateView
-from user_app.views import ( HomeView, ChartView, mining_request_form_view 
+from user_app.views import ( HomeView, ChartView, mining_request_form_view, get_repo_data, MinedRepos
                              )
 
 urlpatterns = [
@@ -24,4 +24,6 @@ urlpatterns = [
     url(r'^$', HomeView.as_view()),
     url(r'^chart/$', ChartView.as_view()),
     url(r'^mining_requests_form/$', mining_request_form_view),
+    url(r'^repos/$', MinedRepos.as_view()),
+    url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data)
 ]

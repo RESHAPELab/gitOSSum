@@ -98,51 +98,16 @@ class ChartView(TemplateView):
         return context
 
 
-class MineView(TemplateView):
-    template_name = 'mine.html'
-
+class MinedRepos(TemplateView):
+    template_name = 'repos.html'
     def get_context_data(self, *args, **kwargs):
-        context = super(MineView, self).get_context_data(*args, **kwargs)
-        mined_jsons = [
-        download_api_page_json(15).json(),
-        download_api_page_json(17).json(),
-        download_api_page_json(20).json(),
-        download_api_page_json(21).json(),
-        download_api_page_json(22).json()
-        ]
-    
-        addition_list = [
-            mined_jsons[0]["additions"],
-            mined_jsons[1]["additions"],
-            mined_jsons[2]["additions"],
-            mined_jsons[3]["additions"],
-            mined_jsons[4]["additions"]
-        ]
+        context = super(MinedRepos, self).get_context_data(*args, **kwargs)
+        mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+        context = {"repos":mined_repos}
+        return context
 
-        pull_requests.insert_many(mined_jsons)
-        context = {"mined_jsons":mined_jsons, "addition_list":addition_list}
+def get_repo_data(request, repo_owner, repo_name):
+    template_name = 'mined_repo_display.html'
+    context = {"repo_owner":repo_owner, "repo_name":repo_name}
 
-        return context 
-
-# Function-based view to see all of the mining requests 
-def mining_request_listview(request):
-    template_name = 'mining_requests/mining_requests_list.html'
-    queryset = MiningRequest.objects.all()
-    context = {
-        "object_list": queryset
-    }
-    return render(request, template_name, context)
-
-# Will display the contents of the mining requests database!
-class MiningRequestListView(ListView):
-    template_name = 'mining_requests/mining_requests_list.html' 
-    queryset = MiningRequest.objects.all()
-
-
-# Will delete the contents of the mining requests database!
-def clean_mining_requests(request):
-    template_name = 'mining_requests/clean_mining_requests.html'
-    context = {} 
-    MiningRequest.objects.all().delete()
-    return render(request, template_name, context)
-
+    return render(request, template_name, context) 
