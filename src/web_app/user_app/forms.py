@@ -1,5 +1,5 @@
 from django import forms 
-from .models import MiningRequest
+from .models import MiningRequest, BlacklistedMiningRequest
 from django.forms import ValidationError
 from mining_scripts.mining import *
 import re
@@ -12,9 +12,10 @@ class MiningRequestForm(forms.Form):
 
     # Function used for validating the mining request form 
     def clean_repo_name(self):
-        repo_name = self.cleaned_data['repo_name']  # This is the repo name we will be looking at 
+        repo_name = self.cleaned_data['repo_name'].lower()  # This is the repo name we will be looking at 
         valid_repo = re.compile('^((\w+)[-]*)+/+((\w+)[-]*)+\w+$') # Regex that defines a proper repo name 
         mining_requests = list(MiningRequest.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+        black_listed_requests = list(BlacklistedMiningRequest.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         mongo_repo = find_repo_main_page(repo_name)
         errors = [] # A list for holding validation errors 
 
@@ -35,6 +36,9 @@ class MiningRequestForm(forms.Form):
         # The repo cannot have already been requested and hasn't already been mined 
         elif repo_name in mining_requests and mongo_repo is None:
             errors.append("This repository has already been requested.")
+
+        elif repo_name in black_listed_requests:
+            errors.append("This repository has been blacklisted by the Administrator.")
 
         # Raise any errors found 
         if errors != []:
