@@ -35,10 +35,6 @@ def mining_request_form_view(request):
                 repo_name=form.cleaned_data.get('repo_name'),
                 email=form.cleaned_data.get("email")
             )
-
-        else:
-            messages.error(request, 'The form is invalid.')
-
         
         return render(request, template, {'form': form})
 

@@ -2,7 +2,7 @@ from django.contrib import admin
 
 
 # Register your models here.
-from .models import MiningRequest, BlacklistedMiningRequest
+from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo
 from mining_scripts.mining import *
 
 # Admin functionality for approving mining requests
@@ -11,8 +11,14 @@ def approve_mining_requests(modeladmin, request, queryset):
     for obj in queryset:
         # Mine that repo, and store it in mongoDB
         mine_and_store_all_repo_data(obj.repo_name, email=obj.email)
+
+        # Add this repo to the mined repos table
+        MinedRepo.objects.create(
+            repo_name=obj.repo_name)
+            
         # Delete the request from the MiningRequest Database
         MiningRequest.objects.get(repo_name=obj.repo_name).delete()
+
 
 # A short description for this function
 approve_mining_requests.short_description = "Approve selected mining requests"
@@ -40,3 +46,4 @@ class MiningRequestAdmin(admin.ModelAdmin):
 
 admin.site.register(MiningRequest, MiningRequestAdmin)
 admin.site.register(BlacklistedMiningRequest)
+admin.site.register(MinedRepo)

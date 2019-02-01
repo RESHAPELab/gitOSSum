@@ -11,6 +11,9 @@ import smtplib # Import smtplib for sending email
 
 
 def send_confirmation_email(repo_name, email_address):
+    if email_address == "":
+        return 
+
     try:
         server = smtplib.SMTP('smtp.gmail.com:587')
         server.ehlo()
