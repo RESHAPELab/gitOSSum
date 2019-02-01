@@ -1,5 +1,5 @@
 import json
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.db import IntegrityError
 from django.shortcuts import render
 from pymongo import MongoClient
@@ -108,6 +108,12 @@ class MinedRepos(TemplateView):
 
 def get_repo_data(request, repo_owner, repo_name):
     template_name = 'mined_repo_display.html'
-    context = {"repo_owner":repo_owner, "repo_name":repo_name}
+    context = {"repo_owner":repo_owner.lower(), "repo_name":repo_name.lower()}
+    original_repo = repo_owner.lower() + "/" + repo_name.lower()
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+    
+    if original_repo in mined_repos:
+        return render(request, template_name, context) 
 
-    return render(request, template_name, context) 
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
