@@ -1,5 +1,5 @@
 from django import forms 
-from .models import AdminApproval, MiningRequest
+from .models import MiningRequest
 from django.forms import ValidationError
 from mining_scripts.mining import *
 import re
@@ -42,10 +42,3 @@ class MiningRequestForm(forms.Form):
         
         return repo_name
 
-
-
-class AdminApprovalForm(forms.Form):
-    approve_for_mining = forms.BooleanField(required=False)
-
-    class Meta: 
-        model = AdminApproval

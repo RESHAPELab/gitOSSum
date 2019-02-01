@@ -17,6 +17,3 @@ class MiningRequest(models.Model):
 
     def __str__(self):
         return f"{self.repo_name}, {self.email}, {self.timestamp}, {self.updated}"
-
-class AdminApproval(models.Model):
-    approve_for_mining = models.BooleanField()
