@@ -20,7 +20,7 @@ repos = db.repos # collection for storing all of a repo's main api json informat
 
 pull_requests = db.pullRequests # collection for storing all pull requests for all repos 
 
-g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API 
+g = Github("cfd91a82f578b98a0ca57e886ce535408eea1b48", per_page=100) # authorization for the github API 
 
 
 # Wrapper function that will perform all mining steps necessary when
