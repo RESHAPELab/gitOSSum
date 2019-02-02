@@ -3,6 +3,11 @@ from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo
 from django.forms import ValidationError
 from mining_scripts.mining import *
 import re
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from github import Github # Import PyGithub for mining data
+
+
 
 class MiningRequestForm(forms.Form):
     repo_name               = forms.CharField(max_length=120, required=True, label="Repository", 
@@ -45,3 +50,24 @@ class MiningRequestForm(forms.Form):
         
         return repo_name
 
+class SignUpForm(UserCreationForm):
+    first_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
+    last_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
+    github_oauth = forms.CharField(max_length=254, required=False, help_text="*Optional.")
+    email = forms.EmailField(max_length=254, required=False, help_text='*Optional.')
+
+    def clean_github_oauth(self):
+        github_oauth = self.cleaned_data['github_oauth']
+
+        # Only try to authenticate of a token was passed in 
+        if github_oauth != "":
+            try:
+                g = Github(github_oauth)
+                authenticated_repo_test = [repo for repo in g.get_user().get_repos()]
+            except Exception: #github.GithubException.BadCredentialsException
+                raise ValidationError("Invalid Github OAuth Token.")
+       
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email', 'github_oauth', 'password1', 'password2', )
+ 
