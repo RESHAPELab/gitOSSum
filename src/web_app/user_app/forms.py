@@ -66,6 +66,8 @@ class SignUpForm(UserCreationForm):
                 authenticated_repo_test = [repo for repo in g.get_user().get_repos()]
             except Exception: #github.GithubException.BadCredentialsException
                 raise ValidationError("Invalid Github OAuth Token.")
+
+        return github_oauth
        
     class Meta:
         model = User

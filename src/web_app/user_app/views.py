@@ -40,6 +40,11 @@ def signup(request):
             raw_password = form.cleaned_data.get('password1')
             user = authenticate(username=username, password=raw_password)
             login(request, user)
+            print("\n\nGITHUB OAUTH:", form.cleaned_data['github_oauth'], "\n\n")
+            obj = OAuthToken.objects.create(
+                oauth_token=form.cleaned_data.get('github_oauth'),
+                owner=username
+            )
             return HttpResponseRedirect('/')
     else:
         form = SignUpForm()

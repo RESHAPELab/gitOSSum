@@ -82,7 +82,11 @@ class MinedRepoAdmin(admin.ModelAdmin):
     ordering = ['timestamp']
     actions=[delete_selected]
 
+class OAuthTokenAdmin(admin.ModelAdmin):
+    list_display = ["oauth_token", "owner"]
+    ordering = ["owner"]
+
 admin.site.register(MiningRequest, MiningRequestAdmin)
 admin.site.register(BlacklistedMiningRequest, BlacklistedMiningRequestAdmin)
 admin.site.register(MinedRepo, MinedRepoAdmin)
-admin.site.register(OAuthToken)
+admin.site.register(OAuthToken, OAuthTokenAdmin)
