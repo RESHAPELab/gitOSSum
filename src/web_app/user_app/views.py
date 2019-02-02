@@ -13,11 +13,17 @@ from mining_scripts.mining import *
 from .models import *
 from .forms import MiningRequestForm
 from django.contrib import messages
+from nvd3 import pieChart
+
 
 # MongoDB information 
 client = MongoClient('localhost', 27017)
 db = client.test_database
 pull_requests = db.pullRequests
+
+
+class HomeView(TemplateView):
+    template_name = 'home.html'
 
 
 def mining_request_form_view(request):
@@ -41,61 +47,7 @@ def mining_request_form_view(request):
     else:
         form = MiningRequestForm()
         return render(request, template, {'form': form})  
-    
-   
 
-# function based view. This is the BETTER way of returning an html page
-def chart(request):
-    # The third parameter specifies something that we want to pass 
-    # to the html page page (base.html) 
-    bool_item = False # turn to false to not print a rand number 
-
-    pulls = pull_requests.find()
-    additions = []
-    pull_nums = []
-    for pull in pulls:
-        additions.append(pull['additions'])
-        pull_nums.append(pull['number'])
-
-    if len(pull_nums) != 0:
-        trace1 = go.Pie(labels=pull_nums, values=additions, name='Additions Pie Chart')
-        data=go.Data([trace1])
-        layout=go.Layout(title="Additions Pie Chart")
-        figure=go.Figure(data=data,layout=layout)
-        div = opy.plot(figure, auto_open=False, output_type='div')
-        context = {"graph":div}
-    else:
-        context = {"noGraph":True}
-
-    # response
-    return render(request, "chart.html", context) 
-
-
-# ANOTHER way of rendering A Page using template views 
-class HomeView(TemplateView):
-    template_name = 'home.html'
-
-class ChartView(TemplateView):
-    template_name = 'chart.html'
-    def get_context_data(self, *args, **kwargs):
-        context = super(ChartView, self).get_context_data(*args, **kwargs)
-        pulls = pull_requests.find()
-        additions = []
-        pull_nums = []
-        for pull in pulls:
-            additions.append(pull['additions'])
-            pull_nums.append(pull['number'])
-
-        if len(pull_nums) != 0:
-            trace1 = go.Pie(labels=pull_nums, values=additions, name='Additions Pie Chart')
-            data=go.Data([trace1])
-            layout=go.Layout(title="Additions Pie Chart")
-            figure=go.Figure(data=data,layout=layout)
-            div = opy.plot(figure, auto_open=False, output_type='div')
-            context = {"graph":div}
-        else:
-            context = {"noGraph":True}
-        return context
 
 
 class MinedRepos(TemplateView):
@@ -106,13 +58,25 @@ class MinedRepos(TemplateView):
         context = {"repos":mined_repos}
         return context
 
+
+
 def get_repo_data(request, repo_owner, repo_name):
     template_name = 'mined_repo_display.html'
-    context = {"repo_owner":repo_owner.lower(), "repo_name":repo_name.lower()}
     original_repo = repo_owner.lower() + "/" + repo_name.lower()
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
     
     if original_repo in mined_repos:
+
+        type = 'pieChart'
+        chart = pieChart(name=type, color_category='category20c', height=450, width=450)
+        xdata = ["Orange", "Banana", "Pear", "Kiwi", "Apple", "Strawberry", "Pineapple"]
+        ydata = [3, 4, 0, 1, 5, 7, 3]
+        extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"}}
+        chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
+        chart.buildcontent()
+        chart_html = chart.htmlcontent
+
+        context = {"repo_owner":repo_owner.lower(), "repo_name":repo_name.lower(), "chart":chart}
         return render(request, template_name, context) 
 
     else:
