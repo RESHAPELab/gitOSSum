@@ -13,8 +13,8 @@ from mining_scripts.mining import *
 from .models import *
 from .forms import MiningRequestForm
 from django.contrib import messages
-from nvd3 import pieChart
-
+from nvd3 import multiBarHorizontalChart
+import random 
 
 
 # MongoDB information 
@@ -42,6 +42,8 @@ def mining_request_form_view(request):
                 repo_name=form.cleaned_data.get('repo_name'),
                 email=form.cleaned_data.get("email")
             )
+
+            return HttpResponseRedirect("")
         
         return render(request, template, {'form': form})
 
@@ -68,15 +70,19 @@ def get_repo_data(request, repo_owner, repo_name):
     
     if original_repo in mined_repos:
 
-        type = 'pieChart'
-        chart = pieChart(name=type, color_category='category20c', height=450, width=450)
-        xdata = ["Orange", "Banana", "Pear", "Kiwi", "Apple", "Strawberry", "Pineapple"]
-        ydata = [3, 4, 0, 1, 5, 7, 3]
-        extra_serie = {"tooltip": {"y_start": "", "y_end": " cal"}}
-        chart.add_serie(y=ydata, x=xdata, extra=extra_serie)
-        chart.buildcontent()
-        chart_html = chart.htmlcontent
-
+        type = "multiBarHorizontalChart"
+        chart = multiBarHorizontalChart(name=type, height=350)
+        chart.set_containerheader("\n\n<h2>" + type + "</h2>\n\n")
+        nb_element = 10
+        xdata = list(range(nb_element))
+        ydata = [random.randint(-10, 10) for i in range(nb_element)]
+        ydata2 = [x * 2 for x in ydata]
+        extra_serie = {"tooltip": {"y_start": "", "y_end": " Calls"}}
+        chart.add_serie(name="Count", y=ydata, x=xdata, extra=extra_serie)
+        extra_serie = {"tooltip": {"y_start": "", "y_end": " Min"}}
+        chart.add_serie(name="Duration", y=ydata2, x=xdata, extra=extra_serie)
+        chart.buildhtml()
+        chart = chart.htmlcontent
         context = {"repo_owner":repo_owner.lower(), "repo_name":repo_name.lower(), "chart":chart}
         return render(request, template_name, context) 
 

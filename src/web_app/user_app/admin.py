@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.admin.actions import delete_selected as delete_selected_
+from django.core.exceptions import PermissionDenied
 
 
 # Register your models here.
@@ -45,13 +47,39 @@ def black_list_requests(modeladmin, request, queryset):
 # A short description for this function
 black_list_requests.short_description = "Blacklist selected requests"
 
+def delete_selected(modeladmin, request, queryset):
+    pool = Pool()
+
+    if not modeladmin.has_delete_permission(request):
+
+        raise PermissionDenied
+
+    if request.POST.get('post'):
+
+        for obj in queryset:
+            pool.apply_async(delete_all_contents_of_specific_repo_from_every_collection, args=(obj.repo_name,))
+            obj.delete()
+
+    else:
+
+        return delete_selected_(modeladmin, request, queryset)
+
+delete_selected.short_description = "Delete selected repos from database"
+
 class MiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "email", "timestamp"]
     ordering = ['timestamp']
     actions = [approve_mining_requests, black_list_requests]
 
+class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
+    list_display = ['repo_name', "timestamp"]
+    ordering = ['timestamp']
 
+class MinedRepoAdmin(admin.ModelAdmin):
+    list_display = ['repo_name', "timestamp"]
+    ordering = ['timestamp']
+    actions=[delete_selected]
 
 admin.site.register(MiningRequest, MiningRequestAdmin)
-admin.site.register(BlacklistedMiningRequest)
-admin.site.register(MinedRepo)
+admin.site.register(BlacklistedMiningRequest, BlacklistedMiningRequestAdmin)
+admin.site.register(MinedRepo, MinedRepoAdmin)
