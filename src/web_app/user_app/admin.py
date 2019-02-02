@@ -4,13 +4,21 @@ from django.contrib import admin
 # Register your models here.
 from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo
 from mining_scripts.mining import *
+from multiprocessing import Pool
 
 # Admin functionality for approving mining requests
 def approve_mining_requests(modeladmin, request, queryset):
+    pool = Pool()
+
     # Iterate over all of the items the admin has checked
     for obj in queryset:
         # Mine that repo, and store it in mongoDB
-        mine_and_store_all_repo_data(obj.repo_name, email=obj.email)
+        repo_name = obj.repo_name
+        user_email = obj.email
+        kw_args = {'email': user_email}
+
+        pool.apply_async(mine_and_store_all_repo_data, args=(repo_name,))
+       
 
         # Add this repo to the mined repos table
         MinedRepo.objects.create(

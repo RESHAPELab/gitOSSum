@@ -16,6 +16,7 @@ from django.contrib import messages
 from nvd3 import pieChart
 
 
+
 # MongoDB information 
 client = MongoClient('localhost', 27017)
 db = client.test_database
