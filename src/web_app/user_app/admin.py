@@ -17,7 +17,7 @@ def approve_mining_requests(modeladmin, request, queryset):
         user_email = obj.email
         kw_args = {'email': user_email}
 
-        pool.apply_async(mine_and_store_all_repo_data, args=(repo_name,))
+        pool.apply_async(mine_and_store_all_repo_data, args=(repo_name, user_email,))
        
 
         # Add this repo to the mined repos table
