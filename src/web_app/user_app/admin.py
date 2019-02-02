@@ -4,7 +4,7 @@ from django.core.exceptions import PermissionDenied
 
 
 # Register your models here.
-from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo
+from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthToken
 from mining_scripts.mining import *
 from multiprocessing import Pool
 
@@ -85,3 +85,4 @@ class MinedRepoAdmin(admin.ModelAdmin):
 admin.site.register(MiningRequest, MiningRequestAdmin)
 admin.site.register(BlacklistedMiningRequest, BlacklistedMiningRequestAdmin)
 admin.site.register(MinedRepo, MinedRepoAdmin)
+admin.site.register(OAuthToken)

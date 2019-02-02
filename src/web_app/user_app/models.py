@@ -1,6 +1,10 @@
 from django.db import models
 from pymongo import MongoClient
 
+class OAuthToken(models.Model):
+    oauth_token             = models.CharField(max_length=240, null=False, blank=False)
+    owner                   = models.CharField(max_length=240, null=False, blank=False)
+
 class MiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
     email                   = models.EmailField(null=False, blank=True)
