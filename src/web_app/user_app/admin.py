@@ -47,6 +47,8 @@ def black_list_requests(modeladmin, request, queryset):
 # A short description for this function
 black_list_requests.short_description = "Blacklist selected requests"
 
+
+# Function for deleting repositories from the MongoDB database
 def delete_selected(modeladmin, request, queryset):
     pool = Pool()
 
