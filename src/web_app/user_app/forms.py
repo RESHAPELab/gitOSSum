@@ -73,3 +73,16 @@ class SignUpForm(UserCreationForm):
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'github_oauth', 'password1', 'password2', )
  
+
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=30, required=True)
+    raw_password = forms.CharField(widget=forms.PasswordInput())
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        users = list(User.objects.values_list('username', flat=True))
+        if not username in users:
+            raise ValidationError("Incorrect username.")
+        
+        return username
+    

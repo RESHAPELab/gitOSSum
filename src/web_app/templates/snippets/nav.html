@@ -25,17 +25,26 @@
         background-color: rgb(165, 161, 161);
     }
 </style>
+{% block content %}
 <ul class="nav">
     <li>
         <a href="/">Home</a>
     </li>
-    <li>
-        <a href="/signup">Sign Up</a>
-    </li>
-    <li>
-        <a href="/mining_requests_form">Mining Request Form</a>
-    </li>
+     {% if not is_authenticated %} 
+        <li>
+            <a href="/signup">Sign Up</a>
+        </li>
+        <li>
+            <a href="/accounts/login">Login</a>
+        </li>
+     {% endif %}
+     {% if user.is_authenticated %} 
+        <li>
+            <a href="/mining_requests_form">Mining Request Form</a>
+        </li>
+    {% endif %}
     <li>
         <a href="/repos">Mined Repos</a>
     </li>
 </ul>
+{% endblock content %}

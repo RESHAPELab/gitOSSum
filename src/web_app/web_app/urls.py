@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url
+from django.conf.urls import include
 from django.contrib import admin
 from django.views.generic import TemplateView
 from user_app.views import ( HomeView, mining_request_form_view, get_repo_data, MinedRepos, signup
@@ -21,8 +22,9 @@ from user_app.views import ( HomeView, mining_request_form_view, get_repo_data, 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^signup/$', signup, name='signup'),
     url(r'^$', HomeView.as_view()),
+    url(r'^accounts/', include('django.contrib.auth.urls')), 
+    url(r'^signup/$', signup, name='signup'),
     url(r'^mining_requests_form/$', mining_request_form_view),
     url(r'^repos/$', MinedRepos.as_view()),
     url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data)
