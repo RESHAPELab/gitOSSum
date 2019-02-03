@@ -9,10 +9,17 @@
 }
 </style>
 <body>
-<footer style="width: 100%; position: absolute; bottom: 0px; text-align: center;">
+{% if not request.get_full_path == "/signup/" or request.get_full_path == "/repos/" %} 
+<footer style="width: 100%; position: absolute; bottom: 0px; text-align: center; x-overflow: hidden">
     <hr>
     <p>Website by Stephen White, Gary Baker, and Van Steinbrenner.                   
        Contact information: <a href="mailto:gitossum@gmail.com">gitossum@gmail.com</a>.</p>
+{% else %}
+<footer style="width: 100%; bottom: 0px; text-align: center; x-overflow: hidden">
+    <hr>
+    <p>Website by Stephen White, Gary Baker, and Van Steinbrenner.
+        Contact information: <a href="mailto:gitossum@gmail.com">gitossum@gmail.com</a>.</p>
 </footer>
+{% endif %}
 </body>
 </html>
