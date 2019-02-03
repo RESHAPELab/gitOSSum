@@ -30,15 +30,18 @@
     <li>
         <a href="/">Home</a>
     </li>
-     {% if not is_authenticated %} 
+     {% if not user.is_authenticated %} 
         <li>
             <a href="/signup">Sign Up</a>
         </li>
         <li>
-            <a href="/accounts/login">Login</a>
+            <a href="{% url 'login' %}">Login</a>
         </li>
      {% endif %}
      {% if user.is_authenticated %} 
+        <li>
+            <a href="{% url 'logout' %}">Logout</a>
+        </li>
         <li>
             <a href="/mining_requests_form">Mining Request Form</a>
         </li>
