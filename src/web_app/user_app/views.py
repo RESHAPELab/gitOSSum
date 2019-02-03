@@ -1,51 +1,36 @@
-import json
+# Import necessary django libraries
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db import IntegrityError
-from django.shortcuts import render, redirect
-from pymongo import MongoClient
-import plotly
-import plotly.offline as opy
-import plotly.graph_objs as go
-from django.views import View 
-from django.views.generic import TemplateView, ListView
+from django.shortcuts import render
+from django.views.generic import TemplateView
+
+
+# Import all handwritten libraries
+from permissions.permissions import login_forbidden
 import mining_scripts.send_email
 from mining_scripts.mining import *
 from .models import *
 from .forms import MiningRequestForm, SignUpForm, LoginForm
-from django.contrib import messages
+
+
+# Import external libraries
 from nvd3 import multiBarHorizontalChart
 import random 
+import json
 
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.decorators import user_passes_test
-from django.conf import settings
 
-# MongoDB information 
-client = MongoClient('localhost', 27017)
-db = client.test_database
-pull_requests = db.pullRequests
 
-LOGIN_REDIRECT_URL = settings.LOGIN_REDIRECT_URL
-
-def login_forbidden(function=None, redirect_field_name=None, redirect_to=LOGIN_REDIRECT_URL):
-    """
-    Decorator for views that checks that the user is NOT logged in, redirecting
-    to the homepage if necessary.
-    """
-    actual_decorator = user_passes_test(
-        lambda u: not u.is_authenticated(),
-        login_url=redirect_to,
-        redirect_field_name=redirect_field_name
-    )
-    if function:
-        return actual_decorator(function)
-    return actual_decorator
+# Begin views
 
 class HomeView(TemplateView):
     template_name = 'home.html'
 
+
+# Only allow people that are not signed in to access the signup page
 @login_forbidden
 def signup(request):
     if request.method == 'POST':
@@ -66,6 +51,8 @@ def signup(request):
     return render(request, 'signup.html', {'form': form})
 
 
+
+# Only allow people that are logged in to access the mining request form 
 @login_required
 def mining_request_form_view(request):
     context = {}
@@ -93,6 +80,7 @@ def mining_request_form_view(request):
 
 
 
+# A page accessible by anyone to see all mined repos (with hyperlinks)
 class MinedRepos(TemplateView):
     template_name = 'repos.html'
     def get_context_data(self, *args, **kwargs):
@@ -103,6 +91,8 @@ class MinedRepos(TemplateView):
 
 
 
+# A function that will be used to generate interactive visualizations of 
+# mined JSON data for any repo.
 def get_repo_data(request, repo_owner, repo_name):
     template_name = 'mined_repo_display.html'
     original_repo = repo_owner.lower() + "/" + repo_name.lower()

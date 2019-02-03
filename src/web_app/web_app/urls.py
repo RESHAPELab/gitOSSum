@@ -21,11 +21,11 @@ from user_app.views import ( HomeView, mining_request_form_view, get_repo_data, 
                              )
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^$', HomeView.as_view()),
-    url(r'^accounts/', include('django.contrib.auth.urls')), 
-    url(r'^signup/$', signup, name='signup'),
-    url(r'^mining_requests_form/$', mining_request_form_view),
-    url(r'^repos/$', MinedRepos.as_view()),
-    url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data)
+    url(r'^admin/', admin.site.urls), # allow access to the admin portal
+    url(r'^$', HomeView.as_view()),   # The home page 
+    url(r'^accounts/', include('django.contrib.auth.urls')), # Login/Logout controls
+    url(r'^signup/$', signup, name='signup'), # The signup page 
+    url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
+    url(r'^repos/$', MinedRepos.as_view(), name="repos"), # The list of all mined repos 
+    url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data) # Visualizations
 ]

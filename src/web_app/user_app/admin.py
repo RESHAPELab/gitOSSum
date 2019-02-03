@@ -68,6 +68,8 @@ def delete_selected(modeladmin, request, queryset):
 
 delete_selected.short_description = "Delete selected repos from database"
 
+
+# Design the admin panel for each database model 
 class MiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "email", "timestamp"]
     ordering = ['timestamp']
@@ -86,6 +88,8 @@ class OAuthTokenAdmin(admin.ModelAdmin):
     list_display = ["oauth_token", "owner"]
     ordering = ["owner"]
 
+
+# Register all of the admin panels to their respective models 
 admin.site.register(MiningRequest, MiningRequestAdmin)
 admin.site.register(BlacklistedMiningRequest, BlacklistedMiningRequestAdmin)
 admin.site.register(MinedRepo, MinedRepoAdmin)
