@@ -10,6 +10,7 @@ defusedxml==0.5.0
 Deprecated==1.2.4
 dj-database-url==0.5.0
 Django==1.11.8
+django-bootstrap3==11.0.0
 django-crispy-forms==1.7.2
 entrypoints==0.3
 gunicorn==19.9.0
@@ -45,6 +46,8 @@ Pygments==2.3.1
 PyJWT==1.7.1
 pymongo==3.7.2
 python-dateutil==2.7.5
+python-nvd3==0.15.0
+python-slugify==2.0.1
 pytz==2018.9
 pywinpty==0.5.5
 pyzmq==17.1.2
@@ -56,6 +59,7 @@ terminado==0.8.1
 testpath==0.4.2
 tornado==5.1.1
 traitlets==4.3.2
+Unidecode==1.0.23
 urllib3==1.24.1
 wcwidth==0.1.7
 webencodings==0.5.1
