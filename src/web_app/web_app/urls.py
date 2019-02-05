@@ -17,7 +17,7 @@ from django.conf.urls import url
 from django.conf.urls import include
 from django.contrib import admin
 from django.views.generic import TemplateView
-from user_app.views import ( HomeView, mining_request_form_view, get_repo_data, MinedRepos, signup
+from user_app.views import ( HomeView, mining_request_form_view, get_repo_data, MinedRepos, signup, activate
                              )
 
 urlpatterns = [
@@ -25,6 +25,8 @@ urlpatterns = [
     url(r'^$', HomeView.as_view()),   # The home page 
     url(r'^accounts/', include('django.contrib.auth.urls')), # Login/Logout controls
     url(r'^signup/$', signup, name='signup'), # The signup page 
+    url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        activate, name='activate'),
     url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
     url(r'^repos/$', MinedRepos.as_view(), name="repos"), # The list of all mined repos 
     url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data) # Visualizations

@@ -4,17 +4,25 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
 from django.db import IntegrityError
-from django.shortcuts import render
 from django.views.generic import TemplateView
+from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
+from .forms import MiningRequestForm, SignUpForm, LoginForm
 import mining_scripts.send_email
 from mining_scripts.mining import *
 from .models import *
-from .forms import MiningRequestForm, SignUpForm, LoginForm
+from .tokens import account_activation_token
+from .visualizations import *
 
 
 # Import external libraries
@@ -36,20 +44,43 @@ def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            login(request, user)
-            obj = OAuthToken.objects.create(
-                oauth_token=form.cleaned_data.get('github_oauth'),
-                owner=username
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your Git-OSS-um account.'
+            message = render_to_string('registration/   acc_active_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+                'token':account_activation_token.make_token(user),
+            })
+            to_email = form.cleaned_data.get('email')
+            email = EmailMessage(
+                        mail_subject, message, to=[to_email]
             )
-            return HttpResponseRedirect('/')
+            email.send()
+            return HttpResponse('Please  confirm your email address to complete the registration')
     else:
         form = SignUpForm()
-    return render(request, 'signup.html', {'form': form})
+        return render(request, 'signup.html', {'form': form})
 
+
+# Utility function taken from https://medium.com/@frfahim/django-registration-with-confirmation-email-bb5da011e4ef
+# That will allow a user to activate their account 
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return HttpResponse('Thank  you for your email confirmation. Now you can login your account.')
+    else:
+        return HttpResponse('Activation  link is invalid!')
 
 
 # Only allow people that are logged in to access the mining request form 
@@ -100,19 +131,7 @@ def get_repo_data(request, repo_owner, repo_name):
     
     if original_repo in mined_repos:
 
-        type = "multiBarHorizontalChart"
-        chart = multiBarHorizontalChart(name=type, height=350)
-        chart.set_containerheader("\n\n<h2>" + type + "</h2>\n\n")
-        nb_element = 10
-        xdata = list(range(nb_element))
-        ydata = [random.randint(-10, 10) for i in range(nb_element)]
-        ydata2 = [x * 2 for x in ydata]
-        extra_serie = {"tooltip": {"y_start": "", "y_end": " Calls"}}
-        chart.add_serie(name="Count", y=ydata, x=xdata, extra=extra_serie)
-        extra_serie = {"tooltip": {"y_start": "", "y_end": " Min"}}
-        chart.add_serie(name="Duration", y=ydata2, x=xdata, extra=extra_serie)
-        chart.buildhtml()
-        chart = chart.htmlcontent
+        chart = multi_bar_chart()
         context = {"repo_owner":repo_owner.lower(), "repo_name":repo_name.lower(), "chart":chart}
         return render(request, template_name, context) 
 
