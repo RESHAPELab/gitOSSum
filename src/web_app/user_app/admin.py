@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin.actions import delete_selected as delete_selected_
 from django.core.exceptions import PermissionDenied
+from django.contrib.auth.models import User
 
 
 # Register your models here.
@@ -16,16 +17,19 @@ def approve_mining_requests(modeladmin, request, queryset):
     for obj in queryset:
         # Mine that repo, and store it in mongoDB
         repo_name = obj.repo_name
-        user_email = obj.email
-        kw_args = {'email': user_email}
+        username = obj.requested_by
+        user_email = ""
+        if obj.send_email == True:
+            user_email = obj.email
 
-        pool.apply_async(mine_and_store_all_repo_data, args=(repo_name, user_email,))
+        pool.apply_async(mine_and_store_all_repo_data, args=(repo_name, username, user_email,))
        
 
         # Add this repo to the mined repos table
         MinedRepo.objects.create(
-            repo_name=obj.repo_name)
-            
+            repo_name=obj.repo_name,
+            requested_by=obj.requested_by
+        )            
         # Delete the request from the MiningRequest Database
         MiningRequest.objects.get(repo_name=obj.repo_name).delete()
 
@@ -40,7 +44,9 @@ def black_list_requests(modeladmin, request, queryset):
     for obj in queryset:
         # Blacklist the repo
         BlacklistedMiningRequest.objects.create(
-            repo_name=obj.repo_name)
+            repo_name=obj.repo_name,
+            requested_by=obj.requested_by
+        )
         # Delete the request from the MiningRequest database
         MiningRequest.objects.get(repo_name=obj.repo_name).delete()
 
@@ -71,16 +77,16 @@ delete_selected.short_description = "Delete selected repos from database"
 
 # Design the admin panel for each database model 
 class MiningRequestAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "email", "timestamp"]
+    list_display = ['repo_name', "requested_by", "email", "send_email", "timestamp"]
     ordering = ['timestamp']
     actions = [approve_mining_requests, black_list_requests]
 
 class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "timestamp"]
+    list_display = ['repo_name', "requested_by", "timestamp"]
     ordering = ['timestamp']
 
 class MinedRepoAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "timestamp"]
+    list_display = ['repo_name', "requested_by", "timestamp"]
     ordering = ['timestamp']
     actions=[delete_selected]
 

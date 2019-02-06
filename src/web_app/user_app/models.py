@@ -7,7 +7,9 @@ class OAuthToken(models.Model):
 
 class MiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
-    email                   = models.EmailField(null=False, blank=True)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
+    email                   = models.EmailField(null=False, blank=False)
+    send_email              = models.BooleanField()
     timestamp               = models.DateTimeField(auto_now_add=True)
     updated                 = models.DateTimeField(auto_now=True)
 
@@ -17,6 +19,7 @@ class MiningRequest(models.Model):
 
 class BlacklistedMiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
     timestamp               = models.DateTimeField(auto_now_add=True)
     updated                 = models.DateTimeField(auto_now=True)
 
@@ -25,6 +28,7 @@ class BlacklistedMiningRequest(models.Model):
 
 class MinedRepo(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
     timestamp               = models.DateTimeField(auto_now_add=True)
     updated                 = models.DateTimeField(auto_now=True)
 

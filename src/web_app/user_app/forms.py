@@ -12,8 +12,8 @@ from github import Github # Import PyGithub for mining data
 class MiningRequestForm(forms.Form):
     repo_name               = forms.CharField(max_length=120, required=True, label="Repository", 
                               widget= forms.TextInput(attrs={'placeholder':'owner/repository'}))
-    email                   = forms.EmailField(required=False, label="Email (optional)", 
-                              widget= forms.TextInput(attrs={'placeholder':'me@example.com'}))
+    email                   = forms.BooleanField(required=False,
+                                                 label="Send Me Email Notifications About This Request")
 
     # Function used for validating the mining request form 
     def clean_repo_name(self):

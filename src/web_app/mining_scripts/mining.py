@@ -25,7 +25,7 @@ g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API
 
 # Wrapper function that will perform all mining steps necessary when
 # provided with the repository name
-def mine_and_store_all_repo_data(repo_name, email):  
+def mine_and_store_all_repo_data(repo_name, username, email):  
     # Use pygit to eliminate any problems with users not spelling the repo name
     # exactly as it is on the actual repo 
     pygit_repo = g.get_repo(repo_name)
@@ -37,7 +37,7 @@ def mine_and_store_all_repo_data(repo_name, email):
     mine_pulls_from_repo(pygit_repo)
 
     # send any emails as necessary
-    send_confirmation_email(repo_name, email)
+    send_confirmation_email(repo_name, username, email)
 
     return 
 

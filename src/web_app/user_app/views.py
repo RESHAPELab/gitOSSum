@@ -18,7 +18,6 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
 from .forms import MiningRequestForm, SignUpForm, LoginForm
-import mining_scripts.send_email
 from mining_scripts.mining import *
 from .models import *
 from .tokens import account_activation_token
@@ -49,7 +48,7 @@ def signup(request):
             user.save()
             current_site = get_current_site(request)
             mail_subject = 'Activate your Git-OSS-um account.'
-            message = render_to_string('registration/   acc_active_email.html', {
+            message = render_to_string('registration/acc_active_email.html', {
                 'user': user,
                 'domain': current_site.domain,
                 'uid':urlsafe_base64_encode(force_bytes(user.pk)),
@@ -98,7 +97,9 @@ def mining_request_form_view(request):
                 # Only create a database object if what is being passed matches our DB form
             obj = MiningRequest.objects.create(
                 repo_name=form.cleaned_data.get('repo_name'),
-                email=form.cleaned_data.get("email")
+                email=request.user.email,
+                send_email=form.cleaned_data.get("email"),
+                requested_by=request.user.username
             )
 
             return HttpResponseRedirect("")
