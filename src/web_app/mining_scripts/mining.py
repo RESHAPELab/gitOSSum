@@ -8,8 +8,8 @@
 
 from pymongo import MongoClient # Import pymongo for interacting with MongoDB
 from github import Github # Import PyGithub for mining data
-from send_email import * 
-import config 
+from mining_scripts.send_email import * 
+from mining_scripts.config import *
 
 
 client = MongoClient('localhost', 27017) # Where are we connecting
@@ -20,12 +20,12 @@ repos = db.repos # collection for storing all of a repo's main api json informat
 
 pull_requests = db.pullRequests # collection for storing all pull requests for all repos 
 
-g = Github(config.GITHUB_TOKEN, per_page=100) # authorization for the github API 
+g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API 
 
 
 # Wrapper function that will perform all mining steps necessary when
 # provided with the repository name
-def mine_and_store_all_repo_data(repo_name, **kwargs):  
+def mine_and_store_all_repo_data(repo_name, username, email): 
     # Use pygit to eliminate any problems with users not spelling the repo name
     # exactly as it is on the actual repo 
     pygit_repo = g.get_repo(repo_name)
@@ -37,15 +37,7 @@ def mine_and_store_all_repo_data(repo_name, **kwargs):
     mine_pulls_from_repo(pygit_repo)
 
     # send any emails as necessary
-    if "email" in kwargs:
-        # Iterate over a list of emails if thats what was provided 
-        if type(kwargs["email"]) is list:
-            for email_recipient in kwargs["email"]:
-                send_confirmation_email(repo_name, email_recipient)
-        
-        # Otherwise its just one single email
-        else:
-            send_confirmation_email(repo_name, kwargs["email"])
+    send_confirmation_email(repo_name, username, email)
 
     return 
 
@@ -100,9 +92,11 @@ def mine_pulls_from_repo(pygit_repo):
 def find_repo_main_page(repo_name):
     # Use pygit to eliminate any problems with users not spelling the repo name
     # exactly as it is on the actual repo 
-    pygit_repo = g.get_repo(repo_name)
-    
-    return repos.find_one({"full_name":pygit_repo.full_name})
+    try:
+        pygit_repo = g.get_repo(repo_name)
+        return repos.find_one({"full_name":pygit_repo.full_name})
+    except Exception as e:
+        return e
 
 
 # Helper method to find and return a list of all pull request json files 
