@@ -53,8 +53,8 @@ class MiningRequestForm(forms.Form):
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
     last_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
+    email = forms.EmailField(max_length=254, required=True, help_text='*Required.')
     github_oauth = forms.CharField(max_length=254, required=False, help_text="*Optional.")
-    email = forms.EmailField(max_length=254, required=False, help_text='*Optional.')
 
     def clean_github_oauth(self):
         github_oauth = self.cleaned_data['github_oauth']
