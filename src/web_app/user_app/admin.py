@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.admin.actions import delete_selected as delete_selected_
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth.models import User
+from django.template.loader import get_template
+
 
 
 # Register your models here.
@@ -21,8 +22,7 @@ def approve_mining_requests(modeladmin, request, queryset):
         user_email = ""
         if obj.send_email == True:
             user_email = obj.email
-
-        pool.apply_async(mine_and_store_all_repo_data, args=(repo_name, username, user_email,))
+        pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
        
 
         # Add this repo to the mined repos table

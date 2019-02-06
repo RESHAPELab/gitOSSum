@@ -6,18 +6,15 @@
 # Purpose: This script will provide the necessary functionality send users
 #          and email from gitossum@gmail.com
 
-
-
-import django
-django.setup() 
+ 
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from mining_scripts.config import * # for authentication purposes 
 import smtplib # Import smtplib for sending email 
 
 
-def send_mining_initialized_email(repo_name, email_address):
-    if email_address == "":
+def send_mining_initialized_email(repo_name, to_email):
+    if to_email == "":
         return 
 
     try:
@@ -25,14 +22,18 @@ def send_mining_initialized_email(repo_name, email_address):
         server.ehlo()
         server.starttls()
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        subj = 'Git-OSS-um %s Mining Request Initialized!' % repo_name
+        subj = f'Git-OSS-um {repo_name} Mining Request Accepted!'
         msg = (
-        '''Hello, this is an automated message letting you know that your ''' + \
-        '''request to mine %s has been accepted! A confirmation email will be sent when your ''' + \
-        '''repository has been fully mined. Thank you for using our service!''' % repo_name + \
-        '''\n\nUntil next time,\n\nGit-OSS-um Team <3''')
+            f'''Hello {username},\n\n'''
+            f'''This is an automated message letting you know that your ''' 
+            f'''request to mine {repo_name} has been accepted! ''' 
+            f'''A confirmation email will be sent when your repository has been fully mined. '''
+            f'''\n\nThank you for using our service!\n\n'''
+            f'''Until next time,\n\n'''
+            f'''Git-OSS-um Team <3'''
+        )
         message = "Subject: {}\n\n{}".format(subj, msg)
-        server.sendmail(EMAIL_ADDRESS, email_address, message)
+        server.sendmail(EMAIL_ADDRESS, to_email, message)
         return True 
 
     except Exception as e:
@@ -46,21 +47,36 @@ def send_confirmation_email(repo_name, username, to_email):
     if to_email == "":
         return 
 
-    mail_subject = 'Git-OSS-um %s Mining Request Complete!' % repo_name
-    message = render_to_string('email_notifications/confirmation.html', {
-        'user': username,
-        'repo': repo_name
-    })
-    print("EMAIL SUBJECT:", mail_subject)
-    print("EMAIL MESSAGE:", message)
-    email = EmailMessage(mail_subject, message, to=[to_email])
-    email.send()
-    return True 
+    try:
+        server = smtplib.SMTP('smtp.gmail.com:587')
+        server.ehlo()
+        server.starttls()
+        server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+        subj = f'Git-OSS-um {repo_name} Mining Request Complete!'
+        msg = (
+            f'''Hello {username},\n\n'''
+            f'''This is an automated message letting you know that your ''' 
+            f'''request to mine {repo_name} has been completed!''' 
+            f'''\n\nThank you for using our service!\n\n'''
+            f'''Until next time,\n\n'''
+            f'''Git-OSS-um Team <3'''
+        )
+        message = "Subject: {}\n\n{}".format(subj, msg)
+        print(message)
+        server.sendmail(EMAIL_ADDRESS, to_email, message)
+        return True 
+
+    except Exception as e:
+        print(e)
+        return False 
+
+    finally:
+        server.quit() 
 
     
 
-def send_repository_denied_email(repo_name, email_address):
-    if email_address == "":
+def send_repository_denied_email(repo_name, to_email):
+    if to_email == "":
         return 
 
     try:
@@ -68,14 +84,17 @@ def send_repository_denied_email(repo_name, email_address):
         server.ehlo()
         server.starttls()
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        subj = 'Git-OSS-um %s Mining Request Complete!' % repo_name
+        subj = f'Git-OSS-um {repo_name} Mining Request Denied'
         msg = (
-        '''Hello, this is an automated message letting you know that your ''' + \
-        '''request to mine %s has been denied. We appologize for the inconvenience, ''' + \
-        '''and thank you for using our service.''' % repo_name + \
-        '''\n\nUntil next time,\n\nGit-OSS-um Team <3''')
+            f'''Hello {username},\n\n'''
+            f'''This is an automated message letting you know that your ''' 
+            f'''request to mine {repo_name} has been denied. We appologize for the inconvenience, ''' 
+            f'''and thank you for using our service.\n\n'''
+            f'''Until next time,\n\n'''
+            f'''Git-OSS-um Team <3'''
+        )
         message = "Subject: {}\n\n{}".format(subj, msg)
-        server.sendmail(EMAIL_ADDRESS, email_address, message)
+        server.sendmail(EMAIL_ADDRESS, to_email, message)
         return True 
 
     except Exception as e:
@@ -85,8 +104,8 @@ def send_repository_denied_email(repo_name, email_address):
     finally:
         server.quit()
 
-def send_repository_blacklist_email(repo_name, email_address):
-    if email_address == "":
+def send_repository_blacklist_email(repo_name, to_email):
+    if to_email == "":
         return 
 
     try:
@@ -94,15 +113,18 @@ def send_repository_blacklist_email(repo_name, email_address):
         server.ehlo()
         server.starttls()
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        subj = 'Git-OSS-um %s Mining Request Complete!' % repo_name
+        subj = f'Git-OSS-um {repo_name} Mining Request Blacklisted'
         msg = (
-        '''Hello, this is an automated message letting you know that your ''' + \
-        '''request to mine %s has been denied. The Administrator has chosen to ''' + \
-        '''blacklist this repository, meaning it can no longer be requested. ''' + \
-        '''We appologize for the inconvenience, and thank you for using our service.''' % repo_name + \
-        '''\n\nUntil next time,\n\nGit-OSS-um Team <3''')
+            f'''Hello {username},\n\n'''
+            f'''This is an automated message letting you know that your ''' 
+            f'''request to mine {repo_name} has been denied. The Administrator has chosen to ''' 
+            f'''blacklist this repository, meaning it can no longer be requested. '''
+            f'''We appologize for the inconvenience, and thank you for using our service.\n\n'''
+            f'''Until next time,\n\n'''
+            f'''Git-OSS-um Team <3'''
+        )
         message = "Subject: {}\n\n{}".format(subj, msg)
-        server.sendmail(EMAIL_ADDRESS, email_address, message)
+        server.sendmail(EMAIL_ADDRESS, to_email, message)
         return True 
 
     except Exception as e:
