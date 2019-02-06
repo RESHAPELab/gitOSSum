@@ -28,6 +28,8 @@ from .visualizations import *
 from nvd3 import multiBarHorizontalChart
 import random 
 import json
+from io import BytesIO
+from PIL import Image
 
 
 
@@ -133,7 +135,24 @@ def get_repo_data(request, repo_owner, repo_name):
     if original_repo in mined_repos:
 
         chart = multi_bar_chart()
-        context = {"repo_owner":repo_owner.lower(), "repo_name":repo_name.lower(), "chart":chart}
+        repo_table = get_repo_table_context(original_repo)
+        context = {
+            "repo_owner":repo_owner.lower(), 
+            "repo_name":repo_name.lower(), 
+            "description":repo_table['description'],
+            "created_at":repo_table['created_at'],
+            "updated_at":repo_table['updated_at'],
+            "clone_url":repo_table['clone_url'],
+            "homepage":repo_table['homepage'],
+            "stargazers_count":repo_table['stargazers_count'],
+            "language":repo_table['language'],
+            "has_wiki":repo_table['has_wiki'],
+            "license_key":repo_table['license_key'],
+            "open_issues":repo_table['open_issues'],
+            "network_count":repo_table['network_count'],
+            "subscribers_count":repo_table['subscribers_count'],
+            "chart":chart, 
+        }
         return render(request, template_name, context) 
 
     else:

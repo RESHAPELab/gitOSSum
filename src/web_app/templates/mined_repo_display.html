@@ -20,7 +20,23 @@
         Repo Owner: {{ repo_owner }}
         <br>
         Repo Name: {{ repo_name }}
+        <br><br>
+        Inner Contents ~
     </h4>
+    <ul>
+        <li><b>description:</b> {{ description }}</li>
+        <li><b>created_at:</b> {{ created_at }}</li>
+        <li><b>updated_at:</b> {{ updated_at }}</li>
+        <li><b>clone_url:</b> {{ clone_url }}</li>
+        <li><b>homepage:</b> {{ homepage }}</li>
+        <li><b>stargazers_count:</b> {{ stargazers_count }}</li>
+        <li><b>language:</b> {{ language }}</li>
+        <li><b>has_wiki:</b> {{ has_wiki }}</li>
+        <li><b>license_key:</b> {{ license_key }}</li>
+        <li><b>open_issues:</b> {{ open_issues }}</li>
+        <li><b>network_count:</b> {{ network_count }}</li>
+        <li><b>subscribers_count:</b> {{ subscribers_count }}</li>
+    </ul>
     {{ chart |safe}}
 </body>
 
