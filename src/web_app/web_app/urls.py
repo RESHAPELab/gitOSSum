@@ -17,7 +17,7 @@ from django.conf.urls import url
 from django.conf.urls import include
 from django.contrib import admin
 from django.views.generic import TemplateView
-from user_app.views import ( HomeView, about_us, mining_request_form_view, get_repo_data, MinedRepos, signup, activate
+from user_app.views import ( HomeView, about_us, mining_request_form_view, get_repo_data, mined_repos, signup, activate
                              )
 
 urlpatterns = [
@@ -29,6 +29,6 @@ urlpatterns = [
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         activate, name='activate'),
     url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
-    url(r'^repos/$', MinedRepos.as_view(), name="repos"), # The list of all mined repos 
+    url(r'^repos/$', mined_repos, name="repos"), # The list of all mined repos 
     url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data, name="visualization") # Visualizations
 ]
