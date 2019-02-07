@@ -30,7 +30,14 @@ def multi_bar_chart():
 
 def get_repo_table_context(repo_name):
     landing_page = find_repo_main_page(repo_name)
-    num_pulls = count_all_pull_requests_from_a_specifc_repo(repo_name)
+    github_img = landing_page['owner']['avatar_url']
+
+    # TODO: Get this info from the Mined Repos Model
+    # num_pulls = count_all_pull_requests_from_a_specifc_repo(repo_name)
+    # num_closed_merged_pulls =
+    # num_closed_unmerged_pulls = 
+    # num_open_pulls = 
+
     description = landing_page['description']
     created_at = landing_page['created_at']
     updated_at = landing_page['updated_at']
@@ -50,7 +57,11 @@ def get_repo_table_context(repo_name):
     subscribers_count = landing_page['subscribers_count']
 
     return {
-        "num_pulls":int(num_pulls),
+        "github_img":str(github_img),
+        #"num_pulls":int(num_pulls),
+        #"num_closed_merged_pulls":num_closed_merged_pulls,
+        #"num_closed_unmerged_pulls":num_closed_unmerged_pulls, 
+        #"num_open_pulls":num_open_pulls,
         "description":str(description),
         "created_at":datetime.datetime.strptime(str(created_at), "%Y-%m-%dT%H:%M:%SZ"),
         "updated_at":datetime.datetime.strptime(str(updated_at), "%Y-%m-%dT%H:%M:%SZ"),
