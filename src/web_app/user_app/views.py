@@ -38,6 +38,8 @@ from PIL import Image
 class HomeView(TemplateView):
     template_name = 'home.html'
 
+class AboutUs(TemplateView):
+    template_name = 'aboutUs.html'
 
 # Only allow people that are not signed in to access the signup page
 @login_forbidden
@@ -117,12 +119,12 @@ def mining_request_form_view(request):
 # A page accessible by anyone to see all mined repos (with hyperlinks)
 class MinedRepos(TemplateView):
     template_name = 'repos.html'
+
     def get_context_data(self, *args, **kwargs):
         context = super(MinedRepos, self).get_context_data(*args, **kwargs)
         mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         context = {"repos":mined_repos}
         return context
-
 
 
 # A function that will be used to generate interactive visualizations of 
