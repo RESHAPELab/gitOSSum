@@ -196,6 +196,9 @@ class HomeViewOld(View):
 class HomeView(TemplateView):
     template_name = 'home.html'
 
+class AboutUs(TemplateView):
+    template_name = 'aboutUs.html'
+    
 class ChartView(TemplateView):
     template_name = 'chart.html'
     def get_context_data(self, *args, **kwargs):

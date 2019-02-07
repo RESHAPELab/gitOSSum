@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <title>About Us</title>
+    </head>
+
+    <style>
+        * {
+        box-sizing: border-box;
+        }
+        
+        /* Create three unequal columns that floats next to each other */
+        .column {
+        float: left;
+        padding: 10px;
+        }
+        
+        .left, .right {
+        width: 33%;
+        }
+        
+        .middle {
+        width: 33%;
+        }
+
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .memberPic {
+            float: left;
+            margin-right: 1%;
+        }
+
+        .memberInfo {
+            text-align: center;
+        }
+
+        
+        /* Clear floats after the columns */
+        .row:after {
+        content: "";
+        display: table;
+        clear: both;
+        }
+
+        @media screen and (max-width: 320px) { @viewport { width: 320px; } }
+        </style>
+
+    <body>
+        
+
+        <div class="jumboContainer" style="width: 100%">
+                <div class="jumbotron" style="text-align: center; margin-top: 1%; background-color: rgb(94, 215, 252);">
+                        <div class="row" style="height: auto;">
+                                <div class="column left">
+                                    <!-- {% load static %}<img src="{% static 'gary.jpg' %}" class="memberPic" style="width: 175px; height: 225px; margin-left: 3%;" />   -->
+                                    <div class="memberInfo">
+                                        <h3>Gary Baker</h3>
+                                        <!-- {% load static %} <img src="{% static 'images/gary.jpg' %}" class="memberPic" style="width: 175px; height: 225px; margin-left: 3%;"/> -->
+                                        <p>Recorder, Co-Architect, Web Manager, Programmer</p>
+                                    </div>        
+                                </div>
+                                <div class="column middle">
+                                    <!-- {% load static %} <img src="{% static 'van.jpg' %}" class="memberPic" style="width: 175px; height: 225px;" /> -->
+                                    <div class="memberInfo">
+                                        <h3>Van Steinbrenner</h3>
+                                        <p>Editor, Co-Architect, Programmer</p>
+                                    </div> 
+                                </div>
+                                <div class="column right">
+                                    <!-- {% load static %} <img src="{% static 'stephen.jpg' %}" class="memberPic" style="width: 175px; height: 225px;" /> -->
+                                    <div class="memberInfo">
+                                        <h3>Stephen White</h3>
+                                        <p>Team Leader, Customer Communicator,Release Manger, Programmer</p>
+                                    </div> 
+                                </div>
+                            </div>
+                </div>
+            </div>
+        
+        <div class="jumboContainer" style="width: 100%">
+            <div class="jumbotron" style="text-align: center; background-color: rgb(252, 94, 94);">
+                <h2 class="header1">Team Contact Information</h2>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px">Gary Baker: <a href="mailto:gpb27@nau.edu">gpb27@nau.edu</a></p>
+                </div>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px">Stephen White: <a href="mailto:smw44@nau.edu">smw444@nau.edu</a></p>
+                </div>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px">Van Steinbrenner: <a href="mailto:vws2@nau.edu">vws2@nau.edu</a></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="jumboContainer">
+            <div class="jumbotron" style="text-align: center; background-color: rgb(3, 151, 119);">
+                <h2 class="header1">Sponsor & Mentor Information</h2>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px"><u>Sponsor</u> <br>Igor Steinmacher: <a href="mailto:igor.steinmacher@nau.edu">igor.steinmacher@nau.edu</a></p>
+                </div>
+
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px"><u>Mentor</u> <br>Ana Paula Chaves Steinmacher: <a href="mailto:acs549@nau.edu">acs549@nau.edu</a></p>
+                </div>                
+            </div>
+        </div>
+    </body>
+    {% include 'snippets/footer.html' %}
+</html>
+{% endblock %}

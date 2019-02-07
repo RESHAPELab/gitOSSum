@@ -1,15 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-</style>
 
 <title>Git-OSS-um.com</title>
 {% include 'snippets/css.html' %}
 
-<head> </head>
+<head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" type="text/css" href="../../static/nav.css" />
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" 
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" 
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" 
+          crossorigin="anonymous"
+    >  
+</head>
 
 <body>
-  <h1>Git-OSS-um.com</h1>
-  {% include 'snippets/nav.html/' %}
+  {% include 'snippets/header.html/' %}
   <div class="container">{% block content %}{% endblock content %}</div>
 
   {% include 'snippets/js.html' %}
