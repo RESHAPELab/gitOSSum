@@ -5,17 +5,19 @@
         padding: 0;
         overflow: hidden;
         background-color: #333;
+        width: 100%;
     }
 
     .nav li {
         float: left;
+        width: auto;
+        height: "2%";
     }
 
     .nav li a {
         display: block;
         color: white;
         text-align: center;
-        padding: 14px 16px;
         text-decoration: none;
     }
 
@@ -28,7 +30,13 @@
 {% block content %}
 <ul class="nav">
     <li>
+        <a href="/" style="font-size: 18px;">Git OSS-um</a>
+    </li>
+    <li>
         <a href="/">Home</a>
+    </li>
+    <li>
+        <a href="about_us">About Us</a>
     </li>
      {% if user.is_authenticated %} 
         <li>
