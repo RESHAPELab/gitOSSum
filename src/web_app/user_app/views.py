@@ -38,8 +38,9 @@ from PIL import Image
 class HomeView(TemplateView):
     template_name = 'home.html'
 
-class AboutUs(TemplateView):
-    template_name = 'aboutUs.html'
+def about_us(request):
+    template_name = 'about_us.html'
+    return render(request, template_name, {})
 
 # Only allow people that are not signed in to access the signup page
 @login_forbidden

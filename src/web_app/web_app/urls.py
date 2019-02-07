@@ -17,13 +17,13 @@ from django.conf.urls import url
 from django.conf.urls import include
 from django.contrib import admin
 from django.views.generic import TemplateView
-from user_app.views import ( HomeView, AboutUs, mining_request_form_view, get_repo_data, MinedRepos, signup, activate
+from user_app.views import ( HomeView, about_us, mining_request_form_view, get_repo_data, MinedRepos, signup, activate
                              )
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls), # allow access to the admin portal
     url(r'^$', HomeView.as_view()),   # The home page 
-    url(r'^aboutUs/', AboutUs.as_view(), name="aboutUs"),
+    url(r'^about_us/$', about_us, name="about_us"),
     url(r'^accounts/', include('django.contrib.auth.urls')), # Login/Logout controls
     url(r'^signup/$', signup, name='signup'), # The signup page 
     url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
