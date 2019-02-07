@@ -139,6 +139,7 @@ def get_repo_data(request, repo_owner, repo_name):
         context = {
             "repo_owner":repo_owner.lower(), 
             "repo_name":repo_name.lower(), 
+            "num_pulls":repo_table['num_pulls'],
             "description":repo_table['description'],
             "created_at":repo_table['created_at'],
             "updated_at":repo_table['updated_at'],
@@ -148,6 +149,7 @@ def get_repo_data(request, repo_owner, repo_name):
             "language":repo_table['language'],
             "has_wiki":repo_table['has_wiki'],
             "license_key":repo_table['license_key'],
+            "license_name":repo_table['license_name'],
             "open_issues":repo_table['open_issues'],
             "network_count":repo_table['network_count'],
             "subscribers_count":repo_table['subscribers_count'],

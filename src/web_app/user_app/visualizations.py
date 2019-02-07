@@ -30,8 +30,7 @@ def multi_bar_chart():
 
 def get_repo_table_context(repo_name):
     landing_page = find_repo_main_page(repo_name)
-    print(landing_page["description"])
-
+    num_pulls = count_all_pull_requests_from_a_specifc_repo(repo_name)
     description = landing_page['description']
     created_at = landing_page['created_at']
     updated_at = landing_page['updated_at']
@@ -40,13 +39,18 @@ def get_repo_table_context(repo_name):
     stargazers_count = landing_page['stargazers_count']
     language = landing_page['language']
     has_wiki = landing_page['has_wiki']
-    license_key = landing_page['license']
+    try:
+        license_key = landing_page['license']["key"]
+        license_name = landing_page['license']['name']
+    except Exception:
+        license_key = None
+        license_name = None 
     open_issues = landing_page['open_issues']
     network_count = landing_page['network_count']
     subscribers_count = landing_page['subscribers_count']
 
     return {
-        "landing_page":str(landing_page),
+        "num_pulls":int(num_pulls),
         "description":str(description),
         "created_at":datetime.datetime.strptime(str(created_at), "%Y-%m-%dT%H:%M:%SZ"),
         "updated_at":datetime.datetime.strptime(str(updated_at), "%Y-%m-%dT%H:%M:%SZ"),
@@ -56,6 +60,7 @@ def get_repo_table_context(repo_name):
         "language":str(language),
         "has_wiki":bool(has_wiki),
         "license_key":str(license_key),
+        "license_name":str(license_name),
         "open_issues":int(open_issues),
         "network_count":int(network_count),
         "subscribers_count":int(subscribers_count)
