@@ -28,6 +28,8 @@ from .visualizations import *
 from nvd3 import multiBarHorizontalChart
 import random 
 import json
+from io import BytesIO
+from PIL import Image
 
 
 
@@ -131,9 +133,12 @@ def get_repo_data(request, repo_owner, repo_name):
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
     
     if original_repo in mined_repos:
-
-        chart = multi_bar_chart()
-        context = {"repo_owner":repo_owner.lower(), "repo_name":repo_name.lower(), "chart":chart}
+        context = get_repo_table_context(original_repo)
+        context.update({
+            "repo_owner":repo_owner.lower(), 
+            "repo_name":repo_name.lower(), 
+            "chart":multi_bar_chart() 
+        })
         return render(request, template_name, context) 
 
     else:

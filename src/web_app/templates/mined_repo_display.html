@@ -2,25 +2,120 @@
 <html lang=en>
 
 {% extends "base.html" %} {% block content %}
+<head>
 <style>
-    li {
-        list-style-type: none;
-        margin: 100;
-        padding: 50;
+    table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    td,
+    th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
+
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
+
+    img {
+        height: 225px; 
+        width: 175px;
     }
 </style>
 
-<head>
 </head>
 
 <body>
     <h1>Mined Repo Information</h1>
     <hr>
-    <h4>
-        Repo Owner: {{ repo_owner }}
-        <br>
-        Repo Name: {{ repo_name }}
-    </h4>
+    <img src= {{ github_img }}> 
+    <table>
+        <tr>
+            <th>Item</th>
+            <th>Content</th>
+        </tr>
+        <tr>
+            <td>Repo Owner</td>
+            <td>{{ repo_owner }}</td>
+        </tr>
+        <tr>
+            <td>Repo Name</td>
+            <td>{{ repo_name }}</td>
+        </tr>
+        <tr>
+            <td>Number of Pull Requests</td>
+            <td>{{ num_pulls }}</td>
+        </tr>
+        <tr>
+            <td>Number of Closed-Merged Pull Requests</td>
+            <td>{{ num_closed_merged_pulls }}</td>
+        </tr>
+        <tr>
+            <td>Number of Closed-Unmerged Pull Requests</td>
+            <td>{{ num_closed_unmerged_pulls }}</td>
+        </tr>
+        <tr>
+            <td>Number of Open Pull Requests</td>
+            <td>{{ num_open_pulls }}</td>
+        </tr>
+        <tr>
+            <td>description</td>
+            <td>{{ description }}</td>
+        </tr>
+        <tr>
+            <td>created_at</td>
+            <td>{{ created_at }}</td>
+        </tr>
+        <tr>
+            <td>updated_at</td>
+            <td>{{ updated_at }}</td>
+        </tr>
+        <tr>
+            <td>clone_url</td>
+            <td>{{ clone_url }}</td>
+        </tr>
+        <tr>
+            <td>homepage</td>
+            <td>{{ homepage }}</td>
+        </tr>
+        <tr>
+            <td>stargazers_count</td>
+            <td>{{ stargazers_count }}</td>
+        </tr>
+        <tr>
+            <td>language</td>
+            <td>{{language }}</td>
+        </tr>
+        <tr>
+            <td>has_wiki</td>
+            <td>{{ has_wiki }}</td>
+        </tr>
+        <tr>
+            <td>license_key</td>
+            <td>{{ license_key }}</td>
+        </tr>
+        <tr>
+            <td>license_name</td>
+            <td>{{ license_name }}</td>
+        </tr>
+        <tr>
+            <td>open_issues</td>
+            <td>{{ open_issues }}</td>
+        </tr>
+        <tr>
+            <td>network_count</td>
+            <td>{{ network_count }}</td>
+        </tr>
+        <tr>
+            <td>subscribers_count</td>
+            <td>{{ subscribers_count }}</td>
+        </tr>
+    </table>
+    <hr>
     {{ chart |safe}}
 </body>
 

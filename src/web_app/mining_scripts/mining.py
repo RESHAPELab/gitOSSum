@@ -111,6 +111,15 @@ def find_all_pull_requests_from_a_specific_repo(repo_name):
 
     return pulls
 
+def count_all_pull_requests_from_a_specifc_repo(repo_name):
+    pygit_repo = g.get_repo(repo_name)
+
+    num_pulls = pull_requests.count_documents({"url": {"$regex": pygit_repo.full_name}})
+
+    return num_pulls
+
+
+
 
 # Method to retrieve all repos in the repo collection
 def get_all_repos():
