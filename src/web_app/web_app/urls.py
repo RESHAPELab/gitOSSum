@@ -14,24 +14,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url
+from django.conf.urls import include
 from django.contrib import admin
 from django.views.generic import TemplateView
-from user_app.views import ( HomeView, ChartView, DatabaseView, CleanDatabaseView,
-                               MineView, mining_request_listview, MiningRequestListView,
-                               mining_request_create_view, clean_mining_requests, 
-                               admin_approve_mining_requests, AboutUs
+from user_app.views import ( HomeView, AboutUs, mining_request_form_view, get_repo_data, MinedRepos, signup, activate
                              )
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^$', HomeView.as_view(), name="home"),
+    url(r'^admin/', admin.site.urls), # allow access to the admin portal
+    url(r'^$', HomeView.as_view()),   # The home page 
     url(r'^aboutUs/', AboutUs.as_view(), name="aboutUs"),
-    url(r'^chart/$', ChartView.as_view(), name="chart"),
-    url(r'^database/$', DatabaseView.as_view(), name="database"),
-    url(r'^mining_requests_form/$', mining_request_create_view, name="requestForm"),
-    url(r'^mining_requests/$', MiningRequestListView.as_view(), name="requests"),
-    url(r'^clean_mining_requests/$', clean_mining_requests, name="cleanRequests"),
-    url(r'^admin_approve_mining_requests/$', admin_approve_mining_requests, name="approveRequests"),
-    url(r'^clean_database/$', CleanDatabaseView.as_view(), name="cleanDB"),
-    url(r'^mine/$', MineView.as_view(), name="mine"),
+    url(r'^accounts/', include('django.contrib.auth.urls')), # Login/Logout controls
+    url(r'^signup/$', signup, name='signup'), # The signup page 
+    url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        activate, name='activate'),
+    url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
+    url(r'^repos/$', MinedRepos.as_view(), name="repos"), # The list of all mined repos 
+    url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data, name="visualization") # Visualizations
 ]

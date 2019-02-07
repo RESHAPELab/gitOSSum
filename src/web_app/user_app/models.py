@@ -1,24 +1,40 @@
 from django.db import models
 from pymongo import MongoClient
 
-class RestaurantLocation(models.Model):
-    name         = models.CharField(max_length=120)
-    location     = models.CharField(max_length=120, null=True, blank=True)
-    category     = models.CharField(max_length=120, null=True, blank=False)
-    timestamp    = models.DateTimeField(auto_now_add=True)
-    updated      = models.DateTimeField(auto_now=True)
+class OAuthToken(models.Model):
+    oauth_token             = models.CharField(max_length=240, null=False, blank=False)
+    owner                   = models.CharField(max_length=240, null=False, blank=False)
 
 class MiningRequest(models.Model):
-    repo_name               = models.CharField(max_length=120, null=False, blank=False)
-    pull_request_number     = models.IntegerField(null=False, blank=False)
+    repo_name               = models.CharField(max_length=240, null=False, blank=False)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
+    email                   = models.EmailField(null=False, blank=False)
+    send_email              = models.BooleanField()
     timestamp               = models.DateTimeField(auto_now_add=True)
     updated                 = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        unique_together = ('repo_name', 'pull_request_number',)
 
     def __str__(self):
-        return f"{self.repo_name}, {self.pull_request_number}, {self.timestamp}, {self.updated}"
+        return f"{self.repo_name}, {self.email}, {self.timestamp}, {self.updated}"
 
-class AdminApproval(models.Model):
-    approve_for_mining = models.BooleanField()
+class BlacklistedMiningRequest(models.Model):
+    repo_name               = models.CharField(max_length=240, null=False, blank=False)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
+    timestamp               = models.DateTimeField(auto_now_add=True)
+    updated                 = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.repo_name}, {self.timestamp}, {self.updated}"
+
+class MinedRepo(models.Model):
+    repo_name                    = models.CharField(max_length=240, null=False, blank=False)
+    requested_by                 = models.CharField(max_length=240, null=False, blank=False)
+    #num_pulls                    = models.IntegerField(min_value=0)
+    #num_closed_merged_pulls      = models.IntegerField(min_value=0)
+    #num_closed_unmerged_pulls    = models.IntegerField(min_value=0)
+    #num_open_pulls               = models.IntegerField(min_value=0)
+    timestamp                    = models.DateTimeField(auto_now_add=True)
+    updated                      = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.repo_name}, {self.timestamp}, {self.updated}"

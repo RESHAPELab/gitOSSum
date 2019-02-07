@@ -27,6 +27,7 @@
         background-color: rgb(165, 161, 161);
     }
 </style>
+{% block content %}
 <ul class="nav">
     <li>
         <a href="/" style="font-size: 18px;">Git OSS-um</a>
@@ -34,28 +35,13 @@
     <li>
         <a href="/">Home</a>
     </li>
+     {% if user.is_authenticated %} 
+        <li>
+            <a href="{% url 'mining_form' %}">Mining Request Form</a>
+        </li>
+    {% endif %}
     <li>
-        <a href="/chart">chart</a>
+        <a href="{% url 'repos' %}">Mined Repos</a>
     </li>
-    <li>
-        <a href="/database"> mongodb database</a>
-    </li>
-    <li>
-        <a href="/clean_database">clean mongodb database</a>
-    </li>
-    <li>
-        <a href="/mining_requests_form">mining request form</a>
-    </li>
-    <li>
-        <a href="/mining_requests">mining requests database</a>
-    </li>
-    <li>
-        <a href="/clean_mining_requests">clean mining requests database</a>
-    </li>
-    <li>
-        <a href="/admin_approve_mining_requests">admin approve mining requests</a>
-    </li>
-    <!-- <li>
-        <a href="/mine">mine data</a>
-    </li> -->
 </ul>
+{% endblock content %}
