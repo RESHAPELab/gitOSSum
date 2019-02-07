@@ -2,5 +2,5 @@
 env/
 *.py[cod]
 *config.py
-*db.sqlite3
+src/web_app/db.sqlite3
 */migrations/
