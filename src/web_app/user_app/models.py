@@ -1,5 +1,4 @@
 from django.db import models
-from pymongo import MongoClient
 from django_mysql.models import ListTextField
 from django.core.validators import MinValueValidator
 

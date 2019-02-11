@@ -2,6 +2,7 @@
 # Produce interactive visualizations of data
 
 from mining_scripts.mining import *
+from user_app.models import MinedRepo
 from nvd3 import multiBarHorizontalChart
 import random 
 import datetime
@@ -29,14 +30,15 @@ def multi_bar_chart():
     return chart.htmlcontent
 
 def get_repo_table_context(repo_name):
+    mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
     landing_page = find_repo_main_page(repo_name)
     github_img = landing_page['owner']['avatar_url']
 
     # TODO: Get this info from the Mined Repos Model
-    # num_pulls = count_all_pull_requests_from_a_specifc_repo(repo_name)
-    # num_closed_merged_pulls =
-    # num_closed_unmerged_pulls = 
-    # num_open_pulls = 
+    num_pulls = getattr(mined_repo_sql_obj, 'num_pulls')
+    num_closed_merged_pulls = getattr(mined_repo_sql_obj, 'num_closed_merged_pulls')
+    num_closed_unmerged_pulls = getattr(mined_repo_sql_obj, 'num_closed_unmerged_pulls')
+    num_open_pulls = getattr(mined_repo_sql_obj, 'num_open_pulls')
 
     description = landing_page['description']
     created_at = landing_page['created_at']
@@ -58,10 +60,10 @@ def get_repo_table_context(repo_name):
 
     return {
         "github_img":str(github_img),
-        #"num_pulls":int(num_pulls),
-        #"num_closed_merged_pulls":num_closed_merged_pulls,
-        #"num_closed_unmerged_pulls":num_closed_unmerged_pulls, 
-        #"num_open_pulls":num_open_pulls,
+        "num_pulls":num_pulls,
+        "num_closed_merged_pulls":num_closed_merged_pulls,
+        "num_closed_unmerged_pulls":num_closed_unmerged_pulls, 
+        "num_open_pulls":num_open_pulls,
         "description":str(description),
         "created_at":datetime.datetime.strptime(str(created_at), "%Y-%m-%dT%H:%M:%SZ"),
         "updated_at":datetime.datetime.strptime(str(updated_at), "%Y-%m-%dT%H:%M:%SZ"),

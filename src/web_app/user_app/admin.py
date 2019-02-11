@@ -10,26 +10,21 @@ from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthTok
 from mining_scripts.mining import *
 from multiprocessing import Pool
 
+
 # Admin functionality for approving mining requests
 def approve_mining_requests(modeladmin, request, queryset):
     pool = Pool()
 
     # Iterate over all of the items the admin has checked
     for obj in queryset:
-        # Mine that repo, and store it in mongoDB
+        # Mine that repo, store it in mongoDB, and create an SQL representation of it
         repo_name = obj.repo_name
         username = obj.requested_by
         user_email = ""
         if obj.send_email == True:
             user_email = obj.email
         pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
-       
-
-        # Add this repo to the mined repos table
-        MinedRepo.objects.create(
-            repo_name=obj.repo_name,
-            requested_by=obj.requested_by
-        )            
+                   
         # Delete the request from the MiningRequest Database
         MiningRequest.objects.get(repo_name=obj.repo_name).delete()
 
