@@ -11,6 +11,8 @@ import plotly.plotly as py
 import plotly.offline as opy
 import plotly.graph_objs as go
 import plotly.tools as tls
+import pandas as pd
+import numpy as np
 
 # Example using mutli-bar chart 
 def multi_bar_chart():
@@ -131,4 +133,49 @@ def pull_request_charts(repo_name):
 
     return {"pie_chart":div1, "bar_chart":div2}
     
+
+def pull_requests_per_month_line_chart(repo_name):
+    mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
+    created_dates_str = getattr(mined_repo_sql_obj, "created_at_list")
+    created_dates = pd.to_datetime(pd.Series(created_dates_str), format="%Y-%m-%d %H:%M:%S")
+    created_dates.index = created_dates.dt.to_period('m')
+    created_dates = created_dates.groupby(level=0).size()
+    created_dates = created_dates.reindex(pd.period_range(created_dates.index.min(),
+                                          created_dates.index.max(), freq='m'), fill_value=0)
+    
+    indices = np.array(created_dates.index.astype(str))
+    date_freq = np.array(created_dates)
+    
+    data = [
+        go.Scatter(
+            x=indices, 
+            y=date_freq
+        )
+    ]
+
+    layout = go.Layout(
+        title='Pull Request Frequency by Month',
+        xaxis=dict(
+            title='Date',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        ),
+        yaxis=dict(
+            title='Number of Pull Requests',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        )
+    )
+
+    figure=go.Figure(data=data,layout=layout)
+
+    div = opy.plot(figure,  output_type='div')
+    return div
+
 
