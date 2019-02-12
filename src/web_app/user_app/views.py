@@ -137,7 +137,8 @@ def get_repo_data(request, repo_owner, repo_name):
         context.update({
             "repo_owner":repo_owner.lower(), 
             "repo_name":repo_name.lower(), 
-            "chart":multi_bar_chart() 
+            "pie_chart":pull_request_charts(original_repo)["pie_chart"],
+            "bar_chart":pull_request_charts(original_repo)["bar_chart"]
         })
         return render(request, template_name, context) 
 

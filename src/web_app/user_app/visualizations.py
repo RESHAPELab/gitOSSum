@@ -3,15 +3,14 @@
 
 from mining_scripts.mining import *
 from user_app.models import MinedRepo
-from nvd3 import multiBarHorizontalChart
+from nvd3 import multiBarHorizontalChart, discreteBarChart
 import random 
 import datetime
 
-
-
-# TODO: Write the code to generate the visualizations we need and
-#       return raw HTML representing the visualization 
-
+import plotly.plotly as py
+import plotly.offline as opy
+import plotly.graph_objs as go
+import plotly.tools as tls
 
 # Example using mutli-bar chart 
 def multi_bar_chart():
@@ -33,13 +32,10 @@ def get_repo_table_context(repo_name):
     mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
     landing_page = find_repo_main_page(repo_name)
     github_img = landing_page['owner']['avatar_url']
-
-    # TODO: Get this info from the Mined Repos Model
     num_pulls = getattr(mined_repo_sql_obj, 'num_pulls')
     num_closed_merged_pulls = getattr(mined_repo_sql_obj, 'num_closed_merged_pulls')
     num_closed_unmerged_pulls = getattr(mined_repo_sql_obj, 'num_closed_unmerged_pulls')
     num_open_pulls = getattr(mined_repo_sql_obj, 'num_open_pulls')
-
     description = landing_page['description']
     created_at = landing_page['created_at']
     updated_at = landing_page['updated_at']
@@ -79,4 +75,62 @@ def get_repo_table_context(repo_name):
         "subscribers_count":int(subscribers_count)
     }
 
-         
+def pull_request_charts(repo_name):
+    mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
+    num_closed_merged_pulls = getattr(mined_repo_sql_obj, 'num_closed_merged_pulls')
+    num_closed_unmerged_pulls = getattr(mined_repo_sql_obj, 'num_closed_unmerged_pulls')
+    num_open_pulls = getattr(mined_repo_sql_obj, 'num_open_pulls')
+
+    trace1 = go.Pie(
+        labels=["Closed-Merged", "Closed-Unmerged", "Open"], 
+        values=[num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls], 
+        name='Pulls Pie Chart'
+        )
+    trace2 = go.Bar(
+        x=["Closed-Merged", "Closed-Unmerged", "Open"],
+        y=[num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls], 
+        name='Pulls Bar Chart',
+        marker=dict(
+            color=['rgba(255,0,0,1)', 
+                   'rgba(0,94,255,1)',
+                   'rgba(8,154,105,1)']
+        )
+    )
+
+       
+    data1 = [trace1]
+    data2 = [trace2]
+
+    layout1=go.Layout(title="Pull Request Types Pie Chart")
+
+
+    layout2 = go.Layout(
+        title='Pull Request Bar Chart',
+        xaxis=dict(
+            title='Pull Request Type',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        ),
+        yaxis=dict(
+            title='Number of Pull Requests',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        )
+    )
+
+
+    figure1=go.Figure(data=data1,layout=layout1)
+    figure2=go.Figure(data=data2,layout=layout2)
+
+    div1 = opy.plot(figure1,  output_type='div')
+    div2 = opy.plot(figure2,  output_type='div')
+
+    return {"pie_chart":div1, "bar_chart":div2}
+    
+
