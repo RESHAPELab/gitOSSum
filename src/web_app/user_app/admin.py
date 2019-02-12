@@ -8,6 +8,7 @@ from django.template.loader import get_template
 # Register your models here.
 from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthToken
 from mining_scripts.mining import *
+from mining_scripts.send_email import *
 from multiprocessing import Pool
 
 
@@ -23,6 +24,8 @@ def approve_mining_requests(modeladmin, request, queryset):
         user_email = ""
         if obj.send_email == True:
             user_email = obj.email
+            send_mining_initialized_email(obj.repo_name, obj.email)
+
         pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
                    
         # Delete the request from the MiningRequest Database
@@ -45,6 +48,10 @@ def black_list_requests(modeladmin, request, queryset):
         # Delete the request from the MiningRequest database
         MiningRequest.objects.get(repo_name=obj.repo_name).delete()
 
+        if obj.send_email == True:
+            send_repository_blacklist_email(obj.repo_name, obj.email)
+
+
 # A short description for this function
 black_list_requests.short_description = "Blacklist selected requests"
 
@@ -61,7 +68,10 @@ def delete_selected(modeladmin, request, queryset):
 
         for obj in queryset:
             pool.apply_async(delete_all_contents_of_specific_repo_from_every_collection, args=(obj.repo_name,))
+            if obj.send_email == True:
+                send_repository_denied_email(obj.repo_name, obj.email)
             obj.delete()
+            
 
     else:
 

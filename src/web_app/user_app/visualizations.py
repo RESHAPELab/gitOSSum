@@ -41,7 +41,9 @@ def get_repo_table_context(repo_name):
     created_at = landing_page['created_at']
     updated_at = landing_page['updated_at']
     clone_url = landing_page['clone_url']
-    homepage = landing_page['homepage']
+    homepage = str(landing_page['homepage'])
+    if str(homepage) == "" or str(homepage) == "None" or str(homepage) == "null":
+        homepage = False
     stargazers_count = landing_page['stargazers_count']
     language = landing_page['language']
     has_wiki = landing_page['has_wiki']
@@ -64,7 +66,7 @@ def get_repo_table_context(repo_name):
         "created_at":datetime.datetime.strptime(str(created_at), "%Y-%m-%dT%H:%M:%SZ"),
         "updated_at":datetime.datetime.strptime(str(updated_at), "%Y-%m-%dT%H:%M:%SZ"),
         "clone_url":str(clone_url),
-        "homepage":str(homepage),
+        "homepage":homepage,
         "stargazers_count":int(stargazers_count),
         "language":str(language),
         "has_wiki":bool(has_wiki),
@@ -81,11 +83,6 @@ def pull_request_charts(repo_name):
     num_closed_unmerged_pulls = getattr(mined_repo_sql_obj, 'num_closed_unmerged_pulls')
     num_open_pulls = getattr(mined_repo_sql_obj, 'num_open_pulls')
 
-    trace1 = go.Pie(
-        labels=["Closed-Merged", "Closed-Unmerged", "Open"], 
-        values=[num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls], 
-        name='Pulls Pie Chart'
-        )
     trace2 = go.Bar(
         x=["Closed-Merged", "Closed-Unmerged", "Open"],
         y=[num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls], 
@@ -97,8 +94,6 @@ def pull_request_charts(repo_name):
         )
     )
 
-       
-    data1 = [trace1]
     data2 = [trace2]
 
     layout1=go.Layout(title="Pull Request Types Pie Chart")
@@ -125,31 +120,73 @@ def pull_request_charts(repo_name):
     )
 
 
-    figure1=go.Figure(data=data1,layout=layout1)
     figure2=go.Figure(data=data2,layout=layout2)
 
-    div1 = opy.plot(figure1,  output_type='div')
     div2 = opy.plot(figure2,  output_type='div')
 
-    return {"pie_chart":div1, "bar_chart":div2}
+    return {"bar_chart":div2}
     
 
 def pull_requests_per_month_line_chart(repo_name):
     mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
     created_dates_str = getattr(mined_repo_sql_obj, "created_at_list")
-    created_dates = pd.to_datetime(pd.Series(created_dates_str), format="%Y-%m-%d %H:%M:%S")
-    created_dates.index = created_dates.dt.to_period('m')
-    created_dates = created_dates.groupby(level=0).size()
-    created_dates = created_dates.reindex(pd.period_range(created_dates.index.min(),
-                                          created_dates.index.max(), freq='m'), fill_value=0)
-    
-    indices = np.array(created_dates.index.astype(str))
-    date_freq = np.array(created_dates)
+    closed_dates_str = getattr(mined_repo_sql_obj, "closed_at_list")
+    merged_dates_str = getattr(mined_repo_sql_obj, "merged_at_list")
+
+    try:
+        created_dates = pd.to_datetime(pd.Series(created_dates_str), format="%Y-%m-%d %H:%M:%S")
+        created_dates.index = created_dates.dt.to_period('m')
+        created_dates = created_dates.groupby(level=0).size()
+        created_dates = created_dates.reindex(pd.period_range(created_dates.index.min(),
+                                            created_dates.index.max(), freq='m'), fill_value=0)
+        created_indices = np.array(created_dates.index.astype(str))
+        created_date_freq = np.array(created_dates)
+    except Exception:
+        created_indices = []
+        created_date_freq = []
+
+    try:
+        closed_dates = pd.to_datetime(pd.Series(closed_dates_str), format="%Y-%m-%d %H:%M:%S")
+        closed_dates.index = closed_dates.dt.to_period('m')
+        closed_dates = closed_dates.groupby(level=0).size()
+        closed_dates = closed_dates.reindex(pd.period_range(closed_dates.index.min(),
+                                            closed_dates.index.max(), freq='m'), fill_value=0)
+        closed_indices = np.array(closed_dates.index.astype(str))
+        closed_date_freq = np.array(closed_dates)
+    except:
+        closed_indices = []
+        closed_date_freq = []
+
+    try:
+        merged_dates = pd.to_datetime(pd.Series(merged_dates_str), format="%Y-%m-%d %H:%M:%S")
+        merged_dates.index = merged_dates.dt.to_period('m')
+        merged_dates = merged_dates.groupby(level=0).size()
+        merged_dates = merged_dates.reindex(pd.period_range(merged_dates.index.min(),
+                                            merged_dates.index.max(), freq='m'), fill_value=0)
+        merged_indices = np.array(merged_dates.index.astype(str))
+        merged_date_freq = np.array(merged_dates)
+    except Exception:
+        merged_indices = []
+        merged_date_freq = []
     
     data = [
         go.Scatter(
-            x=indices, 
-            y=date_freq
+            x=created_indices, 
+            y=created_date_freq,
+            mode = 'lines+markers',
+            name="Created"
+        ),
+        go.Scatter(
+            x=closed_indices, 
+            y=closed_date_freq,
+            mode = 'lines+markers',
+            name="Closed"
+        ),
+        go.Scatter(
+            x=merged_indices, 
+            y=merged_date_freq,
+            mode = 'lines+markers',
+            name="Merged"
         )
     ]
 
