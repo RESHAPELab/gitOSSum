@@ -9,6 +9,7 @@ db = client.backend_db # The specific mongo database we are working with
 repos = db.repos # collection for storing all of a repo's main api json information 
 pull_requests = db.pullRequests # collection for storing all pull requests for all repos
 
+
 # Takes in the name of a repo to query, and returns a dict containing num_pulls, 
 # num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls, created_at_list, 
 # closed_at_list, merged_at_list, and num_newcomer_labels.

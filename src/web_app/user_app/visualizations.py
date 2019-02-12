@@ -31,7 +31,6 @@ def multi_bar_chart():
 def get_repo_table_context(repo_name):
     mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
     landing_page = find_repo_main_page(repo_name)
-    github_img = landing_page['owner']['avatar_url']
     num_pulls = getattr(mined_repo_sql_obj, 'num_pulls')
     num_closed_merged_pulls = getattr(mined_repo_sql_obj, 'num_closed_merged_pulls')
     num_closed_unmerged_pulls = getattr(mined_repo_sql_obj, 'num_closed_unmerged_pulls')
@@ -55,7 +54,6 @@ def get_repo_table_context(repo_name):
     subscribers_count = landing_page['subscribers_count']
 
     return {
-        "github_img":str(github_img),
         "num_pulls":num_pulls,
         "num_closed_merged_pulls":num_closed_merged_pulls,
         "num_closed_unmerged_pulls":num_closed_unmerged_pulls, 
