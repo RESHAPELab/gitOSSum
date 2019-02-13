@@ -8,14 +8,15 @@
 {% include 'snippets/css.html' %}
 
 <head>  
-  {% bootstrap_css %}
-  {% bootstrap_javascript %}
+  <!-- {% bootstrap_css %}
+  {% bootstrap_javascript %} -->
 </head>
   
   {% if user.is_authenticated %}
-  <h4 style="float: right; padding-right: 75px">
+  <h3 style="float: left; margin-left: 1%;">Git OSS-um</h3>
+  <h3 style="float: right; padding-right: 75px">
     Welcome {{ user.get_username }} <a href="{% url 'logout' %}">(logout)</a>
-  </h4>  
+  </h3>  
   {% else %}
   <h4 style="float: right; padding-right: 75px">
     New here? <a href="{% url 'signup' %}">Sign Up</a> or <a href="{% url 'login' %}">Login</a>
