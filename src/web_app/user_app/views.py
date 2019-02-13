@@ -143,6 +143,7 @@ def get_repo_data(request, repo_owner, repo_name):
     if original_repo in mined_repos:
         context = get_repo_table_context(original_repo)
         context.update({
+            "repo_name":original_repo,
             "bar_chart":pull_request_charts(original_repo)["bar_chart"],
             "line_chart":pull_requests_per_month_line_chart(original_repo)
         })
