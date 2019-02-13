@@ -11,6 +11,19 @@ from mining_scripts.mining import *
 from mining_scripts.send_email import *
 from multiprocessing import Pool
 
+def remove_from_fieldsets(fieldsets, fields):
+    for fieldset in fieldsets:
+        for field in fields:
+            if field in fieldset[1]['fields']:
+                new_fields = []
+                for new_field in fieldset[1]['fields']:
+                    if not new_field in fields:
+                        new_fields.append(new_field)
+                        
+                fieldset[1]['fields'] = tuple(new_fields)
+                break
+
+
 
 # Admin functionality for approving mining requests
 def approve_mining_requests(modeladmin, request, queryset):
@@ -94,7 +107,16 @@ class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
 class MinedRepoAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp"]
     ordering = ['timestamp']
+    
     actions=[delete_selected]
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super(MinedRepoAdmin, self).get_fieldsets(request, obj)
+        remove_from_fieldsets(fieldsets, ('num_pulls', 'num_closed_merged_pulls', 
+                                        'num_open_pulls', 'num_closed_unmerged_pulls', 
+                                        'created_at_list', 'closed_at_list', 
+                                        'merged_at_list', 'num_newcomer_labels',))
+        return fieldsets
 
 class OAuthTokenAdmin(admin.ModelAdmin):
     list_display = ["oauth_token", "owner"]
