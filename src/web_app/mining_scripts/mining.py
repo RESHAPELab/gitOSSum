@@ -10,6 +10,19 @@ from pymongo import MongoClient # Import pymongo for interacting with MongoDB
 from github import Github # Import PyGithub for mining data
 from mining_scripts.send_email import * 
 from mining_scripts.config import *
+from mining_scripts.visualizationModelExtraction import *
+from django.core.exceptions import AppRegistryNotReady
+
+# Handle parallel processing not knowing about django apps
+try:
+    from django.apps import apps
+    apps.check_apps_ready()
+except AppRegistryNotReady:
+    import django
+    django.setup()
+
+# Only import the models after we know django has been setup 
+from user_app.models import MinedRepo, OAuthToken
 
 
 client = MongoClient('localhost', 27017) # Where are we connecting
@@ -35,6 +48,25 @@ def mine_and_store_all_repo_data(repo_name, username, email):
 
     # mine and store all pulls for this repo 
     mine_pulls_from_repo(pygit_repo)
+
+    visualization_data = extract_pull_request_model_data(pygit_repo)
+
+    # Add this repo to the mined repos table
+    try:
+        MinedRepo.objects.create(
+            repo_name=repo_name,
+            requested_by=username,
+            num_pulls=visualization_data["num_pulls"],
+            num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
+            num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
+            num_open_pulls=visualization_data["num_open_pulls"],
+            created_at_list=visualization_data["created_at_list"],
+            closed_at_list=visualization_data["closed_at_list"],
+            merged_at_list=visualization_data["merged_at_list"],
+            num_newcomer_labels=visualization_data["num_newcomer_labels"]
+        ) 
+    except Exception as e:
+        print("\n\nTHERE WAS A PROBLEM:\n\n", e, "\n\n")
 
     # send any emails as necessary
     send_confirmation_email(repo_name, username, email)
@@ -117,8 +149,6 @@ def count_all_pull_requests_from_a_specifc_repo(repo_name):
     num_pulls = pull_requests.count_documents({"url": {"$regex": pygit_repo.full_name}})
 
     return num_pulls
-
-
 
 
 # Method to retrieve all repos in the repo collection

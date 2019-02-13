@@ -32,37 +32,11 @@
 <body>
     <h1>Mined Repo Information</h1>
     <hr>
-    <img src= {{ github_img }}> 
     <table>
         <tr>
             <th>Item</th>
             <th>Content</th>
         </tr>
-        <tr>
-            <td>Repo Owner</td>
-            <td>{{ repo_owner }}</td>
-        </tr>
-        <tr>
-            <td>Repo Name</td>
-            <td>{{ repo_name }}</td>
-        </tr>
-        <tr>
-            <td>Number of Pull Requests</td>
-            <td>{{ num_pulls }}</td>
-        </tr>
-        <tr>
-            <td>Number of Closed-Merged Pull Requests</td>
-            <td>{{ num_closed_merged_pulls }}</td>
-        </tr>
-        <tr>
-            <td>Number of Closed-Unmerged Pull Requests</td>
-            <td>{{ num_closed_unmerged_pulls }}</td>
-        </tr>
-        <tr>
-            <td>Number of Open Pull Requests</td>
-            <td>{{ num_open_pulls }}</td>
-        </tr>
-        <tr>
             <td>description</td>
             <td>{{ description }}</td>
         </tr>
@@ -78,11 +52,14 @@
             <td>clone_url</td>
             <td>{{ clone_url }}</td>
         </tr>
+        {% if homepage != False %}
         <tr>
             <td>homepage</td>
-            <td>{{ homepage }}</td>
+            <td><a href="{{ homepage }}"></a></td>
         </tr>
+        {% endif %}
         <tr>
+
             <td>stargazers_count</td>
             <td>{{ stargazers_count }}</td>
         </tr>
@@ -116,7 +93,11 @@
         </tr>
     </table>
     <hr>
-    {{ chart |safe}}
+    {{ pie_chart |safe }}
+    <br>
+    {{ bar_chart |safe }}
+    <br>
+    {{ line_chart |safe }}
 </body>
 
 {% endblock content %}

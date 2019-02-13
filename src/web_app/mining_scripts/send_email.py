@@ -13,7 +13,7 @@ from mining_scripts.config import * # for authentication purposes
 import smtplib # Import smtplib for sending email 
 
 
-def send_mining_initialized_email(repo_name, to_email):
+def send_mining_initialized_email(repo_name, username, to_email):
     if to_email == "":
         return 
 
@@ -75,7 +75,7 @@ def send_confirmation_email(repo_name, username, to_email):
 
     
 
-def send_repository_denied_email(repo_name, to_email):
+def send_repository_denied_email(repo_name, username, to_email):
     if to_email == "":
         return 
 
@@ -104,7 +104,7 @@ def send_repository_denied_email(repo_name, to_email):
     finally:
         server.quit()
 
-def send_repository_blacklist_email(repo_name, to_email):
+def send_repository_blacklist_email(repo_name, username, to_email):
     if to_email == "":
         return 
 
