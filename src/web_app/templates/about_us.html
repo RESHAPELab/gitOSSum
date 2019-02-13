@@ -15,33 +15,61 @@
         
         /* Create three unequal columns that floats next to each other */
         .column {
-        float: left;
-        padding: 10px;
+            float: left;
+            padding: 10px;
         }
         
-        .left, .right {
-        width: 33%;
-        }
-        
-        .middle {
-        width: 33%;
+        .left, .middle, .right {
+            width: 33%;
+
         }
 
-        html, body {
+        html {
             max-width: 100%;
             overflow-x: hidden;
+        }
+
+        .trons {
+            display: inline-flex;
+            width: 100%;
+        }
+
+        .members {
+            color: white;
+            text-align: center; 
+            margin-top: 1%; 
+            background-color: rgb(0, 169, 221);
+        }
+
+        .memberContact {
+            background-color: rgb(216, 81, 81);
+            color: white;
+            text-align: center;
+            width: inherit;
+            margin-bottom: 1%;
+            margin-right: 1%;
+        }
+
+        .sponsor-mentor {
+            background-color: rgb(1, 170, 133);
+            color: white;
+            margin-bottom: 1%;
+            text-align: center;
+            width: inherit;
         }
 
         .memberPic {
             float: left;
             margin-right: 1%;
+            width: 180px; 
+            height: 220px;
         }
 
         .memberInfo {
             text-align: center;
+            font-size: 8pt;
         }
 
-        
         /* Clear floats after the columns */
         .row:after {
         content: "";
@@ -49,68 +77,62 @@
         clear: both;
         }
 
-        @media screen and (max-width: 320px) { @viewport { width: 320px; } }
+        /* @media screen and (max-width: 320px) { @viewport { width: 320px; } } */
         </style>
 
     <body>
-        
-
-        <div class="jumboContainer" style="width: 100%">
-                <div class="jumbotron" style="text-align: center; margin-top: 1%; background-color: rgb(94, 215, 252);">
-                        <div class="row" style="height: auto;">
-                                <div class="column left">
-                                    <!-- {% load static %}<img src="{% static 'gary.jpg' %}" class="memberPic" style="width: 175px; height: 225px; margin-left: 3%;" />   -->
-                                    <div class="memberInfo">
-                                        <h3>Gary Baker</h3>
-                                        <!-- {% load static %} <img src="{% static 'images/gary.jpg' %}" class="memberPic" style="width: 175px; height: 225px; margin-left: 3%;"/> -->
-                                        <p>Recorder, Co-Architect, Web Manager, Programmer</p>
-                                    </div>        
-                                </div>
-                                <div class="column middle">
-                                    <!-- {% load static %} <img src="{% static 'van.jpg' %}" class="memberPic" style="width: 175px; height: 225px;" /> -->
-                                    <div class="memberInfo">
-                                        <h3>Van Steinbrenner</h3>
-                                        <p>Editor, Co-Architect, Programmer</p>
-                                    </div> 
-                                </div>
-                                <div class="column right">
-                                    <!-- {% load static %} <img src="{% static 'stephen.jpg' %}" class="memberPic" style="width: 175px; height: 225px;" /> -->
-                                    <div class="memberInfo">
-                                        <h3>Stephen White</h3>
-                                        <p>Team Leader, Customer Communicator,Release Manger, Programmer</p>
-                                    </div> 
-                                </div>
-                            </div>
+        <div class="jumbotron members">
+                <div class="row">
+                    <div class="column left">
+                            <img src="https://avatars2.githubusercontent.com/u/33642748?v=4" class="memberPic"/>
+                        <div class="memberInfo">
+                            <h4>Gary Baker</h4>
+                            <p style="font-size: 12px;">Recorder, Co-Architect, Web Manager, Programmer</p>
+                        </div>        
+                    </div>
+                    <div class="column middle">
+                        <img src="https://avatars0.githubusercontent.com/u/32231518?v=4" class="memberPic"/>
+                        <div class="memberInfo">
+                            <h4>Van Steinbrenner</h4>
+                            <p style="font-size: 12px;">Editor, Co-Architect, Programmer</p>
+                        </div> 
+                    </div>
+                    <div class="column right">
+                        <img src="https://avatars0.githubusercontent.com/u/23506621?v=4" class="memberPic"/>
+                        <div class="memberInfo">
+                            <h4>Stephen White</h4>
+                            <p style="font-size: 12px;">Team Leader, Customer Communicator,Release Manger, Programmer</p>
+                        </div> 
+                    </div>
                 </div>
-            </div>
-        
-        <div class="jumboContainer" style="width: 100%">
-            <div class="jumbotron" style="text-align: center; background-color: rgb(252, 94, 94);">
+        </div>
+        <div class="trons">
+            <div class="jumbotron memberContact">
                 <h2 class="header1">Team Contact Information</h2>
                 <div class="selection">
-                    <p class="nameContent" style="font-size: 16px">Gary Baker: <a href="mailto:gpb27@nau.edu">gpb27@nau.edu</a></p>
+                    <p class="nameContent" style="font-size: 16px">Gary Baker: <a href="mailto:gpb27@nau.edu" style="color: black;">gpb27@nau.edu</a></p>
                 </div>
                 <div class="selection">
-                    <p class="nameContent" style="font-size: 16px">Stephen White: <a href="mailto:smw44@nau.edu">smw444@nau.edu</a></p>
+                    <p class="nameContent" style="font-size: 16px">Stephen White: <a href="mailto:smw44@nau.edu" style="color: black;">smw444@nau.edu</a></p>
                 </div>
                 <div class="selection">
-                    <p class="nameContent" style="font-size: 16px">Van Steinbrenner: <a href="mailto:vws2@nau.edu">vws2@nau.edu</a></p>
+                    <p class="nameContent" style="font-size: 16px">Van Steinbrenner: <a href="mailto:vws2@nau.edu" style="color: black;">vws2@nau.edu</a></p>
                 </div>
             </div>
-        </div>
-        
-        <div class="jumboContainer">
-            <div class="jumbotron" style="text-align: center; background-color: rgb(3, 151, 119);">
+            <div class="jumbotron sponsor-mentor">
                 <h2 class="header1">Sponsor & Mentor Information</h2>
                 <div class="selection">
-                    <p class="nameContent" style="font-size: 16px"><u>Sponsor</u> <br>Igor Steinmacher: <a href="mailto:igor.steinmacher@nau.edu">igor.steinmacher@nau.edu</a></p>
+                    <p class="nameContent" style="font-size: 16px"><u>Sponsor</u> <br>Igor Steinmacher: <a href="mailto:igor.steinmacher@nau.edu" style="color: black;">igor.steinmacher@nau.edu</a></p>
                 </div>
 
                 <div class="selection">
-                    <p class="nameContent" style="font-size: 16px"><u>Mentor</u> <br>Ana Paula Chaves Steinmacher: <a href="mailto:acs549@nau.edu">acs549@nau.edu</a></p>
-                </div>                
+                    <p class="nameContent" style="font-size: 16px"><u>Mentor</u> <br>Ana Paula Chaves: <a href="mailto:acs549@nau.edu" style="color: black;">acs549@nau.edu</a></p>
+                </div>
             </div>
         </div>
-    </body>
+                
+        </div>
+    </div>
+</body>
 </html>
 {% endblock %}
