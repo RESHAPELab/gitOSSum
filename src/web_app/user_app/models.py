@@ -18,6 +18,14 @@ class MiningRequest(models.Model):
     def __str__(self):
         return f"{self.repo_name}, {self.email}, {self.timestamp}, {self.updated}"
 
+
+class QueuedMiningRequest(models.Model):
+    repo_name               = models.CharField(max_length=240, null=False, blank=False)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
+    timestamp               = models.DateTimeField(auto_now_add=True)
+    updated                 = models.DateTimeField(auto_now=True)
+
+
 class BlacklistedMiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
     requested_by            = models.CharField(max_length=240, null=False, blank=False)

@@ -22,7 +22,7 @@ except AppRegistryNotReady:
     django.setup()
 
 # Only import the models after we know django has been setup 
-from user_app.models import MiningRequest, MinedRepo, OAuthToken
+from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
 
 
 client = MongoClient('localhost', 27017) # Where are we connecting
@@ -68,7 +68,7 @@ def mine_and_store_all_repo_data(repo_name, username, email):
     ) 
 
     # Delete the request from the MiningRequest Database
-    MiningRequest.objects.get(repo_name=repo_name).delete()
+    QueuedMiningRequest.objects.get(repo_name=repo_name).delete()
 
     # send any emails as necessary
     send_confirmation_email(repo_name, username, email)
