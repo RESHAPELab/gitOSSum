@@ -39,9 +39,9 @@ def approve_mining_requests(modeladmin, request, queryset):
             user_email = obj.email
 
         # Move this repo into the Queue
-        QueuedMiningRequest.objects.create(repo_name=repo_name,
-                                           requested_by=username
-                                          )
+        QueuedMiningRequest.objects.create(repo_name=repo_name, requested_by=username,
+                requested_timestamp=getattr(MiningRequest.objects.get(repo_name=repo_name), "timestamp")
+            )
 
         # Delete this repo from the Requests
         MiningRequest.objects.get(repo_name=repo_name).delete()
@@ -109,7 +109,7 @@ class MiningRequestAdmin(admin.ModelAdmin):
     actions = [approve_mining_requests, black_list_requests]
 
 class QueuedMiningRequestAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "requested_by", "timestamp"]
+    list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]
     ordering = ['timestamp']
 
 class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
@@ -117,8 +117,8 @@ class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
     ordering = ['timestamp']
 
 class MinedRepoAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "requested_by", "timestamp"]
-    ordering = ['timestamp']
+    list_display = ['repo_name', "requested_by", "completed_timestamp", "accepted_timestamp", "requested_timestamp"]
+    ordering = ['completed_timestamp']
     
     actions=[delete_selected]
 

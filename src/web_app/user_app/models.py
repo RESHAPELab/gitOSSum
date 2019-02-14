@@ -23,8 +23,7 @@ class QueuedMiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
     requested_by            = models.CharField(max_length=240, null=False, blank=False)
     timestamp               = models.DateTimeField(auto_now_add=True)
-    updated                 = models.DateTimeField(auto_now=True)
-
+    requested_timestamp     = models.DateTimeField(auto_now_add=False)
 
 class BlacklistedMiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
@@ -48,7 +47,9 @@ class MinedRepo(models.Model):
     num_newcomer_labels          = models.IntegerField(validators=[MinValueValidator(0)])
     bar_chart_html               = models.TextField()
     pull_line_chart_html         = models.TextField()
-    timestamp                    = models.DateTimeField(auto_now_add=True)
+    completed_timestamp          = models.DateTimeField(auto_now_add=True)
+    accepted_timestamp           = models.DateTimeField(auto_now_add=False)
+    requested_timestamp          = models.DateTimeField(auto_now_add=False)
     updated                      = models.DateTimeField(auto_now=True)
 
     def __str__(self):

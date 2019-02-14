@@ -64,7 +64,9 @@ def mine_and_store_all_repo_data(repo_name, username, email):
         merged_at_list=visualization_data["merged_at_list"],
         num_newcomer_labels=visualization_data["num_newcomer_labels"],
         bar_chart_html=visualization_data["bar_chart"],
-        pull_line_chart_html=visualization_data["line_chart"]
+        pull_line_chart_html=visualization_data["line_chart"],
+        accepted_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "timestamp"),
+        requested_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "requested_timestamp")
     ) 
 
     # Delete the request from the MiningRequest Database
