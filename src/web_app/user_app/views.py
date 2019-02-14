@@ -147,6 +147,7 @@ def get_repo_data(request, repo_owner, repo_name):
         context = get_repo_table_context(original_repo)
         context.update({
             "repo_name":original_repo,
+            "repo_img":find_repo_main_page(original_repo)['owner']['avatar_url'],
             "bar_chart_html":getattr(repo, "bar_chart_html"),
             "pull_line_chart_html":getattr(repo, "pull_line_chart_html")
         })
