@@ -1,5 +1,5 @@
 from django import forms 
-from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo
+from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo
 from django.forms import ValidationError
 from mining_scripts.mining import *
 import re
@@ -21,6 +21,7 @@ class MiningRequestForm(forms.Form):
         valid_repo = re.compile('^((\w+)[-]*)+/+((\w+)[-]*)+\w+$') # Regex that defines a proper repo name 
         mining_requests = list(MiningRequest.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+        queued_repos = list(QueuedMiningRequest.objects.values_list("repo_name", flat=True))
         black_listed_requests = list(BlacklistedMiningRequest.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         mongo_repo = find_repo_main_page(repo_name)
         errors = [] # A list for holding validation errors 
@@ -40,6 +41,9 @@ class MiningRequestForm(forms.Form):
         # The repo cannot have already been requested and hasn't already been mined 
         elif repo_name in mining_requests:
             errors.append("This repository has already been requested.")
+
+        elif repo_name in queued_repos:
+            errors.append("This repository is currently being mined.")
 
         elif repo_name in black_listed_requests:
             errors.append("This repository has been blacklisted by the Administrator.")

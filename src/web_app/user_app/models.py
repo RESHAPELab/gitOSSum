@@ -18,6 +18,13 @@ class MiningRequest(models.Model):
     def __str__(self):
         return f"{self.repo_name}, {self.email}, {self.timestamp}, {self.updated}"
 
+
+class QueuedMiningRequest(models.Model):
+    repo_name               = models.CharField(max_length=240, null=False, blank=False)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
+    timestamp               = models.DateTimeField(auto_now_add=True)
+    requested_timestamp     = models.DateTimeField(auto_now_add=False)
+
 class BlacklistedMiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
     requested_by            = models.CharField(max_length=240, null=False, blank=False)
@@ -38,8 +45,12 @@ class MinedRepo(models.Model):
     closed_at_list               = ListTextField(base_field=models.CharField(max_length=240))
     merged_at_list               = ListTextField(base_field=models.CharField(max_length=240))
     num_newcomer_labels          = models.IntegerField(validators=[MinValueValidator(0)])
-    timestamp                    = models.DateTimeField(auto_now_add=True)
+    bar_chart_html               = models.TextField()
+    pull_line_chart_html         = models.TextField()
+    completed_timestamp          = models.DateTimeField(auto_now_add=True)
+    accepted_timestamp           = models.DateTimeField(auto_now_add=False)
+    requested_timestamp          = models.DateTimeField(auto_now_add=False)
     updated                      = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.repo_name}, {self.timestamp}, {self.updated}"
+        return f"{self.repo_name}, {self.completed_timestamp}, {self.updated}"

@@ -123,14 +123,16 @@ def mined_repos(request):
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
     images = list()
     context = dict()
-    for image in get_all_repos():
-        images.append(image["owner"]["avatar_url"])
-    for item in range(0, len(mined_repos)):
-        context.update({
-            f"repo{item}": [mined_repos[item], images[item]]
-        })
-    print(context)
-    return render(request, template_name, {"context":context})
+    try:
+        for image in get_all_repos():
+            images.append(image["owner"]["avatar_url"])
+        for item in range(0, len(mined_repos)):
+            context.update({
+                f"repo{item}": [mined_repos[item], images[item]]
+            })
+        return render(request, template_name, {"context":context})
+    except Exception:
+         return render(request, template_name, {})
 
 
 # A function that will be used to generate interactive visualizations of 
@@ -141,10 +143,11 @@ def get_repo_data(request, repo_owner, repo_name):
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
     
     if original_repo in mined_repos:
+        repo = mined_repo_sql_obj = MinedRepo.objects.get(repo_name=original_repo)
         context = get_repo_table_context(original_repo)
         context.update({
-            "bar_chart":pull_request_charts(original_repo)["bar_chart"],
-            "line_chart":pull_requests_per_month_line_chart(original_repo)
+            "bar_chart_html":getattr(repo, "bar_chart_html"),
+            "pull_line_chart_html":getattr(repo, "pull_line_chart_html")
         })
         return render(request, template_name, context) 
 

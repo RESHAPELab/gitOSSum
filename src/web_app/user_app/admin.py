@@ -6,10 +6,23 @@ from django.template.loader import get_template
 
 
 # Register your models here.
-from .models import MiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthToken
+from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthToken
 from mining_scripts.mining import *
 from mining_scripts.send_email import *
 from multiprocessing import Pool
+
+def remove_from_fieldsets(fieldsets, fields):
+    for fieldset in fieldsets:
+        for field in fields:
+            if field in fieldset[1]['fields']:
+                new_fields = []
+                for new_field in fieldset[1]['fields']:
+                    if not new_field in fields:
+                        new_fields.append(new_field)
+                        
+                fieldset[1]['fields'] = tuple(new_fields)
+                break
+
 
 
 # Admin functionality for approving mining requests
@@ -24,13 +37,21 @@ def approve_mining_requests(modeladmin, request, queryset):
         user_email = ""
         if obj.send_email == True:
             user_email = obj.email
+
+        # Move this repo into the Queue
+        QueuedMiningRequest.objects.create(repo_name=repo_name, requested_by=username,
+                requested_timestamp=getattr(MiningRequest.objects.get(repo_name=repo_name), "timestamp")
+            )
+
+        # Delete this repo from the Requests
+        MiningRequest.objects.get(repo_name=repo_name).delete()
             
+        # Send the User an email as appropriate, letting them know 
+        # we have started mining their data
         send_mining_initialized_email(obj.repo_name, username, user_email)
 
+        # Fork a process and mine their data
         pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
-                   
-        # Delete the request from the MiningRequest Database
-        MiningRequest.objects.get(repo_name=obj.repo_name).delete()
 
 
 # A short description for this function
@@ -87,14 +108,28 @@ class MiningRequestAdmin(admin.ModelAdmin):
     ordering = ['timestamp']
     actions = [approve_mining_requests, black_list_requests]
 
+class QueuedMiningRequestAdmin(admin.ModelAdmin):
+    list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]
+    ordering = ['timestamp']
+
 class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp"]
     ordering = ['timestamp']
 
 class MinedRepoAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "requested_by", "timestamp"]
-    ordering = ['timestamp']
+    list_display = ['repo_name', "requested_by", "completed_timestamp", "accepted_timestamp", "requested_timestamp"]
+    ordering = ['completed_timestamp']
+    
     actions=[delete_selected]
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super(MinedRepoAdmin, self).get_fieldsets(request, obj)
+        remove_from_fieldsets(fieldsets, ('num_pulls', 'num_closed_merged_pulls', 
+                                        'num_open_pulls', 'num_closed_unmerged_pulls', 
+                                        'created_at_list', 'closed_at_list', 
+                                        'merged_at_list', 'num_newcomer_labels',
+                                        'bar_chart_html', 'pull_line_chart_html',))
+        return fieldsets
 
 class OAuthTokenAdmin(admin.ModelAdmin):
     list_display = ["oauth_token", "owner"]
@@ -103,6 +138,7 @@ class OAuthTokenAdmin(admin.ModelAdmin):
 
 # Register all of the admin panels to their respective models 
 admin.site.register(MiningRequest, MiningRequestAdmin)
+admin.site.register(QueuedMiningRequest, QueuedMiningRequestAdmin)
 admin.site.register(BlacklistedMiningRequest, BlacklistedMiningRequestAdmin)
 admin.site.register(MinedRepo, MinedRepoAdmin)
 admin.site.register(OAuthToken, OAuthTokenAdmin)
