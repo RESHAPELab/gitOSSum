@@ -2,6 +2,12 @@ from pymongo import MongoClient # Import pymongo for interacting with MongoDB
 from github import Github # Import PyGithub for mining data
 import datetime
 
+import plotly.plotly as py
+import plotly.offline as opy
+import plotly.graph_objs as go
+import plotly.tools as tls
+import pandas as pd
+import numpy as np
 
 
 client = MongoClient('localhost', 27017) # Where are we connecting
@@ -14,7 +20,7 @@ pull_requests = db.pullRequests # collection for storing all pull requests for a
 # num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls, created_at_list, 
 # closed_at_list, merged_at_list, and num_newcomer_labels.
 def extract_pull_request_model_data(pygit_repo):
-    return {
+    extracted_info = {
         "num_pulls": pull_requests.count_documents({"url": {"$regex": pygit_repo.full_name}}),
 
         "num_closed_merged_pulls":pull_requests.count_documents({"url": {"$regex": pygit_repo.full_name}, 
@@ -40,3 +46,145 @@ def extract_pull_request_model_data(pygit_repo):
         "num_newcomer_labels":pull_requests.count_documents({"url": {"$regex": pygit_repo.full_name}, 
                                                                 "labels": {"name": {"$regex": "first"}}})
     }
+    try:
+        extracted_info.update(
+            {
+                "bar_chart": produce_pull_type_bar_chart(extracted_info),
+                "line_chart": produce_pull_requests_per_month_line_chart(extracted_info)
+            }
+        )
+    except Exception as e:
+        print("ERROR ON CHARTS:", e)
+    return extracted_info
+
+def produce_pull_type_bar_chart(extracted_info):
+    num_closed_merged_pulls = extracted_info['num_closed_merged_pulls']
+    num_closed_unmerged_pulls = extracted_info['num_closed_unmerged_pulls']
+    num_open_pulls = extracted_info['num_open_pulls']
+
+    data = [
+        go.Bar(
+            x=["Closed-Merged", "Closed-Unmerged", "Open"],
+            y=[num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls], 
+            name='Pulls Bar Chart',
+            marker=dict(
+            color=['rgba(255,0,0,1)', 
+                    'rgba(0,94,255,1)',
+                    'rgba(8,154,105,1)'
+                ]
+            )
+        )
+    ]
+
+    layout = go.Layout(
+        title='Pull Request Bar Chart',
+        xaxis=dict(
+        title='Pull Request Type',
+        titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        ),
+        yaxis=dict(
+        title='Number of Pull Requests',
+        titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        )
+    )
+
+
+    figure=go.Figure(data=data,layout=layout)
+    div = opy.plot(figure,  output_type='div')
+
+    return div
+
+def produce_pull_requests_per_month_line_chart(extracted_info):
+    created_dates_str = extracted_info["created_at_list"]
+    closed_dates_str = extracted_info["closed_at_list"]
+    merged_dates_str = extracted_info["merged_at_list"]
+
+    try:
+        created_dates = pd.to_datetime(pd.Series(created_dates_str), format="%Y-%m-%d %H:%M:%S")
+        created_dates.index = created_dates.dt.to_period('m')
+        created_dates = created_dates.groupby(level=0).size()
+        created_dates = created_dates.reindex(pd.period_range(created_dates.index.min(),
+                                            created_dates.index.max(), freq='m'), fill_value=0)
+        created_indices = np.array(created_dates.index.astype(str))
+        created_date_freq = np.array(created_dates)
+    except Exception:
+        created_indices = []
+        created_date_freq = []
+
+    try:
+        closed_dates = pd.to_datetime(pd.Series(closed_dates_str), format="%Y-%m-%d %H:%M:%S")
+        closed_dates.index = closed_dates.dt.to_period('m')
+        closed_dates = closed_dates.groupby(level=0).size()
+        closed_dates = closed_dates.reindex(pd.period_range(closed_dates.index.min(),
+                                            closed_dates.index.max(), freq='m'), fill_value=0)
+        closed_indices = np.array(closed_dates.index.astype(str))
+        closed_date_freq = np.array(closed_dates)
+    except:
+        closed_indices = []
+        closed_date_freq = []
+
+    try:
+        merged_dates = pd.to_datetime(pd.Series(merged_dates_str), format="%Y-%m-%d %H:%M:%S")
+        merged_dates.index = merged_dates.dt.to_period('m')
+        merged_dates = merged_dates.groupby(level=0).size()
+        merged_dates = merged_dates.reindex(pd.period_range(merged_dates.index.min(),
+                                            merged_dates.index.max(), freq='m'), fill_value=0)
+        merged_indices = np.array(merged_dates.index.astype(str))
+        merged_date_freq = np.array(merged_dates)
+    except Exception:
+        merged_indices = []
+        merged_date_freq = []
+    
+    data = [
+        go.Scatter(
+            x=created_indices, 
+            y=created_date_freq,
+            mode = 'lines+markers',
+            name="Created"
+        ),
+        go.Scatter(
+            x=closed_indices, 
+            y=closed_date_freq,
+            mode = 'lines+markers',
+            name="Closed"
+        ),
+        go.Scatter(
+            x=merged_indices, 
+            y=merged_date_freq,
+            mode = 'lines+markers',
+            name="Merged"
+        )
+    ]
+
+    layout = go.Layout(
+        title='Pull Request Frequency by Month',
+        xaxis=dict(
+            title='Date',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        ),
+        yaxis=dict(
+            title='Number of Pull Requests',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        )
+    )
+
+    figure=go.Figure(data=data,layout=layout)
+
+    div = opy.plot(figure,  output_type='div')
+    return div

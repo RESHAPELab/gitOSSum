@@ -38,6 +38,8 @@ class MinedRepo(models.Model):
     closed_at_list               = ListTextField(base_field=models.CharField(max_length=240))
     merged_at_list               = ListTextField(base_field=models.CharField(max_length=240))
     num_newcomer_labels          = models.IntegerField(validators=[MinValueValidator(0)])
+    bar_chart_html               = models.TextField()
+    pull_line_chart_html         = models.TextField()
     timestamp                    = models.DateTimeField(auto_now_add=True)
     updated                      = models.DateTimeField(auto_now=True)
 

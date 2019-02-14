@@ -3,7 +3,7 @@ env/
 *.py[cod]
 *config.py
 src/web_app/db.sqlite3
-*/migrations/
+src/web_app/user_app/migrations/
 .DS_Store
 src/.DS_Store
 *.DS_Store

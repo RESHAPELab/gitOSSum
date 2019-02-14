@@ -93,11 +93,9 @@
         </tr>
     </table>
     <hr>
-    {{ pie_chart |safe }}
+    {{ bar_chart_html |safe }}
     <br>
-    {{ bar_chart |safe }}
-    <br>
-    {{ line_chart |safe }}
+    {{ pull_line_chart_html |safe }}
 </body>
 
 {% endblock content %}

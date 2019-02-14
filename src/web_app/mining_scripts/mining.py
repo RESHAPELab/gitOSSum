@@ -22,7 +22,7 @@ except AppRegistryNotReady:
     django.setup()
 
 # Only import the models after we know django has been setup 
-from user_app.models import MinedRepo, OAuthToken
+from user_app.models import MiningRequest, MinedRepo, OAuthToken
 
 
 client = MongoClient('localhost', 27017) # Where are we connecting
@@ -52,21 +52,23 @@ def mine_and_store_all_repo_data(repo_name, username, email):
     visualization_data = extract_pull_request_model_data(pygit_repo)
 
     # Add this repo to the mined repos table
-    try:
-        MinedRepo.objects.create(
-            repo_name=repo_name,
-            requested_by=username,
-            num_pulls=visualization_data["num_pulls"],
-            num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
-            num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
-            num_open_pulls=visualization_data["num_open_pulls"],
-            created_at_list=visualization_data["created_at_list"],
-            closed_at_list=visualization_data["closed_at_list"],
-            merged_at_list=visualization_data["merged_at_list"],
-            num_newcomer_labels=visualization_data["num_newcomer_labels"]
-        ) 
-    except Exception as e:
-        print("\n\nTHERE WAS A PROBLEM:\n\n", e, "\n\n")
+    MinedRepo.objects.create(
+        repo_name=repo_name,
+        requested_by=username,
+        num_pulls=visualization_data["num_pulls"],
+        num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
+        num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
+        num_open_pulls=visualization_data["num_open_pulls"],
+        created_at_list=visualization_data["created_at_list"],
+        closed_at_list=visualization_data["closed_at_list"],
+        merged_at_list=visualization_data["merged_at_list"],
+        num_newcomer_labels=visualization_data["num_newcomer_labels"],
+        bar_chart_html=visualization_data["bar_chart"],
+        pull_line_chart_html=visualization_data["line_chart"]
+    ) 
+
+    # Delete the request from the MiningRequest Database
+    MiningRequest.objects.get(repo_name=repo_name).delete()
 
     # send any emails as necessary
     send_confirmation_email(repo_name, username, email)

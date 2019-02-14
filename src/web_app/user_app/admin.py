@@ -41,9 +41,6 @@ def approve_mining_requests(modeladmin, request, queryset):
         send_mining_initialized_email(obj.repo_name, username, user_email)
 
         pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
-                   
-        # Delete the request from the MiningRequest Database
-        MiningRequest.objects.get(repo_name=obj.repo_name).delete()
 
 
 # A short description for this function
