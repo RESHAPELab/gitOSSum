@@ -53,4 +53,4 @@ class MinedRepo(models.Model):
     updated                      = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.repo_name}, {self.timestamp}, {self.updated}"
+        return f"{self.repo_name}, {self.completed_timestamp}, {self.updated}"
