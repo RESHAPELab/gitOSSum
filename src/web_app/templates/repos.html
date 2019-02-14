@@ -8,27 +8,84 @@
         margin: 100;
         padding: 50;
     }
+
+    .search {
+        background-color: rgb(0, 44, 126); 
+        color: white;
+    }
+    .search:hover {
+        background-color: rgb(0, 73, 207); 
+    }
+    .compare {
+        background-color: rgb(0, 44, 126); 
+        color: white;
+    }
+    .compare:hover {
+        background-color: rgb(0, 73, 207); 
+    }
+
+    .repos {
+        width: 60%;
+    }
+    .reposContent {
+        display: flex;
+    }
+
+    .filter {
+        float: right;
+        width: 25%;
+        background-color: rgb(0, 44, 126);
+        color: white;
+    }
 </style>
 
 <head>
 </head>
 
 <body>
-    <h1>List of Mined Repos</h1>
+    <h1>Mined Repos</h1>
+    <form class="form-inline">
+        <input class="form-control" style="width: 25%;" type="text" placeholder="Search" aria-label="Search">
+        <button type="button" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button>
+    </form>
     <hr>
+    <div class="repoContent">
+        <div class="jumbotron filter">
+            <h4>Languages</h4>
+            <ul>
+                <input type="checkbox"> Java <br>
+                <input type="checkbox"> Python <br>
+                <input type="checkbox"> C <br>
+            </ul>
+            <h4>Pull Requests</h4>
+            <ul>
+                <input type="checkbox"> 0-50 <br>
+                <input type="checkbox"> 51-100 <br>
+                <input type="checkbox"> 100+ <br>
+            </ul>
+            <h4>Has Homepage</h4>
+            <ul>
+                <input type="checkbox"> True <br>
+                <input type="checkbox"> False <br>
+            </ul>
+        </div>
     {% for value in context.values %}
-    <h4>
-        <ul>
-            <img src= {{ value.1 }} 
-                 ALIGN=”right” 
-                 width="65px"
-                 height="65px"
-            >
-            <a href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
-        </ul>
-        <br>
-    </h4>
-    {% endfor %}
+        <div class="jumbotron repos">
+            <h4>
+                <ul>
+                    <input type="checkbox">
+                    <img src= {{ value.1 }} 
+                        ALIGN=”right” 
+                        width="65px"
+                        height="65px"
+                    >
+                    <a href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
+                </ul>
+            </h4>
+        </div>
+        {% endfor %}
+    </div>
+    <button type="button" class="btn compare">Compare</button>
 </body>
 
 {% endblock content %}

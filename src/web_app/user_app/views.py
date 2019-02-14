@@ -146,6 +146,7 @@ def get_repo_data(request, repo_owner, repo_name):
         repo = mined_repo_sql_obj = MinedRepo.objects.get(repo_name=original_repo)
         context = get_repo_table_context(original_repo)
         context.update({
+            "repo_name":original_repo,
             "bar_chart_html":getattr(repo, "bar_chart_html"),
             "pull_line_chart_html":getattr(repo, "pull_line_chart_html")
         })
