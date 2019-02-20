@@ -25,7 +25,7 @@ SECRET_KEY = '1x1n@2p)h^@%0v7gckznov25z_m81#jb9q8e$vp#)@j&7*h%o('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['gitossum.com','138.68.40.43']
 
 
 # Application definition
@@ -129,3 +129,7 @@ EMAIL_PORT = 587
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
+
