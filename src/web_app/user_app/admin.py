@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.actions import delete_selected as delete_selected_
 from django.core.exceptions import PermissionDenied
 from django.template.loader import get_template
-
+from django.shortcuts import redirect
 
 
 # Register your models here.
@@ -10,6 +10,21 @@ from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest
 from mining_scripts.mining import *
 from mining_scripts.send_email import *
 from multiprocessing import Pool
+from threading import Thread
+
+
+def start_new_thread(function):
+    def decorator(*args, **kwargs):
+        t = Thread(target = function, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+    return decorator
+
+
+@start_new_thread
+def go_mine_stuff(repo_name, username, user_email):
+    mine_and_store_all_repo_data(repo_name, username, user_email)
+
 
 def remove_from_fieldsets(fieldsets, fields):
     for fieldset in fieldsets:
@@ -51,8 +66,10 @@ def approve_mining_requests(modeladmin, request, queryset):
         send_mining_initialized_email(obj.repo_name, username, user_email)
 
         # Fork a process and mine their data
-        pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
+        #pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
 
+        go_mine_stuff(repo_name, username, user_email)
+    
 
 # A short description for this function
 approve_mining_requests.short_description = "Approve selected mining requests"
@@ -89,7 +106,8 @@ def delete_selected(modeladmin, request, queryset):
     if request.POST.get('post'):
 
         for obj in queryset:
-            pool.apply_async(delete_all_contents_of_specific_repo_from_every_collection, args=(obj.repo_name,))
+            delete_all_contents_of_specific_repo_from_every_collection(obj.repo_name)
+            #pool.apply_async(delete_all_contents_of_specific_repo_from_every_collection, args=(obj.repo_name,))
             # if obj.send_email == True:
             #     send_repository_denied_email(obj.repo_name, obj.email)
             obj.delete()
@@ -107,6 +125,12 @@ class MiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "email", "send_email", "timestamp"]
     ordering = ['timestamp']
     actions = [approve_mining_requests, black_list_requests]
+
+    def response_add(self, request, obj, post_url_continue=None):
+        return redirect('//admin/user_app/minedrepo')
+
+    def response_change(self, request, obj):
+        return redirect('admin/user_app/queuedminingrequest')
 
 class QueuedMiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]
