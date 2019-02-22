@@ -25,7 +25,7 @@ SECRET_KEY = '1x1n@2p)h^@%0v7gckznov25z_m81#jb9q8e$vp#)@j&7*h%o('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['gitossum.com','138.68.40.43']
+ALLOWED_HOSTS = ['gitossum.com','138.68.40.43', '127.0.0.1']
 
 
 # Application definition
@@ -131,5 +131,5 @@ EMAIL_PORT = 587
 STATIC_URL = '/static/'
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
+STATIC_ROOT = 'static'
 

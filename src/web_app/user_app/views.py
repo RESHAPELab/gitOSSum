@@ -107,7 +107,8 @@ def mining_request_form_view(request):
                 requested_by=request.user.username
             )
 
-            return HttpResponseRedirect("")
+            form = MiningRequestForm()
+            return render(request, template, {'form': form})
         
         return render(request, template, {'form': form})
 
