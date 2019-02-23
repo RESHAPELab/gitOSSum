@@ -31,6 +31,8 @@ ALLOWED_HOSTS = [
     '127.0.0.1', 
     'mongodb-s-3vcpu-1gb-sfo2-01',
     'mongodb-s-3vcpu-1gb-sfo2-01:8080',
+    'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01',
+    'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01:8080',
 ]
 
 

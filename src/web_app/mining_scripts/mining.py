@@ -45,7 +45,8 @@ g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API
 
 # Wrapper function that will perform all mining steps necessary when
 # provided with the repository name
-def mine_and_store_all_repo_data(repo_name, username, email): 
+def mine_and_store_all_repo_data(repo_name, username, email, queued_request):
+
     # Use pygit to eliminate any problems with users not spelling the repo name
     # exactly as it is on the actual repo 
     logger.info('Retrieving the pygit_repo from github for {0}'.format(repo_name))
@@ -81,8 +82,8 @@ def mine_and_store_all_repo_data(repo_name, username, email):
         num_newcomer_labels=visualization_data["num_newcomer_labels"],
         bar_chart_html=visualization_data["bar_chart"],
         pull_line_chart_html=visualization_data["line_chart"],
-        accepted_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "timestamp"),
-        requested_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "requested_timestamp")
+        accepted_timestamp=getattr(QueuedMiningRequest.objects.get(pk=queued_request), "timestamp"),
+        requested_timestamp=getattr(QueuedMiningRequest.objects.get(pk=queued_request), "requested_timestamp")
     ) 
     logger.info('Successfully created MinedRepo database object for {0}'.format(repo_name))
 
@@ -142,25 +143,8 @@ def mine_pulls_from_repo(pygit_repo):
 
     logger.info('Beginning to mine individual pull requests for "{0}".'.format(pygit_repo.full_name))
     
-    # from user_app.tasks import mine_pull_request_asynchronously
-
-    # sub_task_list = list()
-
     for pull in pulls:
         mine_specific_pull(pygit_repo.full_name, pull)
-
-        # group_task = group(mine_pull_request_asynchronously.s(pygit_repo.full_name, pull.number)).delay() 
-        # here instead of executing them immediately, lets chain them
-        # sub_task_list.append(group_task)
-        # sub_task_list.append( mine_pull_request_asynchronously.s(pygit_repo.full_name, pull.number))
-        # result = mine_pull_request_asynchronously.s(pygit_repo.full_name, pull.number)
-        # Overwrite already existing instances of jsons 
-        # logger.info('Placing "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(pygit_repo.full_name, pull.number))
-        # pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
-        # logger.info('Successfully placed "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(pygit_repo.full_name, pull.number))  
-
-    # job = group(sub_task_list)
-    # result = job.apply_async()
 
     return 
 

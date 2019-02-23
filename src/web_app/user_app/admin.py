@@ -12,7 +12,7 @@ from mining_scripts.mining import *
 from multiprocessing import Pool
 from threading import Thread
 from user_app.tasks import mine_data_asynchronously
-
+from django.db import transaction
 
 def start_new_thread(function):
     def decorator(*args, **kwargs):
@@ -43,7 +43,6 @@ def remove_from_fieldsets(fieldsets, fields):
 
 # Admin functionality for approving mining requests
 def approve_mining_requests(modeladmin, request, queryset):
-    pool = Pool()
 
     # Iterate over all of the items the admin has checked
     for obj in queryset:
@@ -55,22 +54,25 @@ def approve_mining_requests(modeladmin, request, queryset):
             user_email = obj.email
 
         # Move this repo into the Queue
-        QueuedMiningRequest.objects.create(repo_name=repo_name, requested_by=username,
+        queued_request = QueuedMiningRequest(repo_name=repo_name, requested_by=username,
                 requested_timestamp=getattr(MiningRequest.objects.get(repo_name=repo_name), "timestamp")
             )
+        
+        queued_request.save()
 
-        # Delete this repo from the Requests
+
+        # # Delete this repo from the Requests
         MiningRequest.objects.get(repo_name=repo_name).delete()
             
-        # Send the User an email as appropriate, letting them know 
-        # we have started mining their data
-        send_mining_initialized_email(obj.repo_name, username, user_email)
+        # # Send the User an email as appropriate, letting them know 
+        # # we have started mining their data
+        # send_mining_initialized_email(obj.repo_name, username, user_email)
 
         # Fork a process and mine their data
         #pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
 
         # go_mine_stuff(repo_name, username, user_email)
-        mine_data_asynchronously.delay(repo_name, username, user_email)
+        mine_data_asynchronously.delay(repo_name, username, user_email, queued_request.id)
     
 
 # A short description for this function
@@ -129,10 +131,10 @@ class MiningRequestAdmin(admin.ModelAdmin):
     actions = [approve_mining_requests, black_list_requests]
 
     def response_add(self, request, obj, post_url_continue=None):
-        return redirect('//admin/user_app/minedrepo')
+        return redirect('/admin/user_app/minedrepo')
 
     def response_change(self, request, obj):
-        return redirect('admin/user_app/queuedminingrequest')
+        return redirect('/admin/user_app/queuedminingrequest')
 
 class QueuedMiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]
