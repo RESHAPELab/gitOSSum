@@ -1,5 +1,9 @@
+amqp==1.4.9
+anyjson==0.3.3
 backcall==0.1.0
+billiard==3.3.0.23
 bleach==3.1.0
+celery==3.1.26.post2
 certifi==2018.11.29
 chardet==3.0.4
 colorama==0.4.1
@@ -11,6 +15,7 @@ Deprecated==1.2.4
 dj-database-url==0.5.0
 Django==1.11.8
 django-bootstrap3==11.0.0
+django-celery==3.2.2
 django-crispy-forms==1.7.2
 django-mysql==2.4.1
 entrypoints==0.3
@@ -25,6 +30,7 @@ Jinja2==2.10
 jsonschema==2.6.0
 jupyter-client==5.2.4
 jupyter-core==4.4.0
+kombu==3.0.37
 MarkupSafe==1.1.0
 mistune==0.8.4
 mysqlclient==1.4.1
@@ -36,12 +42,16 @@ numpy==1.16.0
 pandas==0.24.0
 pandocfilters==1.4.2
 parso==0.3.2
+pexpect==4.6.0
 pickleshare==0.7.5
 Pillow==5.4.1
+pkg-resources==0.0.0
 plotly==3.5.0
 prometheus-client==0.5.0
 prompt-toolkit==2.0.7
 psycopg2==2.7.7
+psycopg2-binary==2.7.6.1
+ptyprocess==0.6.0
 PyGithub==1.43.4
 Pygments==2.3.1
 PyJWT==1.7.1
@@ -62,6 +72,7 @@ tornado==5.1.1
 traitlets==4.3.2
 Unidecode==1.0.23
 urllib3==1.24.1
+vine==1.2.0
 wcwidth==0.1.7
 webencodings==0.5.1
 widgetsnbextension==3.4.2
