@@ -16,6 +16,8 @@ from celery.utils.log import get_task_logger # For the server's logger
 from celery import group
 from time import sleep
 from retrying import retry
+from github import GithubException
+
 
 logger = get_task_logger(__name__) # Retrieve the actual logger 
 
