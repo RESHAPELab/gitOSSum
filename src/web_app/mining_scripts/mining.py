@@ -12,6 +12,13 @@ from mining_scripts.send_email import *
 from mining_scripts.config import *
 from mining_scripts.visualizationModelExtraction import *
 from django.core.exceptions import AppRegistryNotReady
+from celery.utils.log import get_task_logger # For the server's logger
+from celery import group
+from time import sleep
+from retrying import retry
+
+logger = get_task_logger(__name__) # Retrieve the actual logger 
+
 
 # Handle parallel processing not knowing about django apps
 try:
@@ -41,16 +48,25 @@ g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API
 def mine_and_store_all_repo_data(repo_name, username, email): 
     # Use pygit to eliminate any problems with users not spelling the repo name
     # exactly as it is on the actual repo 
+    logger.info('Retrieving the pygit_repo from github for {0}'.format(repo_name))
     pygit_repo = g.get_repo(repo_name)
+    logger.info('Successfully retrieved pygit_repo from github for {0}'.format(repo_name))
 
     # mine and store the main page josn
+    logger.info('Mining the  the landing page JSON from github for {0}'.format(repo_name))
     mine_repo_page(pygit_repo)
+    logger.info('Successfully mined the  the landing page JSON from github for {0}'.format(repo_name))
 
     # mine and store all pulls for this repo 
+    logger.info('Starting to mine pull requests from github for {0}'.format(repo_name))
     mine_pulls_from_repo(pygit_repo)
+    logger.info('Successfully mined all pull requests from github for {0}'.format(repo_name))
 
+    logger.info('Extracting visualization data for {0}'.format(repo_name))
     visualization_data = extract_pull_request_model_data(pygit_repo)
+    logger.info('Successfully extracted visualization data for {0}'.format(repo_name))
 
+    logger.info('Creating MinedRepo database object for {0}'.format(repo_name))
     # Add this repo to the mined repos table
     MinedRepo.objects.create(
         repo_name=repo_name,
@@ -68,12 +84,17 @@ def mine_and_store_all_repo_data(repo_name, username, email):
         accepted_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "timestamp"),
         requested_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "requested_timestamp")
     ) 
+    logger.info('Successfully created MinedRepo database object for {0}'.format(repo_name))
 
     # Delete the request from the MiningRequest Database
+    logger.info('Deleting QueuedMiningRequest database object for {0}'.format(repo_name))
     QueuedMiningRequest.objects.get(repo_name=repo_name).delete()
+    logger.info('Successfully deleted QueuedMiningRequest database object for {0}'.format(repo_name))
 
     # send any emails as necessary
+    logger.info('Sending email confirmation to "{0}" in regard to {1}'.format(email, repo_name))
     send_confirmation_email(repo_name, username, email)
+    logger.info('Successfully sent email confirmation to "{0}" in regard to {1}'.format(email, repo_name))
 
     return 
 
@@ -115,13 +136,43 @@ def delete_specifc_repos_pull_requests(repo_name):
 # put them within the db.pullRequests collection 
 def mine_pulls_from_repo(pygit_repo):
     # Retrieve all pull request numbers associated with this repo 
+    logger.info('Retrieving a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
     pulls = pygit_repo.get_pulls('all')
+    logger.info('Successfully retrieved a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
+
+    logger.info('Beginning to mine individual pull requests for "{0}".'.format(pygit_repo.full_name))
+    
+    # from user_app.tasks import mine_pull_request_asynchronously
+
+    # sub_task_list = list()
 
     for pull in pulls:
+        mine_specific_pull(pygit_repo.full_name, pull)
+
+        # group_task = group(mine_pull_request_asynchronously.s(pygit_repo.full_name, pull.number)).delay() 
+        # here instead of executing them immediately, lets chain them
+        # sub_task_list.append(group_task)
+        # sub_task_list.append( mine_pull_request_asynchronously.s(pygit_repo.full_name, pull.number))
+        # result = mine_pull_request_asynchronously.s(pygit_repo.full_name, pull.number)
         # Overwrite already existing instances of jsons 
-        pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
+        # logger.info('Placing "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(pygit_repo.full_name, pull.number))
+        # pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
+        # logger.info('Successfully placed "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(pygit_repo.full_name, pull.number))  
+
+    # job = group(sub_task_list)
+    # result = job.apply_async()
 
     return 
+
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=25)
+def mine_specific_pull(repo, pull):
+    try:
+        logger.info('Placing "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
+        pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
+        logger.info('Successfully placed "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
+        
+    except GithubException as e:
+        logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{0}/pulls/{1}". RETRYING'.format(e, repo, pull.number))
 
 
 # Helper method to find a specific repo's main api page json 

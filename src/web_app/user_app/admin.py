@@ -7,10 +7,11 @@ from django.shortcuts import redirect
 
 # Register your models here.
 from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthToken
-from mining_scripts.mining import *
 from mining_scripts.send_email import *
+from mining_scripts.mining import *
 from multiprocessing import Pool
 from threading import Thread
+from user_app.tasks import mine_data_asynchronously
 
 
 def start_new_thread(function):
@@ -68,7 +69,8 @@ def approve_mining_requests(modeladmin, request, queryset):
         # Fork a process and mine their data
         #pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
 
-        go_mine_stuff(repo_name, username, user_email)
+        # go_mine_stuff(repo_name, username, user_email)
+        mine_data_asynchronously.delay(repo_name, username, user_email)
     
 
 # A short description for this function

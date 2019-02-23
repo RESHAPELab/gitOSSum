@@ -25,7 +25,13 @@ SECRET_KEY = '1x1n@2p)h^@%0v7gckznov25z_m81#jb9q8e$vp#)@j&7*h%o('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['gitossum.com','138.68.40.43', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'gitossum.com',
+    '138.68.40.43', 
+    '127.0.0.1', 
+    'mongodb-s-3vcpu-1gb-sfo2-01',
+    'mongodb-s-3vcpu-1gb-sfo2-01:8080',
+]
 
 
 # Application definition
@@ -40,6 +46,7 @@ INSTALLED_APPS = [
     'user_app',
     'bootstrap3', 
     'django_mysql',
+    'djcelery',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +140,9 @@ STATIC_URL = '/static/'
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = 'static'
 
+# Stuff for celery
+BROKER_URL='amqp://guest@localhost//'
+CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_ACCEPT_CONTENT=['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
