@@ -122,15 +122,13 @@ def mining_request_form_view(request):
 def mined_repos(request):
     template_name = 'repos.html'
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
-    images = list()
     context = dict()
     try:
-        for image in get_all_repos():
-            images.append(image["owner"]["avatar_url"])
         for item in range(0, len(mined_repos)):
             context.update({
-                f"repo{item}": [mined_repos[item], images[item]]
+                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]]
             })
+        print(context)
         return render(request, template_name, {"context":context})
     except Exception:
          return render(request, template_name, {})

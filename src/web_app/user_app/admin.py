@@ -60,18 +60,13 @@ def approve_mining_requests(modeladmin, request, queryset):
         
         queued_request.save()
 
-
         # # Delete this repo from the Requests
         MiningRequest.objects.get(repo_name=repo_name).delete()
             
         # # Send the User an email as appropriate, letting them know 
         # # we have started mining their data
-        # send_mining_initialized_email(obj.repo_name, username, user_email)
+        # send_mining_initialized_email(obj.repo_name, username, user_email) 
 
-        # Fork a process and mine their data
-        #pool.apply_async(mine_and_store_all_repo_data, [repo_name, username, user_email]) 
-
-        # go_mine_stuff(repo_name, username, user_email)
         mine_data_asynchronously.delay(repo_name, username, user_email, queued_request.id)
     
 
@@ -129,12 +124,6 @@ class MiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "email", "send_email", "timestamp"]
     ordering = ['timestamp']
     actions = [approve_mining_requests, black_list_requests]
-
-    def response_add(self, request, obj, post_url_continue=None):
-        return redirect('/admin/user_app/minedrepo')
-
-    def response_change(self, request, obj):
-        return redirect('/admin/user_app/queuedminingrequest')
 
 class QueuedMiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]
