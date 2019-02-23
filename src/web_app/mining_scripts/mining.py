@@ -16,8 +16,6 @@ from celery.utils.log import get_task_logger # For the server's logger
 from celery import group
 from time import sleep
 from retrying import retry
-from github import GithubException
-
 
 logger = get_task_logger(__name__) # Retrieve the actual logger 
 
@@ -150,14 +148,14 @@ def mine_pulls_from_repo(pygit_repo):
 
     return 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=25)
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10)
 def mine_specific_pull(repo, pull):
     try:
         logger.info('Placing "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
         logger.info('Successfully placed "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         
-    except GithubException as e:
+    except Exception as e:
         logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{0}/pulls/{1}". RETRYING'.format(e, repo, pull.number))
 
 
