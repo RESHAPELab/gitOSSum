@@ -151,12 +151,16 @@ def mine_pulls_from_repo(pygit_repo):
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10)
 def mine_specific_pull(repo, pull):
     try:
-        logger.info('Placing "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
+        logger.info('Placing "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
         logger.info('Successfully placed "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         
     except Exception as e:
-        logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{0}/pulls/{1}". RETRYING'.format(e, repo, pull.number))
+        # if this repo doesn't exist, don't mine it 
+        if e == 500:
+            logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". RETRYING'.format(e, repo, pull.number))
+            pass
+        # otherwise retry as necessary
 
 
 # Helper method to find a specific repo's main api page json 
