@@ -14,8 +14,10 @@ from mining_scripts.visualizationModelExtraction import *
 from django.core.exceptions import AppRegistryNotReady
 from celery.utils.log import get_task_logger # For the server's logger
 from celery import group
-from time import sleep
 from retrying import retry
+
+import time
+from datetime import datetime
 
 logger = get_task_logger(__name__) # Retrieve the actual logger 
 
@@ -132,6 +134,29 @@ def delete_specifc_repos_pull_requests(repo_name):
     pull_requests.delete_many({"url": {"$regex": pygit_repo.full_name}})
     return
 
+def rate_limit_is_reached():
+    if get_number_of_remaining_requests() == 0:
+        return True 
+    else:
+        return False 
+
+def get_number_of_remaining_requests():
+    return  g.rate_limiting[0] # the current number of remaining requests
+
+def get_num_seconds_until_rate_limit_reset():
+    current_time_unix = time.mktime(datetime.now().timetuple())
+    rate_limit_reset_time_unix = g.rate_limiting_resettime
+    num_seconds=rate_limit_reset_time_unix-current_time_unix
+    num_minutes=num_seconds / 60
+    # logger.info('RATE LIMIT REACHED! WAITING FOR {0} minutes.'.format(num_minutes))
+    print('RATE LIMIT REACHED! WAITING FOR {0} minutes.'.format(num_minutes))
+    return num_seconds
+
+def wait_for_request_rate_reset():
+    sleep(get_num_seconds_until_rate_limit_reset())
+    # logger.info('RATE LIMIT HAS BEEN RESET! STARTING TO MINE AGAIN.')
+    print('RATE LIMIT HAS BEEN RESET! STARTING TO MINE AGAIN.')
+    return
 
 # Method to download all pull requests of a given repo and 
 # put them within the db.pullRequests collection 
@@ -160,10 +185,6 @@ def mine_specific_pull(repo, pull):
         if e == 500:
             logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". PULL INACCESSIBLE, PASSING.'.format(e, repo, pull.number))
             pass
-
-        # otherwise retry as necessary
-        else:
-            logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". RETRYING.'.format(e, repo, pull.number))
 
 
 # Helper method to find a specific repo's main api page json 
