@@ -158,9 +158,12 @@ def mine_specific_pull(repo, pull):
     except Exception as e:
         # if this repo doesn't exist, don't mine it 
         if e == 500:
-            logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". RETRYING'.format(e, repo, pull.number))
+            logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". PULL INACCESSIBLE, PASSING.'.format(e, repo, pull.number))
             pass
+
         # otherwise retry as necessary
+        else:
+            logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". RETRYING.'.format(e, repo, pull.number))
 
 
 # Helper method to find a specific repo's main api page json 
