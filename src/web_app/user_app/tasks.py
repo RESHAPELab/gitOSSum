@@ -10,7 +10,7 @@ from django.db import transaction
 logger = get_task_logger(__name__)
 
 # When the admin approves, go call the mining script asynchronously 
-@app.task(name='tasks.mine_data_asynchronously')
+@app.task(name='tasks.mine_data_asynchronously', hard_time_limit=60*60*10)
 def mine_data_asynchronously(repo_name, username, user_email, queued_request):
     # Update the log to show we started 
     logger.info('Starting Mining Job with repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
@@ -27,9 +27,9 @@ def mine_data_asynchronously(repo_name, username, user_email, queued_request):
 def mine_pull_request_asynchronously(self, repo, pygit_pull):
     try:
         pull = g.get_repo(repo).get_pull(pygit_pull)
-        logger.info('Placing "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
+        # logger.info('Placing "api.github.com/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
-        logger.info('Successfully placed "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
+        # logger.info('Successfully placed "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         return True
         
     except GithubException as e:

@@ -15,7 +15,7 @@ from django.core.exceptions import AppRegistryNotReady
 from celery.utils.log import get_task_logger # For the server's logger
 from celery import group
 from retrying import retry
-
+import os
 import time
 from datetime import datetime
 
@@ -33,8 +33,13 @@ except AppRegistryNotReady:
 # Only import the models after we know django has been setup 
 from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
 
-
-client = MongoClient('localhost', 27017) # Where are we connecting
+# precent issues with forking 
+if os.getpid() == 0:
+    # Initial connection by parent process
+    client = MongoClient('localhost', 27017) # Where are we connecting
+else: 
+    # No need to reconnect if we are connected
+    client = MongoClient('localhost', 27017, connect=False)
 
 db = client.backend_db # The specific mongo database we are working with 
 
@@ -135,12 +140,15 @@ def delete_specifc_repos_pull_requests(repo_name):
     return
 
 def rate_limit_is_reached():
-    if get_number_of_remaining_requests() == 0:
+    num_requests_remaining = get_number_of_remaining_requests()
+    if num_requests_remaining == 0:
         return True 
     else:
+        logger.info('NUMBER OF GITHUB REQUESTS REMAINING: {0}'.format(num_requests_remaining))
         return False 
 
 def get_number_of_remaining_requests():
+    g = Github(GITHUB_TOKEN, per_page=100) # Update authorization to have up to date requests remaining 
     return  g.rate_limiting[0] # the current number of remaining requests
 
 def get_num_seconds_until_rate_limit_reset():
@@ -148,43 +156,53 @@ def get_num_seconds_until_rate_limit_reset():
     rate_limit_reset_time_unix = g.rate_limiting_resettime
     num_seconds=rate_limit_reset_time_unix-current_time_unix
     num_minutes=num_seconds / 60
-    # logger.info('RATE LIMIT REACHED! WAITING FOR {0} minutes.'.format(num_minutes))
-    print('RATE LIMIT REACHED! WAITING FOR {0} minutes.'.format(num_minutes))
+    logger.info('RATE LIMIT REACHED! WAITING FOR {0} minutes.'.format(num_minutes))
     return num_seconds
 
 def wait_for_request_rate_reset():
-    sleep(get_num_seconds_until_rate_limit_reset())
-    # logger.info('RATE LIMIT HAS BEEN RESET! STARTING TO MINE AGAIN.')
-    print('RATE LIMIT HAS BEEN RESET! STARTING TO MINE AGAIN.')
+    time.sleep(get_num_seconds_until_rate_limit_reset())
+    time.sleep(1)  
+    logger.info('Getting a new Github Token...') 
+    g = Github(GITHUB_TOKEN, per_page=100) # Update authorization to have up to date requests remaining 
+
+    logger.info('RATE LIMIT HAS BEEN RESET! STARTING TO MINE AGAIN.')
     return
 
 # Method to download all pull requests of a given repo and 
 # put them within the db.pullRequests collection 
 def mine_pulls_from_repo(pygit_repo):
-    # Retrieve all pull request numbers associated with this repo 
     logger.info('Retrieving a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
+
+    # Retrieve all pull request numbers associated with this repo 
     pulls = pygit_repo.get_pulls('all')
     logger.info('Successfully retrieved a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
 
     logger.info('Beginning to mine individual pull requests for "{0}".'.format(pygit_repo.full_name))
     
     for pull in pulls:
-        mine_specific_pull(pygit_repo.full_name, pull)
+        
+        # Only mine data when we have remaining requests
+        if rate_limit_is_reached():
+            wait_for_request_rate_reset() # Dynamically wait for a given number of seconds
+        else:
+            mine_specific_pull(pygit_repo.full_name, pull) # Go mine stuff!
 
     return 
 
-@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10)
+
+# Mine and store specific repo. If there are any errors (other than 503),
+# retry with exponential backoff 10 times. Fail after 10th attempt 
+# @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10)
 def mine_specific_pull(repo, pull):
     try:
-        logger.info('Placing "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
-        logger.info('Successfully placed "api.github.com/repos/{0}/pulls/{1}" into MongoDB pullRequests collection.'.format(repo, pull.number))
         
     except Exception as e:
         # if this repo doesn't exist, don't mine it 
-        if e == 500:
+        if e == 500 or e == 404:
             logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". PULL INACCESSIBLE, PASSING.'.format(e, repo, pull.number))
             pass
+        # TODO: Else, send the administrator an email to alert them of an error
 
 
 # Helper method to find a specific repo's main api page json 
