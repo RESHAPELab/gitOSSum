@@ -18,6 +18,7 @@ from retrying import retry
 import os
 import time
 from datetime import datetime
+from mining_scripts.batchify import BatchedGeneratorTask
 
 logger = get_task_logger(__name__) # Retrieve the actual logger 
 
@@ -188,6 +189,15 @@ def mine_pulls_from_repo(pygit_repo):
             mine_specific_pull(pygit_repo.full_name, pull) # Go mine stuff!
 
     return 
+
+
+def mine_pulls_batch(pulls_batch):
+    for pull in range(len(pulls_batch)):
+        if rate_limit_is_reached():
+            wait_for_request_rate_reset() # Dynamically wait for a given number of seconds
+        else:
+            data = next(pulls_batch).raw_data
+            pull_requests.update_one(data, {"$set": data}, upsert=True)
 
 
 # Mine and store specific repo. If there are any errors (other than 503),

@@ -9,10 +9,16 @@ from django.shortcuts import redirect
 from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthToken
 from mining_scripts.send_email import *
 from mining_scripts.mining import *
+from mining_scripts.batchify import *
 from multiprocessing import Pool
 from threading import Thread
-from user_app.tasks import mine_data_asynchronously
+from user_app.tasks import mine_data_asynchronously, mine_pull_request_batch_asynchronously
 from django.db import transaction
+
+g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API 
+
+logger = get_task_logger(__name__)
+
 
 def start_new_thread(function):
     def decorator(*args, **kwargs):
@@ -23,8 +29,37 @@ def start_new_thread(function):
 
 
 @start_new_thread
-def go_mine_stuff(repo_name, username, user_email):
-    mine_and_store_all_repo_data(repo_name, username, user_email)
+def go_mine_stuff(repo_name, username, user_email, queued_request):
+    # Update the log to show we started 
+    logger.info('Starting Mining Job with repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
+    
+    logger.info('Retrieving the pygit_repo from github for {0}'.format(repo_name))
+    pygit_repo = g.get_repo(repo_name)
+    logger.info('Successfully retrieved pygit_repo from github for {0}'.format(repo_name))
+
+
+    # mine and store the main page josn
+    logger.info('Mining the  the landing page JSON from github for {0}'.format(repo_name))
+    mine_repo_page(pygit_repo)
+    logger.info('Successfully mined the  the landing page JSON from github for {0}'.format(repo_name))
+
+    # Go mine the data and log whats happening along the way
+    # mine_and_store_all_repo_data(repo_name, username, user_email, queued_request)
+
+    logger.info('Starting to BATCH JOBS for repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
+    batch_data = batchify(repo_name)
+    logger.info('Successfully BATCHED JOBS for repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
+
+    logger.info(f'TOTAL OF {len(batch_data)} BATCH JOBS OF SIZE {len(batch_data[0])} for repo_name="{repo_name}"')
+    
+    logger.info(f'Kicking off jobs for repo_name="{repo_name}"')
+    for job in range(len(batch_data)):
+        mine_pull_request_batch_asynchronously.delay(repo_name, job, username, user_email, queued_request)
+
+ 
+    # Log that this repo has been finished 
+    # logger.info('Finished Mining Job with repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
+    logger.info(f'PARENT PROCESS FINISHED FOR {repo_name}. WAITING ON TASKS.')
 
 
 def remove_from_fieldsets(fieldsets, fields):
@@ -67,7 +102,8 @@ def approve_mining_requests(modeladmin, request, queryset):
         # # we have started mining their data
         # send_mining_initialized_email(obj.repo_name, username, user_email) 
 
-        mine_data_asynchronously.delay(repo_name, username, user_email, queued_request.id)
+        # mine_data_asynchronously.delay(repo_name, username, user_email, queued_request.id)
+        go_mine_stuff(repo_name, username, user_email, queued_request.id)
     
 
 # A short description for this function

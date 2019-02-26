@@ -1,7 +1,7 @@
 from pymongo import MongoClient # Import pymongo for interacting with MongoDB
 from github import Github # Import PyGithub for mining data
 import datetime
-
+import os
 import plotly.plotly as py
 import plotly.offline as opy
 import plotly.graph_objs as go
@@ -10,7 +10,13 @@ import pandas as pd
 import numpy as np
 
 
-client = MongoClient('localhost', 27017) # Where are we connecting
+if os.getpid() == 0:
+    # Initial connection by parent process
+    client = MongoClient('localhost', 27017) # Where are we connecting
+else: 
+    # No need to reconnect if we are connected
+    client = MongoClient('localhost', 27017, connect=False)
+
 db = client.backend_db # The specific mongo database we are working with 
 repos = db.repos # collection for storing all of a repo's main api json information 
 pull_requests = db.pullRequests # collection for storing all pull requests for all repos
