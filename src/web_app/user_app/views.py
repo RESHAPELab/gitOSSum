@@ -30,6 +30,7 @@ import random
 import json
 from io import BytesIO
 from PIL import Image
+import numpy as np
 
 
 
@@ -121,7 +122,8 @@ def mining_request_form_view(request):
 # A page accessible by anyone to see all mined repos (with hyperlinks)
 def mined_repos(request):
     template_name = 'repos.html'
-    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests          
+             
     context = dict()
     try:
         for item in range(0, len(mined_repos)):

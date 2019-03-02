@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from celery.schedules import crontab   
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,6 +27,7 @@ SECRET_KEY = '1x1n@2p)h^@%0v7gckznov25z_m81#jb9q8e$vp#)@j&7*h%o('
 DEBUG = False
 
 ALLOWED_HOSTS = [
+    'localhost',
     'gitossum.com',
     '138.68.40.43', 
     '127.0.0.1', 
@@ -48,7 +50,7 @@ INSTALLED_APPS = [
     'user_app',
     'bootstrap3', 
     'django_mysql',
-    'djcelery',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +151,13 @@ CELERY_ACCEPT_CONTENT=['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'MST'
+CELERYD_MAX_TASKS_PER_CHILD = 2
+CELERY_TASK_RESULT_EXPIRES = 60*60  
+
+CELERY_BEAT_SCHEDULE = {
+    'check-for-repos-needing-visualization': {
+        'task': 'tasks.visualize_repo_data',
+        'schedule': 30.0,
+        'args': ()
+    },    
+}

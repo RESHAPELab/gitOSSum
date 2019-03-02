@@ -19,6 +19,7 @@ import os
 import time
 from datetime import datetime
 from mining_scripts.batchify import BatchedGeneratorTask
+import gc
 
 logger = get_task_logger(__name__) # Retrieve the actual logger 
 
@@ -47,6 +48,8 @@ db = client.backend_db # The specific mongo database we are working with
 repos = db.repos # collection for storing all of a repo's main api json information 
 
 pull_requests = db.pullRequests # collection for storing all pull requests for all repos 
+
+pull_batches = db.pullBatches
 
 g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API 
 
@@ -190,31 +193,46 @@ def mine_pulls_from_repo(pygit_repo):
 
     return 
 
+def increase_collected_batches_count(repo_name):
+    document = pull_batches.find_one({"repo":repo_name})
+    current_count = pull_batches.find_one({"repo":repo_name})["collected_batches"] 
+    pull_batches.update_one(document, {"$set": {"collected_batches": current_count + 1}}, upsert=False)
+    return 
 
-def mine_pulls_batch(pulls_batch):
-    for pull in range(len(pulls_batch)):
-        if rate_limit_is_reached():
-            wait_for_request_rate_reset() # Dynamically wait for a given number of seconds
-        else:
-            data = next(pulls_batch).raw_data
-            pull_requests.update_one(data, {"$set": data}, upsert=True)
+def increase_attempted_batches_count(repo_name):
+    document = pull_batches.find_one({"repo":repo_name})
+    current_count = pull_batches.find_one({"repo":repo_name})["attempted_batches"] 
+    pull_batches.update_one(document, {"$set": {"attempted_batches": current_count + 1}}, upsert=False)
+    return 
 
+def mine_pulls_batch(pulls_batch, repo_name):
+    increase_attempted_batches_count(repo_name)
+    try:
+        for pull in range(len(pulls_batch)):
+            if rate_limit_is_reached():
+                wait_for_request_rate_reset() # Dynamically wait for a given number of seconds
+            else:
+                mine_specific_pull(next(pulls_batch)) # Move the iterator to the next pull request & mine
+        increase_collected_batches_count(repo_name)
+        # gc.collect()
+        return True
+    except Exception: 
+        return False
 
 # Mine and store specific repo. If there are any errors (other than 503),
 # retry with exponential backoff 10 times. Fail after 10th attempt 
 # @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=10)
-def mine_specific_pull(repo, pull):
+def mine_specific_pull(pull):
     try:
         pull_requests.update_one(pull.raw_data, {"$set": pull.raw_data}, upsert=True)
         
     except Exception as e:
         # if this repo doesn't exist, don't mine it 
         if e == 500 or e == 404:
-            logger.info('GITHUB EXCEPTION: {0} for "api.github.com/repos/{1}/pulls/{2}". PULL INACCESSIBLE, PASSING.'.format(e, repo, pull.number))
+            logger.info('GITHUB EXCEPTION: {0} for PULL {1}. PULL INACCESSIBLE, PASSING.'.format(e, pull.number))
             pass
         # TODO: Else, send the administrator an email to alert them of an error
-
-
+    
 # Helper method to find a specific repo's main api page json 
 def find_repo_main_page(repo_name):
     # Use pygit to eliminate any problems with users not spelling the repo name
