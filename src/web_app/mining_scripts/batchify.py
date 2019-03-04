@@ -74,12 +74,13 @@ def get_batch_number(repo_name, batch_num):
     try:
         whole_batch = batchify(repo_name)
         batch = whole_batch[batch_num]
+        return batch
 
-        if batch_num == len(whole_batch) - 1:
-            return {"data":batch, "is_last_batch":True}
+        # if batch_num == len(whole_batch) - 1:
+        #     return {"data":batch, "is_last_batch":True}
 
-        else:
-            return {"data":batch, "is_last_batch":False}
+        # else:
+        #     return {"data":batch, "is_last_batch":False}
     except Exception:
         pass 
 

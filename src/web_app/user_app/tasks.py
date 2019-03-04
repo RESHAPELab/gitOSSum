@@ -15,6 +15,8 @@ import json
 from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
 from django.contrib.auth.models import User
 import sys
+import numpy as np
+
 
 # Handle parallel processing not knowing about django apps
 try:
@@ -36,11 +38,10 @@ def all_tasks_completed(repo_name):
     collected_batches = db.pullBatches.find_one({"repo":repo_name})["collected_batches"]
     attempted_batches = db.pullBatches.find_one({"repo":repo_name})["attempted_batches"]
     
-    if attempted_batches == total_batches:
-        if collected_batches == total_batches:
-            return True
-        else:
-            raise CeleryTaskFailedError("Celery Task Failed!!!")
+    if collected_batches == total_batches:
+        return True
+        # else:
+        #     raise CeleryTaskFailedError("Celery Task Failed!!!")
     else:
         return False 
 
@@ -93,7 +94,7 @@ def mine_data_asynchronously(self, repo_name, username, user_email, queued_reque
 def mine_pull_request_batch_asynchronously(repo_name, job):
     pulls_batch = get_batch_number(repo_name, job)
     
-    mine_pulls_batch(pulls_batch["data"], repo_name)
+    mine_pulls_batch(pulls_batch, repo_name)
 
     return True
 
