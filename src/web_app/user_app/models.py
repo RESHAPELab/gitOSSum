@@ -14,6 +14,14 @@ class MiningRequest(models.Model):
     timestamp               = models.DateTimeField(auto_now_add=True)
     updated                 = models.DateTimeField(auto_now=True)
 
+class FeedbackMessage(models.Model):
+    subject                 = models.CharField(max_length=120, null=False, blank=False)
+    message                 = models.TextField(null=False, blank=False)
+    requested_by            = models.CharField(max_length=240, null=False, blank=False)
+    sender_email            = models.EmailField(null=False, blank=False)
+    timestamp               = models.DateTimeField(auto_now_add=True)
+
+
 
     def __str__(self):
         return f"{self.repo_name}, {self.email}, {self.timestamp}, {self.updated}"

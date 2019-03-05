@@ -14,6 +14,7 @@
         background-color: black;
         color: white;
         border-radius: 20px;
+        width: 100%;
     }
 
     td,
@@ -42,47 +43,60 @@
         margin-bottom: 3%;
     }
 
-    .introduction {
-        margin-top: 1%;
-        margin-bottom: 1%;
-        background-color: rgb(0, 169, 221);
-        color: white;
-        text-align: center;
-    }
-
     .row1 {
         display: flex;
     }
-
-    .table {
+    .introduction {
+        margin-top: 1%;
         margin-bottom: 1%;
         margin-right: 0.5%;
-        background-color: rgb(216, 81, 81);
-        color: white;
-        width: 50%;
-        text-align: center;
-    }
-
-    .bar {
-        margin-bottom: 1%;
-        width: 50%;
-        margin-left: 0.5%;
-        border-radius: 20px;
-        background-color: rgb(1, 170, 133);
-        text-align: center;
-    }
-
-    
-
-    .prByMonth {
-        margin-bottom: 1%;
-        width: 100%;
         background-color: rgb(0, 169, 221);
         color: white;
         text-align: center;
+        width: 40%;
+    }
+    .table {
+        margin-bottom: 1%;
+        margin-left: 0.5%;
+        margin-top: 1%;
+        background-color: rgb(216, 81, 81);
+        color: white;
+        width: 60%;
+        text-align: center;
     }
 
-    a {
+
+    .row2 {
+        display: flex;
+    }
+    .bar {
+        margin-bottom: 1%;
+        margin-left: 0.5%;
+        width: 40%;
+        border-radius: 20px;
+        background-color: rgb(0, 169, 221);
+        /* background-color: rgb(1, 170, 133); */
+        text-align: center;
+    }
+    .pie {
+        margin-bottom: 1%;
+        margin-right: 0.5%;
+        width: 50%;
+        border-radius: 20px;
+        background-color: rgb(0, 169, 221);
+        text-align: center;
+    }
+    .prByMonth {
+        margin-bottom: 1%;
+        margin-right: 0.5%;
+        width: 60%;
+        background-color: rgb(1, 170, 133);
+        /* background-color: rgb(216, 81, 81); */
+        color: white;
+        text-align: center;
+    }
+
+    .link {
         color: black;
     }
 </style>
@@ -90,12 +104,12 @@
 </head>
 
 <body>
-    <div class="jumbotron introduction">
-        <img src="{{ avatar }}" alt="">
-        <h2><a href="https://github.com/{{ repo_name }}">{{ repo_name }}</a></h2>
-        <p>{{ description }}</p>
-    </div>
     <div class="row1">
+            <div class="jumbotron introduction">
+                <img src="{{ repo_img }}" style="width: 170px; height: 170px;" alt="">
+                <h2><a class="link" href="https://github.com/{{ repo_name }}"><u>{{ repo_name }}</u></a></h2>
+                <p>{{ description }}</p>
+            </div>
         <div class="jumbotron table">
             <h3 class="jumboTitle">Repo Information</h3>
             <table>
@@ -155,14 +169,26 @@
                 </tr>
             </table>
         </div>
+    </div>
+    <div class="row2">
+        <div class="jumbotron prByMonth">
+            {{ pull_line_chart_html |safe }}
+        </div>
+
         <div class="jumbotron bar">
             <h3 class="jumboTitle"> </h3>
             {{ bar_chart_html |safe }}
         </div>
+        <!-- <div class="jumbotron pie">
+            <h3 class="jumboTitle"></h3>
+            
+        </div> -->
     </div>
-    <div class="jumbotron prByMonth">
-        {{ pull_line_chart_html |safe }}
-    </div>
+    <!-- <div class="row3">
+        <div class="jumbotron prByMonth">
+            {{ pull_line_chart_html |safe }}
+        </div>
+    </div> -->
 </body>
 
 {% endblock content %}

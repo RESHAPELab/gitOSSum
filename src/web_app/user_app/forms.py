@@ -8,6 +8,12 @@ from django.contrib.auth.models import User
 from github import Github # Import PyGithub for mining data
 
 
+class FeedbackForm(forms.Form):
+    subject                 = forms.CharField(max_length=120, required=True, label="Subject",
+                              widget = forms.TextInput(attrs={'placeholder':'Subject of message...'}))
+    body                    = forms.CharField(max_length=1000, required=True, label='Message',
+                              widget = forms.Textarea(attrs={'placeholder':'Message content...', 
+                                                             'style': 'resize:none;'}))
 
 class MiningRequestForm(forms.Form):
     repo_name               = forms.CharField(max_length=120, required=True, label="Repository", 
@@ -89,4 +95,5 @@ class LoginForm(forms.Form):
             raise ValidationError("Incorrect username.")
         
         return username
+
     

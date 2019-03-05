@@ -11,19 +11,28 @@
   <!-- {% bootstrap_css %}
   {% bootstrap_javascript %} -->
 </head>
-  
-  {% if user.is_authenticated %}
+
+<style>
+  .productName {
+    background-color: rgb(0, 0, 175);
+  }
+</style>
+  <div class="productName"> 
+    <h3 style="float: left; margin-left: 1%;">Git OSS-um</h3>
+  </div>  
+
+  <!-- {% if user.is_authenticated %}
   <div class="head" style="background-color: rgb(0, 0, 175); width: 100%;"> 
     <h3 style="float: left; margin-left: 1%;">Git OSS-um</h3>
   </div>
-  {% comment %} <h3 style="float: right; padding-right: 75px">
+  <h3 style="float: right; padding-right: 75px">
     Welcome {{ user.get_username }} <a href="{% url 'logout' %}">(logout)</a>
-  </h3>   {% endcomment %}
+  </h3>
   {% else %}
   <h4 style="float: right; padding-right: 75px">
     New here? <a href="{% url 'signup' %}">Sign Up</a> or <a href="{% url 'login' %}">Login</a>
   </h4>
-  {% endif %}
+  {% endif %} -->
     
 <body>
    {% include 'snippets/nav.html' %}
