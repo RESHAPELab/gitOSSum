@@ -17,7 +17,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
-from .forms import MiningRequestForm, SignUpForm, LoginForm
+from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm
 from mining_scripts.mining import *
 from .models import *
 from .tokens import account_activation_token
@@ -113,7 +113,31 @@ def mining_request_form_view(request):
 
     else:
         form = MiningRequestForm()
-        return render(request, template, {'form': form})  
+        return render(request, template, {'form': form}) 
+
+@login_required
+def feedback_form(request):
+    context = {}
+    template = "feedbackForm.html"
+    form = FeedbackForm()
+
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            messages.success(request, 'Your message has been sent. Thank you for your feedback!')
+            obj = FeebackForm.objects.create(
+                subject = form.cleaned_data.get('subject'),
+                message = form.cleaned_data.get('message'),
+                sender_email = request.user.email,
+                requested_by = request.user.username
+            )
+            EmailMessage(obj.subject, obj.message, obj.sender_email, ['gitossum@gmail.com'])
+            return HttpResponseRedirect("")
+        return render(request, template, {'form': form})
+    else: 
+        form = FeedbackForm()
+        return render(request, template, {'form': form})
+    #return render(request, template, {'form': form}) 
 
 
 
