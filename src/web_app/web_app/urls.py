@@ -30,6 +30,5 @@ urlpatterns = [
         activate, name='activate'),
     url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
     url(r'^repos/$', mined_repos, name="repos"), # The list of all mined repos 
-    url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data, name="visualization"), # Visualizations
-    url(r'^feedback/$', feedback_form, name="feedback")
+    url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data, name="visualization") # Visualizations
 ]

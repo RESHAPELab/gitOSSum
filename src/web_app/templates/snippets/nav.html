@@ -26,7 +26,7 @@
 
     .nav li a:hover {
         /* background-color: rgb(94, 215, 252); */
-        background-color:lightgrey;
+        background-color: gold;
         color: black;
         transition: 0.5s;
     }
@@ -50,9 +50,11 @@
     <li>
         <a href="{% url 'repos' %}">Mined Repos</a>
     </li>
+    {% if user.objects.status == admin or request.user.is_superuser %}
     <li>
-        <a href="{% url 'feedback' %}">Feedback</a>
+        <a href="{% url 'admin:index' %}">Admin Portal</a>
     </li>
+    {% endif %}
     {% if user.is_authenticated %}
     <div style="color: white; margin-top: 0.8%; margin-right: 1%; float: right;">   
         Welcome, {{ user.get_username }} <a href="{% url 'logout' %}" style="color: gold;">(Log Out)</a>
