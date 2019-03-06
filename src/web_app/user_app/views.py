@@ -179,4 +179,26 @@ def get_repo_data(request, repo_owner, repo_name):
 
     else:
         return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
- 
+
+
+def compare_two_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name2):
+    template_name = 'mined_repo_display_2.html'
+    repo_one_full_name = repo_owner1.lower() + "/" + repo_name1.lower()
+    repo_two_full_name = repo_owner2.lower() + "/" + repo_name2.lower()
+
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+
+    if repo_one_full_name in mined_repos and repo_two_full_name in mined_repos:
+        context = get_dual_repo_table_context(repo_one_full_name, repo_two_full_name)
+        context.update({
+            "repo_one_name":repo_one_full_name,
+            "repo_one_img":find_repo_main_page(repo_one_full_name)['owner']['avatar_url'],
+            "repo_two_name":repo_two_full_name,
+            "repo_two_img":find_repo_main_page(repo_two_full_name)['owner']['avatar_url'],
+        })
+        return render(request, template_name, context) 
+
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
+
+     

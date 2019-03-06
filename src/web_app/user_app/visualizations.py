@@ -42,7 +42,7 @@ def get_repo_table_context(repo_name):
     updated_at = landing_page['updated_at']
     clone_url = landing_page['clone_url']
     homepage = str(landing_page['homepage'])
-    if str(homepage) == "" or str(homepage) == "None" or str(homepage) == "null":
+    if str(homepage).strip() == "" or str(homepage) == "None" or str(homepage) == "null":
         homepage = False
     stargazers_count = landing_page['stargazers_count']
     language = landing_page['language']
@@ -76,3 +76,151 @@ def get_repo_table_context(repo_name):
         "network_count":int(network_count),
         "subscribers_count":int(subscribers_count)
     }
+
+
+
+def get_dual_repo_table_context(repo_one_full_name, repo_two_full_name):
+    context = dict()
+    
+    mined_repo_one_sql_obj = MinedRepo.objects.get(repo_name=repo_one_full_name)
+    mined_repo_two_sql_obj = MinedRepo.objects.get(repo_name=repo_two_full_name)
+
+    landing_page_repo_one = find_repo_main_page(repo_one_full_name)
+    landing_page_repo_two = find_repo_main_page(repo_two_full_name)
+
+    num_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_pulls')
+    num_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_pulls')
+    context.update({
+        'num_pulls_repo_one':num_pulls_repo_one,
+        'num_pulls_repo_two':num_pulls_repo_two
+    })
+
+    num_closed_merged_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_closed_merged_pulls')
+    num_closed_merged_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_closed_merged_pulls')
+    context.update({
+        'num_closed_merged_pulls_repo_one':num_closed_merged_pulls_repo_one,
+        'num_closed_merged_pulls_repo_two':num_closed_merged_pulls_repo_two
+    })
+
+    num_closed_unmerged_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_closed_unmerged_pulls')
+    num_closed_unmerged_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_closed_unmerged_pulls')
+    context.update({
+        'num_closed_unmerged_pulls_repo_one':num_closed_unmerged_pulls_repo_one,
+        'num_closed_unmerged_pulls_repo_two':num_closed_unmerged_pulls_repo_two
+    })
+
+    num_open_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_open_pulls')
+    num_open_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_open_pulls')
+    context.update({
+        'num_open_pulls_repo_one':num_open_pulls_repo_one,
+        'num_open_pulls_repo_two':num_open_pulls_repo_two
+    })
+
+    description_repo_one = landing_page_repo_one['description']
+    description_repo_two = landing_page_repo_two['description']
+    context.update({
+        'description_repo_one':description_repo_one,
+        'description_repo_two':description_repo_two
+    })
+
+    created_at_repo_one = landing_page_repo_one['created_at']
+    created_at_repo_two = landing_page_repo_two['created_at']
+    context.update({
+        'created_at_repo_one':created_at_repo_one,
+        'created_at_repo_two':created_at_repo_two
+    })
+
+    updated_at_repo_one = landing_page_repo_one['updated_at']
+    updated_at_repo_two = landing_page_repo_two['updated_at']
+    context.update({
+        'updated_at_repo_one':updated_at_repo_one,
+        'updated_at_repo_two':updated_at_repo_two
+    })
+
+    clone_url_repo_one = landing_page_repo_one['clone_url']
+    clone_url_repo_two = landing_page_repo_two['clone_url']
+    context.update({
+        'clone_url_repo_one':clone_url_repo_one,
+        'clone_url_repo_two':clone_url_repo_two
+    })
+
+    homepage_repo_one = str(landing_page_repo_one['homepage'])
+    homepage_repo_two = str(landing_page_repo_two['homepage'])
+
+    if str(homepage_repo_one).strip() == "" or str(homepage_repo_one) == "None" or str(homepage_repo_one) == "null":
+        homepage_repo_one = False
+
+    if str(homepage_repo_two).strip() == "" or str(homepage_repo_two) == "None" or str(homepage_repo_two) == "null":
+        homepage_repo_two = False
+
+    context.update({
+        'homepage_repo_one':homepage_repo_one,
+        'homepage_repo_two':homepage_repo_two
+    })
+
+    stargazers_count_repo_one = landing_page_repo_one['stargazers_count']
+    stargazers_count_repo_two = landing_page_repo_two['stargazers_count']
+    context.update({
+        'stargazers_count_repo_one':stargazers_count_repo_one,
+        'stargazers_count_repo_two':stargazers_count_repo_two
+    })
+
+    language_repo_one = landing_page_repo_one['language']
+    language_repo_two = landing_page_repo_two['language']
+    context.update({
+        'language_repo_one':language_repo_one,
+        'language_repo_two':language_repo_two
+    })
+
+    has_wiki_repo_one = landing_page_repo_one['has_wiki']
+    has_wiki_repo_two = landing_page_repo_two['has_wiki']
+    context.update({
+        'has_wiki_repo_one':has_wiki_repo_one,
+        'has_wiki_repo_two':has_wiki_repo_two
+    })
+
+    try:
+        license_key_repo_one = landing_page_repo_one['license']["key"]
+        license_name_repo_one = landing_page_repo_one['license']['name']
+    except Exception:
+        license_key_repo_one = None
+        license_name_repo_one = None 
+
+    try:
+        license_key_repo_two = landing_page_repo_two['license']["key"]
+        license_name_repo_two = landing_page_repo_two['license']['name']
+    except Exception:
+        license_key_repo_two = None
+        license_name_repo_two = None 
+
+    context.update({
+        'license_key_repo_one':license_key_repo_one,
+        'license_name_repo_one':license_name_repo_one,
+        'license_key_repo_two':license_key_repo_one,
+        'license_name_repo_two':license_name_repo_one
+    })
+
+
+    
+    open_issues_repo_one = landing_page_repo_one['open_issues']
+    open_issues_repo_two = landing_page_repo_two['open_issues']
+    context.update({
+        'open_issues_repo_one':open_issues_repo_one,
+        'open_issues_repo_two':open_issues_repo_two
+    })
+
+    network_count_repo_one = landing_page_repo_one['network_count']
+    network_count_repo_two =landing_page_repo_two['network_count']
+    context.update({
+        'network_count_repo_one':network_count_repo_one,
+        'network_count_repo_two':network_count_repo_two
+    })
+
+    subscribers_count_repo_one = landing_page_repo_one['subscribers_count']
+    subscribers_count_repo_two = landing_page_repo_two['subscribers_count']
+    context.update({
+        'subscribers_count_repo_one':subscribers_count_repo_one,
+        'subscribers_count_repo_two':subscribers_count_repo_two
+    })
+
+    return context

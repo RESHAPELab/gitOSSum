@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SECRET_KEY = '1x1n@2p)h^@%0v7gckznov25z_m81#jb9q8e$vp#)@j&7*h%o('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -154,10 +154,10 @@ CELERY_TIMEZONE = 'MST'
 CELERYD_MAX_TASKS_PER_CHILD = 2
 CELERY_TASK_RESULT_EXPIRES = 60*60  
 
-CELERY_BEAT_SCHEDULE = {
-    'check-for-repos-needing-visualization': {
-        'task': 'tasks.visualize_repo_data',
-        'schedule': 30.0,
-        'args': ()
-    },    
-}
+# CELERY_BEAT_SCHEDULE = {
+#     'check-for-repos-needing-visualization': {
+#         'task': 'tasks.visualize_repo_data',
+#         'schedule': 30.0,
+#         'args': ()
+#     },    
+# }

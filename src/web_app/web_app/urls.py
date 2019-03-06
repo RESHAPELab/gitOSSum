@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from user_app.views import ( HomeView, about_us, mining_request_form_view, 
                             get_repo_data, mined_repos, signup, activate,
-                            feedback_form
+                            feedback_form, compare_two_repos
                              )
 
 urlpatterns = [
@@ -33,5 +33,6 @@ urlpatterns = [
     url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
     url(r'^repos/$', mined_repos, name="repos"), # The list of all mined repos 
     url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data, name="visualization"), # Visualizations
+    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*))&(?P<repo_name1>((\w+)[-]*)+\w+)&(?P<repo_owner2>((\w+)[-]*))&(?P<repo_name2>((\w+)[-]*)+\w+)/$', compare_two_repos, name="compare_two"),
     url(r'^feedback/$', feedback_form, name="feedback")
 ]
