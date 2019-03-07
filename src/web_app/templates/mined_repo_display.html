@@ -11,9 +11,8 @@
 
     table {
         font-family: arial, sans-serif;
-        background-color: black;
-        color: white;
-        border-radius: 20px;
+        background-color: white;
+        color: black;
         width: 100%;
     }
 
@@ -21,18 +20,11 @@
     th {
         text-align: left;
         padding: 8px;
-        min-width: 50px;
-    }
-
-    tr {
         width: auto;
+        min-width: 50px;
+        border: 1px solid black;
     }
-
-    tr:nth-child(even) {
-        background-color: #dddddd;
-        color: black;
-    }
-
+   
     /* img {
         height: 225px; 
         width: 175px;
@@ -69,29 +61,32 @@
     .row2 {
         display: flex;
     }
-    .bar {
+    .bar1 {
+        margin-bottom: 1%;
+        margin-right: 0.5%;
+        width: 50%;
+        background-color: rgb(1, 170, 133);
+        text-align: center;
+    }
+    .bar2 {
         margin-bottom: 1%;
         margin-left: 0.5%;
-        width: 40%;
-        border-radius: 20px;
+        width: 50%;
         background-color: rgb(0, 169, 221);
-        /* background-color: rgb(1, 170, 133); */
         text-align: center;
     }
     .pie {
         margin-bottom: 1%;
         margin-right: 0.5%;
         width: 50%;
-        border-radius: 20px;
         background-color: rgb(0, 169, 221);
         text-align: center;
     }
     .prByMonth {
         margin-bottom: 1%;
         margin-right: 0.5%;
-        width: 60%;
-        background-color: rgb(1, 170, 133);
-        /* background-color: rgb(216, 81, 81); */
+        width: 100%;
+        background-color: rgb(216, 81, 81);
         color: white;
         text-align: center;
     }
@@ -186,24 +181,20 @@
         </div>
     </div>
     <div class="row2">
-        <div class="jumbotron prByMonth">
-            {{ pull_line_chart_html |safe }}
-        </div>
-
-        <div class="jumbotron bar">
+        <div class="jumbotron bar1">
             <h3 class="jumboTitle"> </h3>
             {{ bar_chart_html |safe }}
         </div>
-        <!-- <div class="jumbotron pie">
-            <h3 class="jumboTitle"></h3>
-            
-        </div> -->
+        <div class="jumbotron bar2">
+            <h3 class="jumboTitle"> </h3>
+            {{ bar_chart_html |safe }}
+        </div>
     </div>
-    <!-- <div class="row3">
+    <div class="row3">
         <div class="jumbotron prByMonth">
             {{ pull_line_chart_html |safe }}
         </div>
-    </div> -->
+    </div>
 </body>
 
 {% endblock content %}
