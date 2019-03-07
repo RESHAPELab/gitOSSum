@@ -14,14 +14,15 @@
         color: white;
     }
     .search:hover {
-        background-color: rgb(0, 73, 207); 
+        background-color: gold; 
     }
     .compare {
         background-color: rgb(0, 44, 126); 
         color: white;
+        float: left;
     }
     .compare:hover {
-        background-color: rgb(0, 73, 207); 
+        background-color: gold; 
     }
 
     .repos {
@@ -29,6 +30,17 @@
     }
     .reposContent {
         display: flex;
+    }
+    .list-group-item {
+        background-color: rgb(0, 44, 126);
+        color: white;
+    }
+    
+    .link {
+        color: white;
+    }
+    .link:hover {
+        color: gold;
     }
 
     .filter {
@@ -70,21 +82,24 @@
             </ul>
         </div>
     {% for value in context.values %}
-        <div class="jumbotron repos">
-            <h4>
-                <ul>
+    <div class="repos">
+        <h4>
+            <ul class="list-group">
+                <li class="list-group-item">
                     <input type="checkbox">
                     <img src= {{ value.1 }} 
                         ALIGN=”right” 
-                        width="65px"
-                        height="65px"
+                        width="45px"
+                        height="45px"
                     >
-                    <a href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
-                </ul>
-            </h4>
-        </div>
-        {% endfor %}
+                    <a class="link" href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
+                </li>
+            </ul>
+        </h4>
     </div>
+    {% endfor %}
+    </div>
+    <br>
     <button type="button" class="btn compare">Compare</button>
 </body>
 
