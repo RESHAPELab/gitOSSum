@@ -201,4 +201,28 @@ def compare_two_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name2)
     else:
         return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
 
+def compare_three_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name2, repo_owner3, repo_name3):
+    template_name = 'mined_repo_display_3.html'
+    repo_one_full_name = repo_owner1.lower() + "/" + repo_name1.lower()
+    repo_two_full_name = repo_owner2.lower() + "/" + repo_name2.lower()
+    repo_three_full_name = repo_owner3.lower() + "/" + repo_name3.lower()
+
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+
+    if repo_one_full_name in mined_repos and repo_two_full_name in mined_repos and repo_three_full_name in mined_repos:
+        context = get_three_repo_table_context(repo_one_full_name, repo_two_full_name, repo_three_full_name)
+        context.update({
+            "repo_one_name":repo_one_full_name,
+            "repo_one_img":find_repo_main_page(repo_one_full_name)['owner']['avatar_url'],
+            "repo_two_name":repo_two_full_name,
+            "repo_two_img":find_repo_main_page(repo_two_full_name)['owner']['avatar_url'],
+            "repo_three_name":repo_three_full_name,
+            "repo_three_img":find_repo_main_page(repo_three_full_name)['owner']['avatar_url'],
+        })
+        return render(request, template_name, context)
+
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
+    
+
      

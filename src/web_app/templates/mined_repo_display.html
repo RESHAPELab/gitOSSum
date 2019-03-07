@@ -99,6 +99,11 @@
     .link {
         color: black;
     }
+    
+    .whiteLink {
+        color: white;
+    }
+
 </style>
 
 </head>
@@ -129,13 +134,17 @@
                     <td>{{ updated_at }}</td>
                 </tr>
                 <tr>
+                    <td>Date Last Mined</td>
+                    <td>{{ last_mined_date }}</td>
+                </tr>
+                <tr>
                     <td>Clone URL</td>
                     <td>{{ clone_url }}</td>
                 </tr>
                 {% if homepage != False %}
                 <tr>
                     <td>Repository Homepage</td>
-                    <td><a href="{{ homepage }}"></a></td>
+                    <td><a class="link" href="{{ homepage }}" target="blank">{{ homepage }}</a></td>
                 </tr>
                 {% endif %}
                 <tr>
@@ -153,7 +162,13 @@
                 </tr>
                 <tr>
                     <td>Development License</td>
-                    <td>{{ license_name }}</td>
+                    {% if license_name == "Other" or license_name == "None" %}
+                        <td>{{ license_name }}</td>
+                    {% elif homepage != False and license_name != "Other" or license_name != None %}
+                        <td><a class='link' href="https://google.com/search?q=define {{license_name}}" target="blank">{{ license_name }}</td>
+                    {% elif homepage != False and license_name != "Other" or license_name != None %}
+                        <td><a class='whiteLink' href="https://google.com/search?q=define {{license_name}}" target="blank">{{ license_name }}</td>  
+                    {% endif %}
                 </tr>
                 <tr>
                     <td>Number of Open Issues</td>

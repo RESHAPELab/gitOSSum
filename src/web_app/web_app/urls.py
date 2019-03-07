@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from user_app.views import ( HomeView, about_us, mining_request_form_view, 
                             get_repo_data, mined_repos, signup, activate,
-                            feedback_form, compare_two_repos
+                            feedback_form, compare_two_repos, compare_three_repos
                              )
 
 urlpatterns = [
@@ -34,5 +34,6 @@ urlpatterns = [
     url(r'^repos/$', mined_repos, name="repos"), # The list of all mined repos 
     url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data, name="visualization"), # Visualizations
     url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*))&(?P<repo_name1>((\w+)[-]*)+\w+)&(?P<repo_owner2>((\w+)[-]*))&(?P<repo_name2>((\w+)[-]*)+\w+)/$', compare_two_repos, name="compare_two"),
+    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*))&(?P<repo_name1>((\w+)[-]*)+\w+)&(?P<repo_owner2>((\w+)[-]*))&(?P<repo_name2>((\w+)[-]*)+\w+)&(?P<repo_owner3>((\w+)[-]*))&(?P<repo_name3>((\w+)[-]*)+\w+)/$', compare_three_repos, name="compare_three"),
     url(r'^feedback/$', feedback_form, name="feedback")
 ]
