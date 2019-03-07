@@ -2,6 +2,7 @@
 <html lang=en>
 
 {% extends "base.html" %} {% block content %}
+
 <style>
     li {
         list-style-type: none;
@@ -54,6 +55,12 @@
 <head>
 </head>
 
+{% if message %}
+<script>
+    alert('{{ message }}');
+</script>
+{% endif %}
+
 <body>
     <h1>Mined Repos</h1>
     <form class="form-inline">
@@ -81,27 +88,39 @@
                 <input type="checkbox"> False <br>
             </ul>
         </div>
-    {% for value in context.values %}
-    <div class="repos">
-        <h4>
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <input type="checkbox">
-                    <img src= {{ value.1 }} 
-                        ALIGN=”right” 
-                        width="45px"
-                        height="45px"
-                    >
-                    <a class="link" href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
-                </li>
-            </ul>
-        </h4>
-    </div>
-    {% endfor %}
-    </div>
-    <br>
-    <button type="button" class="btn compare">Compare</button>
+    <form name="form" method="POST" action=".">
+    {% csrf_token %}
+
+        {% for value in context.values %}
+        <div class="repos">
+            <h4>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <input type="checkbox" name="checkbox" value="{{ value.0 }}">
+                        <img src= {{ value.1 }} 
+                            ALIGN=”right” 
+                            width="45px"
+                            height="45px"
+                        >
+                        <a class="link" href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
+                    </li>
+                </ul>
+            </h4>
+        </div>
+        {% endfor %}
+        </div>
+        <br>
+        <input type="submit" name="compare" value="Compare Repos" onchange="checkboxes()">
+    </form>
 </body>
+
+<script>
+ function checkboxes(){
+    var form = document.forms[0]; // your form element (whatever)
+    var checkedElms = form.querySelectorAll(':checked').length;
+    alert(checkedElms);
+ }
+</script>
 
 {% endblock content %}
 

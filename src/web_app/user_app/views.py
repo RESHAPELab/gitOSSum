@@ -13,6 +13,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.forms import ValidationError
 
 
 # Import all handwritten libraries
@@ -144,19 +145,64 @@ def feedback_form(request):
 
 # A page accessible by anyone to see all mined repos (with hyperlinks)
 def mined_repos(request):
+
     template_name = 'repos.html'
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests          
-             
+            
     context = dict()
+    message = ''
+
+    if request.method == 'POST':
+        if "checkbox" in request.POST:
+            checked_repos = request.POST.getlist("checkbox")
+            
+            if len(checked_repos) < 2 or len(checked_repos) > 3:
+                message = "You can only compare 2-3 repos"
+
+            elif len(checked_repos) == 2:
+                repo_owner1 = checked_repos[0].split('/')[0]
+                repo_owner2 = checked_repos[1].split('/')[0]
+
+                repo_name1 = checked_repos[0].split('/')[1]
+                repo_name2 = checked_repos[1].split('/')[1]
+
+                url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}/"
+
+                return HttpResponseRedirect(url)
+
+
+            else:
+                repo_owner1 = checked_repos[0].split('/')[0]
+                repo_owner2 = checked_repos[1].split('/')[0]
+                repo_owner3 = checked_repos[2].split('/')[0]
+
+                repo_name1 = checked_repos[0].split('/')[1]
+                repo_name2 = checked_repos[1].split('/')[1]
+                repo_name3 = checked_repos[2].split('/')[1]
+                
+
+                url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}&{repo_owner3}&{repo_name3}/"
+
+                return HttpResponseRedirect(url)
+
+        else:
+            message = "You must choose at least one page to compare!"
+        
     try:
         for item in range(0, len(mined_repos)):
             context.update({
                 f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]]
             })
-        print(context)
-        return render(request, template_name, {"context":context})
+        
+        if message == '':
+            return render(request, template_name, {"context":context})
+        else:
+            return render(request, template_name, {"context":context, "message":message})
+
     except Exception:
-         return render(request, template_name, {})
+        return render(request, template_name, {})
+
+    
 
 
 # A function that will be used to generate interactive visualizations of 

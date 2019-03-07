@@ -161,8 +161,6 @@
                         <td>{{ license_name }}</td>
                     {% elif homepage != False and license_name != "Other" or license_name != None %}
                         <td><a class='link' href="https://google.com/search?q=define {{license_name}}" target="blank">{{ license_name }}</td>
-                    {% elif homepage != False and license_name != "Other" or license_name != None %}
-                        <td><a class='whiteLink' href="https://google.com/search?q=define {{license_name}}" target="blank">{{ license_name }}</td>  
                     {% endif %}
                 </tr>
                 <tr>
@@ -187,7 +185,6 @@
         </div>
         <div class="jumbotron bar2">
             <h3 class="jumboTitle"> </h3>
-            {{ bar_chart_html |safe }}
         </div>
     </div>
     <div class="row3">
