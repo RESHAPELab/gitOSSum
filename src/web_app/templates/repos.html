@@ -16,12 +16,12 @@
     .search:hover {
         background-color: gold; 
     }
-    .compare {
+    .compare2 {
         background-color: rgb(0, 44, 126); 
         color: white;
-        float: left;
+        /* float: left; */
     }
-    .compare:hover {
+    .compare2:hover {
         background-color: gold; 
     }
 
@@ -30,6 +30,12 @@
     }
     .reposContent {
         display: flex;
+    }
+    .list-group {
+        max-height: 40%;
+        margin-bottom: 10px;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
     }
     .list-group-item {
         background-color: rgb(0, 44, 126);
@@ -42,11 +48,24 @@
     .link:hover {
         color: gold;
     }
+    .searchSection {
+        position: sticky;
+    }
 
     .filter {
         float: right;
         width: 25%;
         background-color: rgb(0, 44, 126);
+        color: white;
+    }
+    .updateSearch {
+        background-color: white;
+        color: black;
+        margin-top: 5%;
+        margin-bottom: -10%;
+    }
+    .updateSearch:hover {
+        background-color: black;
         color: white;
     }
 </style>
@@ -55,11 +74,14 @@
 </head>
 
 <body>
-    <h1>Mined Repos</h1>
-    <form class="form-inline">
-        <input class="form-control" style="width: 25%;" type="text" placeholder="Search" aria-label="Search">
-        <button type="button" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button>
-    </form>
+    <div class="searchSection">
+        <h1>Mined Repos</h1>
+        <form class="form-inline">
+            <input class="form-control" style="width: 25%;" type="text" placeholder="Search" aria-label="Search">
+            <button type="button" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button>
+            <button type="button" class="btn compare2">Compare</button>
+        </form>
+    </div>
     <hr>
     <div class="repoContent">
         <div class="jumbotron filter">
@@ -80,6 +102,7 @@
                 <input type="checkbox"> True <br>
                 <input type="checkbox"> False <br>
             </ul>
+            <button type="button" class="btn updateSearch">Update Search</button>
         </div>
     {% for value in context.values %}
     <div class="repos">
@@ -100,7 +123,7 @@
     {% endfor %}
     </div>
     <br>
-    <button type="button" class="btn compare">Compare</button>
+    <!-- <button type="button" class="btn compare">Compare</button> -->
 </body>
 
 {% endblock content %}
