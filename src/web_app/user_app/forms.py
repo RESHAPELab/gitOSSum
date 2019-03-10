@@ -96,4 +96,6 @@ class LoginForm(forms.Form):
         
         return username
 
-    
+class Search(forms.Form):
+    search = forms.CharField(max_length=120, required=False, 
+        label="Search", widget = forms.TextInput(attrs={'placeholder':'Search For Repositories'}))

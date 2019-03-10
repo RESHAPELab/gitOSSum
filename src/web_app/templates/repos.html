@@ -2,6 +2,8 @@
 <html lang=en>
 
 {% extends "base.html" %} {% block content %}
+{% load bootstrap3 %}
+
 
 <style>
     li {
@@ -50,6 +52,16 @@
         background-color: rgb(0, 44, 126);
         color: white;
     }
+    .button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    } 
 </style>
 
 <head>
@@ -63,31 +75,44 @@
 
 <body>
     <h1>Mined Repos</h1>
-    <form class="form-inline">
-        <input class="form-control" style="width: 25%;" type="text" placeholder="Search" aria-label="Search">
-        <button type="button" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button>
+    <form class="form-inline" name="search" method="POST", action=".">
+    {% csrf_token %}
+        {{ search }}
+        {% buttons %}
+        <button type="submit" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button>
+        {% endbuttons %}
+        <!-- <input class="form-control" style="width: 25%;" type="text" placeholder="Search" aria-label="Search", name="search_query" value=""> -->
+        <!-- <button type="button" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button> -->
+        <!-- <input type="submit" class="btn search" class="fas fa-search" aria-hidden="true" value="Search"> -->
     </form>
     <hr>
-    <div class="repoContent">
-        <div class="jumbotron filter">
-            <h4>Languages</h4>
-            <ul>
-                <input type="checkbox"> Java <br>
-                <input type="checkbox"> Python <br>
-                <input type="checkbox"> C <br>
-            </ul>
-            <h4>Pull Requests</h4>
-            <ul>
-                <input type="checkbox"> 0-50 <br>
-                <input type="checkbox"> 51-100 <br>
-                <input type="checkbox"> 100+ <br>
-            </ul>
-            <h4>Has Homepage</h4>
-            <ul>
-                <input type="checkbox"> True <br>
-                <input type="checkbox"> False <br>
-            </ul>
-        </div>
+
+    <form name="filter", method="POST", action=".">
+    {% csrf_token %}
+        <div class="repoContent">
+            <div class="jumbotron filter">
+                <h4>Languages</h4>
+                {% for language in languages %}
+                <ul>
+                    <input type="checkbox" name="language_checkbox" value="{{ language }}"> {{ language }} <br>
+                </ul>
+                {% endfor %}
+                <h4>Pull Requests</h4>
+                <ul>
+                    <input type="checkbox" name="pulls" value="0-50"> 0-50 <br>
+                    <input type="checkbox" name="pulls" value="51-100"> 51-100 <br>
+                    <input type="checkbox" name="pulls" value="100-500"> 100-500 <br>
+                    <input type="checkbox" name="pulls" value="1000+"> 1000+ <br>
+                </ul>
+                <h4>Has Wiki</h4>
+                <ul>
+                    <input type="checkbox" name="has_wiki"> True <br>
+                </ul>
+                <br>
+                <input type="submit" class="button" name="filter" value="Filter Repos">
+            </div>
+    </form>
+
     <form name="form" method="POST" action=".">
     {% csrf_token %}
 
@@ -96,7 +121,7 @@
             <h4>
                 <ul class="list-group">
                     <li class="list-group-item">
-                        <input type="checkbox" name="checkbox" value="{{ value.0 }}">
+                        <input type="checkbox" name="repo_checkbox" value="{{ value.0 }}">
                         <img src= {{ value.1 }} 
                             ALIGN=”right” 
                             width="45px"
@@ -110,17 +135,9 @@
         {% endfor %}
         </div>
         <br>
-        <input type="submit" name="compare" value="Compare Repos" onchange="checkboxes()">
+        <input type="submit" name="compare" value="Compare Repos">
     </form>
 </body>
-
-<script>
- function checkboxes(){
-    var form = document.forms[0]; // your form element (whatever)
-    var checkedElms = form.querySelectorAll(':checked').length;
-    alert(checkedElms);
- }
-</script>
 
 {% endblock content %}
 

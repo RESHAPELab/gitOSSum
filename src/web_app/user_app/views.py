@@ -18,11 +18,12 @@ from django.forms import ValidationError
 
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
-from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm
+from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm, Search
 from mining_scripts.mining import *
 from .models import *
 from .tokens import account_activation_token
 from .visualizations import *
+from .filters import *
 
 
 # Import external libraries
@@ -151,53 +152,114 @@ def mined_repos(request):
             
     context = dict()
     message = ''
+    search = Search()
 
     if request.method == 'POST':
-        if "checkbox" in request.POST:
-            checked_repos = request.POST.getlist("checkbox")
-            
-            if len(checked_repos) < 2 or len(checked_repos) > 3:
-                message = "You can only compare 2-3 repos"
+        filters = list()
+        search = Search(request.POST)
+        
+        if search.is_valid():
+            repos_filtered_by_search = get_repos_search_query_filter(search.cleaned_data.get('search'))
+            filters.append(repos_filtered_by_search)
 
-            elif len(checked_repos) == 2:
-                repo_owner1 = checked_repos[0].split('/')[0]
-                repo_owner2 = checked_repos[1].split('/')[0]
+            if len(filters) != 0:
+                repos_list = get_filtered_repos_list(filters)
 
-                repo_name1 = checked_repos[0].split('/')[1]
-                repo_name2 = checked_repos[1].split('/')[1]
+                for item in range(0, len(repos_list)):
+                    context.update({
+                        f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
+                    })
 
-                url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}/"
+                return render(request, template_name, {"context":context, 
+                       "languages":get_language_list_from_mongo(), "search":search})
 
-                return HttpResponseRedirect(url)
+        if request.POST.get('filter'):
 
+            if "language_checkbox" in request.POST:
+                languages = request.POST.getlist("language_checkbox")
+                repos_filtered_by_language = get_repos_list_by_language_filter(languages)
+                filters.append(repos_filtered_by_language)
 
-            else:
-                repo_owner1 = checked_repos[0].split('/')[0]
-                repo_owner2 = checked_repos[1].split('/')[0]
-                repo_owner3 = checked_repos[2].split('/')[0]
+            if "pulls" in request.POST:
+                bounded_pulls = request.POST.getlist("pulls")
+                if len(bounded_pulls) > 1:
+                    pass
+                else:
+                    if '+' in bounded_pulls[0]:
+                        lower_bound = int((bounded_pulls[0].split('+'))[0])
+                        repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
+                        filters.append(repos_filtered_by_pulls)
+                    else:
+                        lower_bound = int((bounded_pulls[0].split('-'))[0])
+                        upper_bound = int((bounded_pulls[0].split('-'))[1])
+                        repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+                        filters.append(repos_filtered_by_pulls)
 
-                repo_name1 = checked_repos[0].split('/')[1]
-                repo_name2 = checked_repos[1].split('/')[1]
-                repo_name3 = checked_repos[2].split('/')[1]
+            if "has_wiki" in request.POST:
+                repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)
+                filters.append(repos_that_have_a_wiki)
+
+            if len(filters) != 0:
+                repos_list = get_filtered_repos_list(filters)
+
+                for item in range(0, len(repos_list)):
+                    context.update({
+                        f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
+                    })
+
+                return render(request, template_name, {"context":context, 
+                       "languages":get_language_list_from_mongo(), "search":search})
                 
 
-                url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}&{repo_owner3}&{repo_name3}/"
+        elif request.POST.get('compare'):
+            if "repo_checkbox" in request.POST:
+                checked_repos = request.POST.getlist("repo_checkbox")
+                
+                if len(checked_repos) < 2 or len(checked_repos) > 3:
+                    message = "You can only compare 2-3 repos"
 
-                return HttpResponseRedirect(url)
+                elif len(checked_repos) == 2:
+                    repo_owner1 = checked_repos[0].split('/')[0]
+                    repo_owner2 = checked_repos[1].split('/')[0]
 
-        else:
-            message = "You must choose at least one page to compare!"
+                    repo_name1 = checked_repos[0].split('/')[1]
+                    repo_name2 = checked_repos[1].split('/')[1]
+
+                    url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}/"
+
+                    return HttpResponseRedirect(url)
+
+
+                else:
+                    repo_owner1 = checked_repos[0].split('/')[0]
+                    repo_owner2 = checked_repos[1].split('/')[0]
+                    repo_owner3 = checked_repos[2].split('/')[0]
+
+                    repo_name1 = checked_repos[0].split('/')[1]
+                    repo_name2 = checked_repos[1].split('/')[1]
+                    repo_name3 = checked_repos[2].split('/')[1]
+                    
+
+                    url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}&{repo_owner3}&{repo_name3}/"
+
+                    return HttpResponseRedirect(url)
+
+            else:
+                message = "You must choose at least one page to compare!"
         
     try:
         for item in range(0, len(mined_repos)):
             context.update({
-                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]]
+                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]],
             })
         
         if message == '':
-            return render(request, template_name, {"context":context})
+            return render(request, template_name, {"context":context, "languages":get_language_list_from_mongo(), 
+                                                   "search":search})
         else:
-            return render(request, template_name, {"context":context, "message":message})
+            return render(request, template_name, {"context":context, "message":message, 
+                                                   "languages":get_language_list_from_mongo(), 
+                                                   "search":search})
 
     except Exception:
         return render(request, template_name, {})
@@ -269,6 +331,3 @@ def compare_three_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name
 
     else:
         return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
-    
-
-     
