@@ -67,6 +67,10 @@ def signup(request):
             )
             email.send()
             return HttpResponse('Please  confirm your email address to complete the registration')
+        else:
+            form = SignUpForm()
+            error = "That username is already taken!" 
+            return render(request, 'signup.html', {'form': form, "error":error})
     else:
         form = SignUpForm()
         return render(request, 'signup.html', {'form': form})
@@ -155,51 +159,8 @@ def mined_repos(request):
     filter_form = Filter()
 
     if request.method == 'POST':
-        filters = list()
-        filter_form = Filter(request.POST)
-        
-        if filter_form.is_valid():
-            if 'search' in request.POST:
-                search_query = filter_form.cleaned_data.get('search')
-                if search_query.strip() != '':
-                    repos_filtered_by_search = get_repos_search_query_filter(search_query)
-                    filters.append(repos_filtered_by_search)
 
-            if 'languages' in request.POST:
-                languages = filter_form.cleaned_data.get('languages')
-                repos_filtered_by_language = get_repos_list_by_language_filter(languages)
-                filters.append(repos_filtered_by_language)
-
-            if 'num_pulls' in request.POST:
-                num_pulls = filter_form.cleaned_data.get('num_pulls')
-                if '+' in num_pulls[0]:
-                        lower_bound = int((num_pulls[0].split('+'))[0])
-                        repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
-                else:
-                    lower_bound = int((num_pulls[0].split('-'))[0])
-                    upper_bound = int((num_pulls[0].split('-'))[1])
-                    repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
-
-                filters.append(repos_filtered_by_pulls)
-
-            if 'has_wiki' in request.POST:
-                repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)
-                filters.append(repos_that_have_a_wiki)
-
-            if len(filters) != 0:
-                repos_list = get_filtered_repos_list(filters)
-
-                for item in range(0, len(repos_list)):
-                    context.update({
-                        f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
-                    })
-
-                return render(request, template_name, {"context":context, "filter":filter_form})
-
-        
-                
-
-        elif request.POST.get('compare'):
+        if request.POST.get('compare'):
             if "repo_checkbox" in request.POST:
                 checked_repos = request.POST.getlist("repo_checkbox")
                 
@@ -234,6 +195,49 @@ def mined_repos(request):
 
             else:
                 message = "You must choose at least one page to compare!"
+
+        else:
+            filters = list()
+            filter_form = Filter(request.POST)
+            
+            if filter_form.is_valid():
+                if 'search' in request.POST:
+                    search_query = filter_form.cleaned_data.get('search')
+                    if search_query.strip() != '':
+                        repos_filtered_by_search = get_repos_search_query_filter(search_query)
+                        filters.append(repos_filtered_by_search)
+
+                if 'languages' in request.POST:
+                    languages = filter_form.cleaned_data.get('languages')
+                    repos_filtered_by_language = get_repos_list_by_language_filter(languages)
+                    filters.append(repos_filtered_by_language)
+
+                if 'num_pulls' in request.POST:
+                    num_pulls = filter_form.cleaned_data.get('num_pulls')
+                    if '+' in num_pulls[0]:
+                            lower_bound = int((num_pulls[0].split('+'))[0])
+                            repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
+                    else:
+                        lower_bound = int((num_pulls[0].split('-'))[0])
+                        upper_bound = int((num_pulls[0].split('-'))[1])
+                        repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+
+                    filters.append(repos_filtered_by_pulls)
+
+                if 'has_wiki' in request.POST:
+                    repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)
+                    filters.append(repos_that_have_a_wiki)
+
+                if len(filters) != 0:
+                    repos_list = get_filtered_repos_list(filters)
+
+                    for item in range(0, len(repos_list)):
+                        context.update({
+                            f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
+                        })
+
+                    return render(request, template_name, {"context":context, "filter":filter_form})
+
         
     try:
         for item in range(0, len(mined_repos)):

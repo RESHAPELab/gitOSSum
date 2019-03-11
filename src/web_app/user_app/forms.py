@@ -79,6 +79,12 @@ class SignUpForm(UserCreationForm):
                 raise ValidationError("Invalid Github OAuth Token.")
 
         return github_oauth
+
+    def clean_user(self):
+        username = self.cleaned_data['username']
+        users = list(User.objects.values_list('username', flat=True))
+        if username in users:
+            raise ValidationError(f"The Username '{username}' Has Already Been Taken!") 
        
     class Meta:
         model = User
@@ -97,9 +103,6 @@ class LoginForm(forms.Form):
         
         return username
 
-# class Search(forms.Form):
-#     search = forms.CharField(max_length=120, required=False, 
-#         label="Search", widget = forms.TextInput(attrs={'placeholder':'Search For Repositories'}))
 
 class Filter(forms.Form):
     search = forms.CharField(max_length=120, required=False, 

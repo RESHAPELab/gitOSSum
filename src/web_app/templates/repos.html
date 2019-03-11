@@ -82,16 +82,6 @@
 <body>
     <h1>Mined Repos</h1>
     {{ error }}
-    <!-- <form class="form-inline" name="search" method="POST", action=".">
-    {% csrf_token %}
-        {{ search }}
-        {% buttons %}
-        <button type="submit" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button>
-        {% endbuttons %} -->
-        <!-- <input class="form-control" style="width: 25%;" type="text" placeholder="Search" aria-label="Search", name="search_query" value=""> -->
-        <!-- <button type="button" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button> -->
-        <!-- <input type="submit" class="btn search" class="fas fa-search" aria-hidden="true" value="Search"> -->
-    <!-- </form> -->
     <hr>
 
     <form action="." method="post">
@@ -116,7 +106,6 @@
 
     <form name="form" method="POST" action=".">
     {% csrf_token %}
-
         {% for value in context.values %}
         <div class="repos">
             <h4>
@@ -134,9 +123,13 @@
             </h4>
         </div>
         {% endfor %}
+        {% buttons %}
+        
+        <input type="submit" name="compare" value=" Compare Repos " style="font-size:12pt;color:white;
+        background-color:rgb(71,158,71); border-radius: 18px; -moz-border-radius: 5px; -webkit-border-radius: 5px;">
+        <!-- <input type="submit" name="compare" value="Compare Repos" style="color:green"> -->
+        {% endbuttons %}
         </div>
-        <br>
-        <input type="submit" name="compare" value="Compare Repos">
     </form>
 </body>
 
