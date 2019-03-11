@@ -1,11 +1,12 @@
 from django import forms 
 from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo
-from django.forms import ValidationError
+from django.forms import ValidationError, MultipleChoiceField, CheckboxSelectMultiple
 from mining_scripts.mining import *
 import re
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from github import Github # Import PyGithub for mining data
+from .filters import *
 
 
 class FeedbackForm(forms.Form):
@@ -96,6 +97,41 @@ class LoginForm(forms.Form):
         
         return username
 
-class Search(forms.Form):
+# class Search(forms.Form):
+#     search = forms.CharField(max_length=120, required=False, 
+#         label="Search", widget = forms.TextInput(attrs={'placeholder':'Search For Repositories'}))
+
+class Filter(forms.Form):
     search = forms.CharField(max_length=120, required=False, 
-        label="Search", widget = forms.TextInput(attrs={'placeholder':'Search For Repositories'}))
+        label="Search", widget = forms.TextInput(attrs={'placeholder':'Search For Repositories', 'class': 'filter-input'}))
+
+    languages = forms.MultipleChoiceField(
+        required= False,
+        widget  = forms.CheckboxSelectMultiple,
+        choices = [tuple((item, item)) for item in get_language_list_from_mongo()]
+    )
+
+    num_pulls = forms.MultipleChoiceField(
+        required= False,
+        widget = forms.CheckboxSelectMultiple,
+        choices =[tuple(('0-50', '0-50')), tuple(('51-100', '51-100')), 
+                  tuple(('100-500', '100-500')), tuple(('500-999', '500-999')),
+                  tuple(('1000+', '1000+'))]
+    )
+
+    has_wiki = forms.MultipleChoiceField(
+        required= False,
+        widget = forms.CheckboxSelectMultiple,
+        choices =[tuple(('True', 'True'))]
+    )
+
+
+    def clean_num_pulls(self):
+        num_pulls = self.cleaned_data['num_pulls']
+        if len(num_pulls) > 1:
+            raise ValidationError("Only select 1")
+        
+        return num_pulls
+
+    def selected_languages_labels(self):
+        return [label for value, label in self.fields['languages'].choices if value in self['languages'].value()]

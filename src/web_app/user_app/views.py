@@ -18,7 +18,7 @@ from django.forms import ValidationError
 
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
-from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm, Search
+from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm, Filter
 from mining_scripts.mining import *
 from .models import *
 from .tokens import account_activation_token
@@ -152,50 +152,37 @@ def mined_repos(request):
             
     context = dict()
     message = ''
-    search = Search()
+    filter_form = Filter()
 
     if request.method == 'POST':
         filters = list()
-        search = Search(request.POST)
+        filter_form = Filter(request.POST)
         
-        if search.is_valid():
-            repos_filtered_by_search = get_repos_search_query_filter(search.cleaned_data.get('search'))
-            filters.append(repos_filtered_by_search)
+        if filter_form.is_valid():
+            if 'search' in request.POST:
+                search_query = filter_form.cleaned_data.get('search')
+                if search_query.strip() != '':
+                    repos_filtered_by_search = get_repos_search_query_filter(search_query)
+                    filters.append(repos_filtered_by_search)
 
-            if len(filters) != 0:
-                repos_list = get_filtered_repos_list(filters)
-
-                for item in range(0, len(repos_list)):
-                    context.update({
-                        f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
-                    })
-
-                return render(request, template_name, {"context":context, 
-                       "languages":get_language_list_from_mongo(), "search":search})
-
-        if request.POST.get('filter'):
-
-            if "language_checkbox" in request.POST:
-                languages = request.POST.getlist("language_checkbox")
+            if 'languages' in request.POST:
+                languages = filter_form.cleaned_data.get('languages')
                 repos_filtered_by_language = get_repos_list_by_language_filter(languages)
                 filters.append(repos_filtered_by_language)
 
-            if "pulls" in request.POST:
-                bounded_pulls = request.POST.getlist("pulls")
-                if len(bounded_pulls) > 1:
-                    pass
-                else:
-                    if '+' in bounded_pulls[0]:
-                        lower_bound = int((bounded_pulls[0].split('+'))[0])
+            if 'num_pulls' in request.POST:
+                num_pulls = filter_form.cleaned_data.get('num_pulls')
+                if '+' in num_pulls[0]:
+                        lower_bound = int((num_pulls[0].split('+'))[0])
                         repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
-                        filters.append(repos_filtered_by_pulls)
-                    else:
-                        lower_bound = int((bounded_pulls[0].split('-'))[0])
-                        upper_bound = int((bounded_pulls[0].split('-'))[1])
-                        repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
-                        filters.append(repos_filtered_by_pulls)
+                else:
+                    lower_bound = int((num_pulls[0].split('-'))[0])
+                    upper_bound = int((num_pulls[0].split('-'))[1])
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
 
-            if "has_wiki" in request.POST:
+                filters.append(repos_filtered_by_pulls)
+
+            if 'has_wiki' in request.POST:
                 repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)
                 filters.append(repos_that_have_a_wiki)
 
@@ -207,8 +194,9 @@ def mined_repos(request):
                         f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
                     })
 
-                return render(request, template_name, {"context":context, 
-                       "languages":get_language_list_from_mongo(), "search":search})
+                return render(request, template_name, {"context":context, "filter":filter_form})
+
+        
                 
 
         elif request.POST.get('compare'):
@@ -254,15 +242,13 @@ def mined_repos(request):
             })
         
         if message == '':
-            return render(request, template_name, {"context":context, "languages":get_language_list_from_mongo(), 
-                                                   "search":search})
+            return render(request, template_name, {"context":context, "filter":filter_form})
         else:
             return render(request, template_name, {"context":context, "message":message, 
-                                                   "languages":get_language_list_from_mongo(), 
-                                                   "search":search})
+                                                   "filter":filter_form})
 
-    except Exception:
-        return render(request, template_name, {})
+    except Exception as e:
+        return render(request, template_name, {"error":e})
 
     
 
