@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'bootstrap3', 
     'django_mysql',
     'django_celery_beat',
+    'celerybeat_status',
 ]
 
 MIDDLEWARE = [
@@ -147,17 +148,11 @@ STATIC_ROOT = 'static'
 # Stuff for celery
 BROKER_URL='amqp://guest@localhost//'
 CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_RESULT_PERSISTENT = False
 CELERY_ACCEPT_CONTENT=['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'MST'
 CELERYD_MAX_TASKS_PER_CHILD = 2
-CELERY_TASK_RESULT_EXPIRES = 60*60  
-
-# CELERY_BEAT_SCHEDULE = {
-#     'check-for-repos-needing-visualization': {
-#         'task': 'tasks.visualize_repo_data',
-#         'schedule': 30.0,
-#         'args': ()
-#     },    
-# }
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+CELERY_BEAT_SCHEDULE = {}

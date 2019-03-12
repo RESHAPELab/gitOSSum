@@ -167,7 +167,7 @@ def approve_mining_requests(modeladmin, request, queryset):
             
         # # Send the User an email as appropriate, letting them know 
         # # we have started mining their data
-        # send_mining_initialized_email(obj.repo_name, username, user_email) 
+        send_mining_initialized_email(obj.repo_name, username, user_email) 
 
         mine_data_asynchronously.delay(repo_name, username, user_email, queued_request.id)
         # go_mine_stuff(repo_name, username, user_email, queued_request.id)
@@ -176,6 +176,18 @@ def approve_mining_requests(modeladmin, request, queryset):
 # A short description for this function
 approve_mining_requests.short_description = "Approve selected mining requests"
 
+
+def delete_mining_requests(modeladmin, request, queryset):
+    for obj in queryset:                
+        if obj.send_email == True:
+            repo_name = obj.repo_name
+            username = obj.requested_by
+            user_email = obj.email
+            send_repository_denied_email(repo_name, username, user_email)
+
+        obj.delete()
+
+delete_mining_requests.short_description = "Deny selected mining requests"
 
 # Admin functionality for blacklisting a repository
 def black_list_requests(modeladmin, request, queryset):
@@ -186,20 +198,26 @@ def black_list_requests(modeladmin, request, queryset):
             repo_name=obj.repo_name,
             requested_by=obj.requested_by
         )
+
+        if obj.send_email == True:
+            repo_name = obj.repo_name
+            username = obj.requested_by
+            user_email = obj.email
+            send_repository_blacklist_email(repo_name, username, user_email)
+
         # Delete the request from the MiningRequest database
         MiningRequest.objects.get(repo_name=obj.repo_name).delete()
 
-        # if obj.send_email == True:
-        #     send_repository_blacklist_email(obj.repo_name, obj.email)
+        
 
 
 # A short description for this function
-black_list_requests.short_description = "Blacklist selected requests"
+black_list_requests.short_description = "Blacklist selected mining requests"
 
 
 # Function for deleting repositories from the MongoDB database
 def delete_selected(modeladmin, request, queryset):
-    pool = Pool()
+    # pool = Pool()
 
     if not modeladmin.has_delete_permission(request):
 
@@ -209,9 +227,10 @@ def delete_selected(modeladmin, request, queryset):
 
         for obj in queryset:
             delete_all_contents_of_specific_repo_from_every_collection(obj.repo_name)
+            
             #pool.apply_async(delete_all_contents_of_specific_repo_from_every_collection, args=(obj.repo_name,))
-            # if obj.send_email == True:
-            #     send_repository_denied_email(obj.repo_name, obj.email)
+            
+
             obj.delete()
             
 
@@ -226,7 +245,13 @@ delete_selected.short_description = "Delete selected repos from database"
 class MiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "email", "send_email", "timestamp"]
     ordering = ['timestamp']
-    actions = [approve_mining_requests, black_list_requests]
+    actions = [approve_mining_requests, delete_mining_requests, black_list_requests]
+    
+    def get_actions(self, request):
+        actions = super(MiningRequestAdmin, self).get_actions(request)
+        del actions['delete_selected']
+        return actions
+
 
 class QueuedMiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]

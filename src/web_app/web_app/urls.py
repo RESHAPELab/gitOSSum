@@ -24,6 +24,7 @@ from user_app.views import ( HomeView, about_us, mining_request_form_view,
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls), # allow access to the admin portal
+    url(r'^admin/statuscheck/', include('celerybeat_status.urls')),
     url(r'^$', HomeView.as_view()),   # The home page 
     url(r'^about_us/$', about_us, name="about_us"),
     url(r'^accounts/', include('django.contrib.auth.urls')), # Login/Logout controls

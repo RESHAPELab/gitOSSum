@@ -3,6 +3,25 @@ from operator import and_
 from functools import reduce
 from mining_scripts.mining import *
 import re
+import os
+
+
+
+# precent issues with forking 
+if os.getpid() == 0:
+    # Initial connection by parent process
+    client = MongoClient('localhost', 27017) # Where are we connecting
+else: 
+    # No need to reconnect if we are connected
+    client = MongoClient('localhost', 27017, connect=False)
+
+db = client.backend_db # The specific mongo database we are working with 
+
+repos = db.repos # collection for storing all of a repo's main api json information 
+
+pull_requests = db.pullRequests # collection for storing all pull requests for all repos 
+
+pull_batches = db.pullBatches
 
 # Method to return a list of dictionaries containing each language
 # we have stored in mongo, and the corresponding count for each language

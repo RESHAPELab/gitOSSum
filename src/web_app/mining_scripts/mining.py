@@ -280,10 +280,14 @@ def delete_all_contents_from_every_collection():
     delete_all_pulls_from_pull_request_collection()
     return 
 
+def delete_specific_repos_pull_request_batches(repo_name):
+    pygit_repo = g.get_repo(repo_name)
+    pull_batches.delete_many({"repo": {"$regex": pygit_repo.full_name.lower()}})
 
 # Method to delete all jsons belonging to a specific repo from every collection 
 def delete_all_contents_of_specific_repo_from_every_collection(repo_name):
     delete_specific_repo_from_repo_collection(repo_name)
     delete_specifc_repos_pull_requests(repo_name)
+    delete_specific_repos_pull_request_batches(repo_name)
     return
 

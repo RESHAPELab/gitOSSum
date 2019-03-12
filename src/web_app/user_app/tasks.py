@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, unicode_literals
 
 from web_app.celery import app
 from celery.utils.log import get_task_logger
@@ -17,6 +17,7 @@ from django.contrib.auth.models import User
 import sys
 import numpy as np
 
+import os
 
 # Handle parallel processing not knowing about django apps
 try:
@@ -25,6 +26,21 @@ try:
 except AppRegistryNotReady:
     import django
     django.setup()
+
+if os.getpid() == 0:
+    # Initial connection by parent process
+    client = MongoClient('localhost', 27017) # Where are we connecting
+else: 
+    # No need to reconnect if we are connected
+    client = MongoClient('localhost', 27017, connect=False)
+
+db = client.backend_db # The specific mongo database we are working with 
+
+repos = db.repos # collection for storing all of a repo's main api json information 
+
+pull_requests = db.pullRequests # collection for storing all pull requests for all repos 
+
+pull_batches = db.pullBatches
 
 g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API 
 logger = get_task_logger(__name__)
