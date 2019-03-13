@@ -40,16 +40,17 @@ def get_repo_table_context(repo_name):
     description = landing_page['description']
     created_at = landing_page['created_at']
     updated_at = landing_page['updated_at']
+    last_mined_date = getattr(mined_repo_sql_obj, "completed_timestamp")
     clone_url = landing_page['clone_url']
     homepage = str(landing_page['homepage'])
-    if str(homepage) == "" or str(homepage) == "None" or str(homepage) == "null":
+    if str(homepage).strip() == "" or str(homepage) == "None" or str(homepage) == "null":
         homepage = False
     stargazers_count = landing_page['stargazers_count']
     language = landing_page['language']
     has_wiki = landing_page['has_wiki']
     try:
-        license_key = landing_page['license']["key"]
-        license_name = landing_page['license']['name']
+        license_key = str(landing_page['license']["key"])
+        license_name = str(landing_page['license']['name'])
     except Exception:
         license_key = None
         license_name = None 
@@ -65,6 +66,7 @@ def get_repo_table_context(repo_name):
         "description":str(description),
         "created_at":datetime.datetime.strptime(str(created_at), "%Y-%m-%dT%H:%M:%SZ"),
         "updated_at":datetime.datetime.strptime(str(updated_at), "%Y-%m-%dT%H:%M:%SZ"),
+        "last_mined_date":last_mined_date,
         "clone_url":str(clone_url),
         "homepage":homepage,
         "stargazers_count":int(stargazers_count),
@@ -77,142 +79,356 @@ def get_repo_table_context(repo_name):
         "subscribers_count":int(subscribers_count)
     }
 
-def pull_request_charts(repo_name):
-    mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
-    num_closed_merged_pulls = getattr(mined_repo_sql_obj, 'num_closed_merged_pulls')
-    num_closed_unmerged_pulls = getattr(mined_repo_sql_obj, 'num_closed_unmerged_pulls')
-    num_open_pulls = getattr(mined_repo_sql_obj, 'num_open_pulls')
-
-    trace2 = go.Bar(
-        x=["Closed-Merged", "Closed-Unmerged", "Open"],
-        y=[num_closed_merged_pulls, num_closed_unmerged_pulls, num_open_pulls], 
-        name='Pulls Bar Chart',
-        marker=dict(
-            color=['rgba(255,0,0,1)', 
-                   'rgba(0,94,255,1)',
-                   'rgba(8,154,105,1)']
-        )
-    )
-
-    data2 = [trace2]
-
-    layout1=go.Layout(title="Pull Request Types Pie Chart")
 
 
-    layout2 = go.Layout(
-        title='Pull Request Bar Chart',
-        xaxis=dict(
-            title='Pull Request Type',
-            titlefont=dict(
-                family='Courier New, monospace',
-                size=18,
-                color='#7f7f7f'
-            )
-        ),
-        yaxis=dict(
-            title='Number of Pull Requests',
-            titlefont=dict(
-                family='Courier New, monospace',
-                size=18,
-                color='#7f7f7f'
-            )
-        )
-    )
-
-
-    figure2=go.Figure(data=data2,layout=layout2)
-
-    div2 = opy.plot(figure2,  output_type='div')
-
-    return {"bar_chart":div2}
+def get_dual_repo_table_context(repo_one_full_name, repo_two_full_name):
+    context = dict()
     
+    mined_repo_one_sql_obj = MinedRepo.objects.get(repo_name=repo_one_full_name)
+    mined_repo_two_sql_obj = MinedRepo.objects.get(repo_name=repo_two_full_name)
 
-def pull_requests_per_month_line_chart(repo_name):
-    mined_repo_sql_obj = MinedRepo.objects.get(repo_name=repo_name)
-    created_dates_str = getattr(mined_repo_sql_obj, "created_at_list")
-    closed_dates_str = getattr(mined_repo_sql_obj, "closed_at_list")
-    merged_dates_str = getattr(mined_repo_sql_obj, "merged_at_list")
+    landing_page_repo_one = find_repo_main_page(repo_one_full_name)
+    landing_page_repo_two = find_repo_main_page(repo_two_full_name)
+
+    num_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_pulls')
+    num_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_pulls')
+    context.update({
+        'num_pulls_repo_one':num_pulls_repo_one,
+        'num_pulls_repo_two':num_pulls_repo_two
+    })
+
+    num_closed_merged_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_closed_merged_pulls')
+    num_closed_merged_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_closed_merged_pulls')
+    context.update({
+        'num_closed_merged_pulls_repo_one':num_closed_merged_pulls_repo_one,
+        'num_closed_merged_pulls_repo_two':num_closed_merged_pulls_repo_two
+    })
+
+    num_closed_unmerged_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_closed_unmerged_pulls')
+    num_closed_unmerged_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_closed_unmerged_pulls')
+    context.update({
+        'num_closed_unmerged_pulls_repo_one':num_closed_unmerged_pulls_repo_one,
+        'num_closed_unmerged_pulls_repo_two':num_closed_unmerged_pulls_repo_two
+    })
+
+    num_open_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_open_pulls')
+    num_open_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_open_pulls')
+    context.update({
+        'num_open_pulls_repo_one':num_open_pulls_repo_one,
+        'num_open_pulls_repo_two':num_open_pulls_repo_two
+    })
+
+    description_repo_one = landing_page_repo_one['description']
+    description_repo_two = landing_page_repo_two['description']
+    context.update({
+        'description_repo_one':description_repo_one,
+        'description_repo_two':description_repo_two
+    })
+
+    created_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['created_at']), "%Y-%m-%dT%H:%M:%SZ")
+    created_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['created_at']), "%Y-%m-%dT%H:%M:%SZ")
+    context.update({
+        'created_at_repo_one':created_at_repo_one,
+        'created_at_repo_two':created_at_repo_two
+    })
+
+    updated_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
+    updated_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
+    context.update({
+        'updated_at_repo_one':updated_at_repo_one,
+        'updated_at_repo_two':updated_at_repo_two
+    })
+
+    last_mined_date_repo_one = getattr(MinedRepo.objects.get(repo_name=repo_one_full_name), "completed_timestamp")
+    last_mined_date_repo_two = getattr(MinedRepo.objects.get(repo_name=repo_two_full_name), "completed_timestamp")
+    context.update({
+        'last_mined_date_repo_one':last_mined_date_repo_one,
+        'last_mined_date_repo_two':last_mined_date_repo_two
+    })
+
+    clone_url_repo_one = landing_page_repo_one['clone_url']
+    clone_url_repo_two = landing_page_repo_two['clone_url']
+    context.update({
+        'clone_url_repo_one':clone_url_repo_one,
+        'clone_url_repo_two':clone_url_repo_two
+    })
+
+    homepage_repo_one = str(landing_page_repo_one['homepage'])
+    homepage_repo_two = str(landing_page_repo_two['homepage'])
+
+    if homepage_repo_one.strip() == "" or homepage_repo_one.strip() == "None" or homepage_repo_one.strip == "null":
+        homepage_repo_one = "None"
+
+    if homepage_repo_two.strip() == "" or homepage_repo_two.strip() == "None" or homepage_repo_two.strip == "null":
+        homepage_repo_two = "None"
+
+    context.update({
+        'homepage_repo_one':homepage_repo_one,
+        'homepage_repo_two':homepage_repo_two
+    })
+
+    stargazers_count_repo_one = landing_page_repo_one['stargazers_count']
+    stargazers_count_repo_two = landing_page_repo_two['stargazers_count']
+    context.update({
+        'stargazers_count_repo_one':stargazers_count_repo_one,
+        'stargazers_count_repo_two':stargazers_count_repo_two
+    })
+
+    language_repo_one = landing_page_repo_one['language']
+    language_repo_two = landing_page_repo_two['language']
+    context.update({
+        'language_repo_one':language_repo_one,
+        'language_repo_two':language_repo_two
+    })
+
+    has_wiki_repo_one = landing_page_repo_one['has_wiki']
+    has_wiki_repo_two = landing_page_repo_two['has_wiki']
+    context.update({
+        'has_wiki_repo_one':has_wiki_repo_one,
+        'has_wiki_repo_two':has_wiki_repo_two
+    })
 
     try:
-        created_dates = pd.to_datetime(pd.Series(created_dates_str), format="%Y-%m-%d %H:%M:%S")
-        created_dates.index = created_dates.dt.to_period('m')
-        created_dates = created_dates.groupby(level=0).size()
-        created_dates = created_dates.reindex(pd.period_range(created_dates.index.min(),
-                                            created_dates.index.max(), freq='m'), fill_value=0)
-        created_indices = np.array(created_dates.index.astype(str))
-        created_date_freq = np.array(created_dates)
+        license_key_repo_one = landing_page_repo_one['license']["key"]
+        license_name_repo_one = landing_page_repo_one['license']['name']
     except Exception:
-        created_indices = []
-        created_date_freq = []
+        license_key_repo_one = "None"
+        license_name_repo_one = "None" 
 
     try:
-        closed_dates = pd.to_datetime(pd.Series(closed_dates_str), format="%Y-%m-%d %H:%M:%S")
-        closed_dates.index = closed_dates.dt.to_period('m')
-        closed_dates = closed_dates.groupby(level=0).size()
-        closed_dates = closed_dates.reindex(pd.period_range(closed_dates.index.min(),
-                                            closed_dates.index.max(), freq='m'), fill_value=0)
-        closed_indices = np.array(closed_dates.index.astype(str))
-        closed_date_freq = np.array(closed_dates)
-    except:
-        closed_indices = []
-        closed_date_freq = []
-
-    try:
-        merged_dates = pd.to_datetime(pd.Series(merged_dates_str), format="%Y-%m-%d %H:%M:%S")
-        merged_dates.index = merged_dates.dt.to_period('m')
-        merged_dates = merged_dates.groupby(level=0).size()
-        merged_dates = merged_dates.reindex(pd.period_range(merged_dates.index.min(),
-                                            merged_dates.index.max(), freq='m'), fill_value=0)
-        merged_indices = np.array(merged_dates.index.astype(str))
-        merged_date_freq = np.array(merged_dates)
+        license_key_repo_two = landing_page_repo_two['license']["key"]
+        license_name_repo_two = landing_page_repo_two['license']['name']
     except Exception:
-        merged_indices = []
-        merged_date_freq = []
+        license_key_repo_two = "None"
+        license_name_repo_two = "None" 
+
+    context.update({
+        'license_key_repo_one':license_key_repo_one,
+        'license_name_repo_one':license_name_repo_one,
+        'license_key_repo_two':license_key_repo_two,
+        'license_name_repo_two':license_name_repo_two
+    })
+
+
     
-    data = [
-        go.Scatter(
-            x=created_indices, 
-            y=created_date_freq,
-            mode = 'lines+markers',
-            name="Created"
-        ),
-        go.Scatter(
-            x=closed_indices, 
-            y=closed_date_freq,
-            mode = 'lines+markers',
-            name="Closed"
-        ),
-        go.Scatter(
-            x=merged_indices, 
-            y=merged_date_freq,
-            mode = 'lines+markers',
-            name="Merged"
-        )
-    ]
+    open_issues_repo_one = landing_page_repo_one['open_issues']
+    open_issues_repo_two = landing_page_repo_two['open_issues']
+    context.update({
+        'open_issues_repo_one':open_issues_repo_one,
+        'open_issues_repo_two':open_issues_repo_two
+    })
 
-    layout = go.Layout(
-        title='Pull Request Frequency by Month',
-        xaxis=dict(
-            title='Date',
-            titlefont=dict(
-                family='Courier New, monospace',
-                size=18,
-                color='#7f7f7f'
-            )
-        ),
-        yaxis=dict(
-            title='Number of Pull Requests',
-            titlefont=dict(
-                family='Courier New, monospace',
-                size=18,
-                color='#7f7f7f'
-            )
-        )
-    )
+    network_count_repo_one = landing_page_repo_one['network_count']
+    network_count_repo_two =landing_page_repo_two['network_count']
+    context.update({
+        'network_count_repo_one':network_count_repo_one,
+        'network_count_repo_two':network_count_repo_two
+    })
 
-    figure=go.Figure(data=data,layout=layout)
+    subscribers_count_repo_one = landing_page_repo_one['subscribers_count']
+    subscribers_count_repo_two = landing_page_repo_two['subscribers_count']
+    context.update({
+        'subscribers_count_repo_one':subscribers_count_repo_one,
+        'subscribers_count_repo_two':subscribers_count_repo_two
+    })
 
-    div = opy.plot(figure,  output_type='div')
-    return div
+    return context
+
+def get_three_repo_table_context(repo_one_full_name, repo_two_full_name, repo_three_full_name):
+    context = dict()
+    
+    mined_repo_one_sql_obj = MinedRepo.objects.get(repo_name=repo_one_full_name)
+    mined_repo_two_sql_obj = MinedRepo.objects.get(repo_name=repo_two_full_name)
+    mined_repo_three_sql_obj = MinedRepo.objects.get(repo_name=repo_three_full_name)
+
+    landing_page_repo_one = find_repo_main_page(repo_one_full_name)
+    landing_page_repo_two = find_repo_main_page(repo_two_full_name)
+    landing_page_repo_three = find_repo_main_page(repo_three_full_name)
+
+    num_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_pulls')
+    num_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_pulls')
+    num_pulls_repo_three = getattr(mined_repo_three_sql_obj, 'num_pulls')
+    context.update({
+        'num_pulls_repo_one':num_pulls_repo_one,
+        'num_pulls_repo_two':num_pulls_repo_two,
+        'num_pulls_repo_three':num_pulls_repo_three
+    })
+
+    num_closed_merged_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_closed_merged_pulls')
+    num_closed_merged_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_closed_merged_pulls')
+    num_closed_merged_pulls_repo_three = getattr(mined_repo_three_sql_obj, 'num_closed_merged_pulls')
+    context.update({
+        'num_closed_merged_pulls_repo_one':num_closed_merged_pulls_repo_one,
+        'num_closed_merged_pulls_repo_two':num_closed_merged_pulls_repo_two,
+        'num_closed_merged_pulls_repo_three':num_closed_merged_pulls_repo_three
+    })
+
+    num_closed_unmerged_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_closed_unmerged_pulls')
+    num_closed_unmerged_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_closed_unmerged_pulls')
+    num_closed_unmerged_pulls_repo_three = getattr(mined_repo_three_sql_obj, 'num_closed_unmerged_pulls')
+    context.update({
+        'num_closed_unmerged_pulls_repo_one':num_closed_unmerged_pulls_repo_one,
+        'num_closed_unmerged_pulls_repo_two':num_closed_unmerged_pulls_repo_two,
+        'num_closed_unmerged_pulls_repo_three':num_closed_unmerged_pulls_repo_three
+    })
+
+    num_open_pulls_repo_one = getattr(mined_repo_one_sql_obj, 'num_open_pulls')
+    num_open_pulls_repo_two = getattr(mined_repo_two_sql_obj, 'num_open_pulls')
+    num_open_pulls_repo_three = getattr(mined_repo_three_sql_obj, 'num_open_pulls')
+    context.update({
+        'num_open_pulls_repo_one':num_open_pulls_repo_one,
+        'num_open_pulls_repo_two':num_open_pulls_repo_two,
+        'num_open_pulls_repo_three':num_open_pulls_repo_three
+    })
+
+    description_repo_one = landing_page_repo_one['description']
+    description_repo_two = landing_page_repo_two['description']
+    description_repo_three = landing_page_repo_three['description']
+    context.update({
+        'description_repo_one':description_repo_one,
+        'description_repo_two':description_repo_two,
+        'description_repo_three':description_repo_three
+    })
+
+    created_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['created_at']), "%Y-%m-%dT%H:%M:%SZ")
+    created_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['created_at']), "%Y-%m-%dT%H:%M:%SZ")
+    created_at_repo_three = datetime.datetime.strptime(str(landing_page_repo_three['created_at']), "%Y-%m-%dT%H:%M:%SZ")
+    context.update({
+        'created_at_repo_one':created_at_repo_one,
+        'created_at_repo_two':created_at_repo_two,
+        'created_at_repo_three':created_at_repo_three
+    })
+
+    updated_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
+    updated_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
+    updated_at_repo_three = datetime.datetime.strptime(str(landing_page_repo_three['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
+    context.update({
+        'updated_at_repo_one':updated_at_repo_one,
+        'updated_at_repo_two':updated_at_repo_two,
+        'updated_at_repo_three':updated_at_repo_three
+    })
+
+    last_mined_date_repo_one = getattr(MinedRepo.objects.get(repo_name=repo_one_full_name), "completed_timestamp")
+    last_mined_date_repo_two = getattr(MinedRepo.objects.get(repo_name=repo_two_full_name), "completed_timestamp")
+    last_mined_date_repo_three = getattr(MinedRepo.objects.get(repo_name=repo_three_full_name), "completed_timestamp")
+    context.update({
+        'last_mined_date_repo_one':last_mined_date_repo_one,
+        'last_mined_date_repo_two':last_mined_date_repo_two,
+        'last_mined_date_repo_three':last_mined_date_repo_three
+    })
+
+    clone_url_repo_one = landing_page_repo_one['clone_url']
+    clone_url_repo_two = landing_page_repo_two['clone_url']
+    clone_url_repo_three = landing_page_repo_three['clone_url']
+    context.update({
+        'clone_url_repo_one':clone_url_repo_one,
+        'clone_url_repo_two':clone_url_repo_two,
+        'clone_url_repo_three':clone_url_repo_three
+    })
+
+    homepage_repo_one = str(landing_page_repo_one['homepage'])
+    homepage_repo_two = str(landing_page_repo_two['homepage'])
+    homepage_repo_three = str(landing_page_repo_three['homepage'])
+
+    if str(homepage_repo_one).strip() == "" or str(homepage_repo_one) == "None" or str(homepage_repo_one) == "null":
+        homepage_repo_one = "None"
+
+    if str(homepage_repo_two).strip() == "" or str(homepage_repo_two) == "None" or str(homepage_repo_two) == "null":
+        homepage_repo_two = "None"
+
+    if str(homepage_repo_three).strip() == "" or str(homepage_repo_three) == "None" or str(homepage_repo_three) == "null":
+        homepage_repo_three = "None"
+
+    context.update({
+        'homepage_repo_one':homepage_repo_one,
+        'homepage_repo_two':homepage_repo_two,
+        'homepage_repo_three':homepage_repo_three
+    })
+
+    stargazers_count_repo_one = landing_page_repo_one['stargazers_count']
+    stargazers_count_repo_two = landing_page_repo_two['stargazers_count']
+    stargazers_count_repo_three = landing_page_repo_three['stargazers_count']
+    context.update({
+        'stargazers_count_repo_one':stargazers_count_repo_one,
+        'stargazers_count_repo_two':stargazers_count_repo_two,
+        'stargazers_count_repo_three':stargazers_count_repo_three
+    })
+
+    language_repo_one = landing_page_repo_one['language']
+    language_repo_two = landing_page_repo_two['language']
+    language_repo_three = landing_page_repo_three['language']
+    context.update({
+        'language_repo_one':language_repo_one,
+        'language_repo_two':language_repo_two,
+        'language_repo_three':language_repo_three
+    })
+
+    has_wiki_repo_one = landing_page_repo_one['has_wiki']
+    has_wiki_repo_two = landing_page_repo_two['has_wiki']
+    has_wiki_repo_three = landing_page_repo_three['has_wiki']
+    context.update({
+        'has_wiki_repo_one':has_wiki_repo_one,
+        'has_wiki_repo_two':has_wiki_repo_two,
+        'has_wiki_repo_three':has_wiki_repo_three
+    })
+
+    try:
+        license_key_repo_one = landing_page_repo_one['license']["key"]
+        license_name_repo_one = landing_page_repo_one['license']['name']
+    except Exception:
+        license_key_repo_one = None
+        license_name_repo_one = None 
+
+    try:
+        license_key_repo_two = landing_page_repo_two['license']["key"]
+        license_name_repo_two = landing_page_repo_two['license']['name']
+    except Exception:
+        license_key_repo_two = None
+        license_name_repo_two = None
+
+    try:
+        license_key_repo_three = landing_page_repo_three['license']["key"]
+        license_name_repo_three = landing_page_repo_three['license']['name']
+    except Exception:
+        license_key_repo_three = None
+        license_name_repo_three = None
+
+    context.update({
+        'license_key_repo_one':license_key_repo_one,
+        'license_name_repo_one':license_name_repo_one,
+        'license_key_repo_two':license_key_repo_two,
+        'license_name_repo_two':license_name_repo_two,
+        'license_key_repo_three':license_key_repo_three,
+        'license_name_repo_three':license_name_repo_three
+    })
 
 
+
+    open_issues_repo_one = landing_page_repo_one['open_issues']
+    open_issues_repo_two = landing_page_repo_two['open_issues']
+    open_issues_repo_three = landing_page_repo_three['open_issues']
+    context.update({
+        'open_issues_repo_one':open_issues_repo_one,
+        'open_issues_repo_two':open_issues_repo_two,
+        'open_issues_repo_three':open_issues_repo_three
+    })
+
+    network_count_repo_one = landing_page_repo_one['network_count']
+    network_count_repo_two =landing_page_repo_two['network_count']
+    network_count_repo_three =landing_page_repo_three['network_count']
+    context.update({
+        'network_count_repo_one':network_count_repo_one,
+        'network_count_repo_two':network_count_repo_two,
+        'network_count_repo_three':network_count_repo_three
+    })
+
+    subscribers_count_repo_one = landing_page_repo_one['subscribers_count']
+    subscribers_count_repo_two = landing_page_repo_two['subscribers_count']
+    subscribers_count_repo_three = landing_page_repo_three['subscribers_count']
+    context.update({
+        'subscribers_count_repo_one':subscribers_count_repo_one,
+        'subscribers_count_repo_two':subscribers_count_repo_two,
+        'subscribers_count_repo_three':subscribers_count_repo_three
+    })
+
+    return context

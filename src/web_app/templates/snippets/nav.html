@@ -50,7 +50,7 @@
     <li>
         <a href="{% url 'repos' %}">Mined Repos</a>
     </li>
-    {% if user.objects.status == admin or request.user.is_superuser %}
+    {% if user.is_authenticated and user.objects.status == admin or request.user.is_superuser %}
     <li>
         <a href="{% url 'admin:index' %}">Admin Portal</a>
     </li>

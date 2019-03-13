@@ -13,15 +13,17 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.forms import ValidationError
 
 
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
-from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm
+from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm, Filter
 from mining_scripts.mining import *
 from .models import *
 from .tokens import account_activation_token
 from .visualizations import *
+from .filters import *
 
 
 # Import external libraries
@@ -65,6 +67,10 @@ def signup(request):
             )
             email.send()
             return HttpResponse('Please  confirm your email address to complete the registration')
+        else:
+            form = SignUpForm()
+            error = "That username is already taken!" 
+            return render(request, 'signup.html', {'form': form, "error":error})
     else:
         form = SignUpForm()
         return render(request, 'signup.html', {'form': form})
@@ -107,7 +113,8 @@ def mining_request_form_view(request):
                 requested_by=request.user.username
             )
 
-            return HttpResponseRedirect("")
+            form = MiningRequestForm()
+            return render(request, template, {'form': form})
         
         return render(request, template, {'form': form})
 
@@ -115,54 +122,119 @@ def mining_request_form_view(request):
         form = MiningRequestForm()
         return render(request, template, {'form': form}) 
 
-@login_required
-def feedback_form(request):
-    context = {}
-    template = "feedbackForm.html"
-    form = FeedbackForm()
-
-    if request.method == 'POST':
-        form = FeedbackForm(request.POST)
-        if form.is_valid():
-            messages.success(request, 'Your message has been sent. Thank you for your feedback!')
-            obj = FeebackForm.objects.create(
-                subject = form.cleaned_data.get('subject'),
-                message = form.cleaned_data.get('message'),
-                sender_email = request.user.email,
-                requested_by = request.user.username
-            )
-            EmailMessage(obj.subject, obj.message, obj.sender_email, ['gitossum@gmail.com'])
-            return HttpResponseRedirect("")
-        return render(request, template, {'form': form})
-    else: 
-        form = FeedbackForm()
-        return render(request, template, {'form': form})
-    #return render(request, template, {'form': form}) 
-
-
-
 # A page accessible by anyone to see all mined repos (with hyperlinks)
 def mined_repos(request):
+
     template_name = 'repos.html'
-    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
-    images = list()
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests          
+            
     context = dict()
+    message = ''
+    filter_form = Filter()
+
+    if request.method == 'POST':
+
+        if request.POST.get('compare'):
+            if "repo_checkbox" in request.POST:
+                checked_repos = request.POST.getlist("repo_checkbox")
+                
+                if len(checked_repos) < 2 or len(checked_repos) > 3:
+                    message = "You can only compare 2-3 repos"
+
+                elif len(checked_repos) == 2:
+                    repo_owner1 = checked_repos[0].split('/')[0]
+                    repo_owner2 = checked_repos[1].split('/')[0]
+
+                    repo_name1 = checked_repos[0].split('/')[1]
+                    repo_name2 = checked_repos[1].split('/')[1]
+
+                    url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}/"
+
+                    return HttpResponseRedirect(url)
+
+
+                else:
+                    repo_owner1 = checked_repos[0].split('/')[0]
+                    repo_owner2 = checked_repos[1].split('/')[0]
+                    repo_owner3 = checked_repos[2].split('/')[0]
+
+                    repo_name1 = checked_repos[0].split('/')[1]
+                    repo_name2 = checked_repos[1].split('/')[1]
+                    repo_name3 = checked_repos[2].split('/')[1]
+                    
+
+                    url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}&{repo_owner3}&{repo_name3}/"
+
+                    return HttpResponseRedirect(url)
+
+            else:
+                message = "You must choose at least one page to compare!"
+
+        else:
+            filters = list()
+            filter_form = Filter(request.POST)
+            
+            if filter_form.is_valid():
+                if 'search' in request.POST:
+                    search_query = filter_form.cleaned_data.get('search')
+                    if search_query.strip() != '':
+                        repos_filtered_by_search = get_repos_search_query_filter(search_query)
+                        filters.append(repos_filtered_by_search)
+
+                if 'languages' in request.POST:
+                    languages = filter_form.cleaned_data.get('languages')
+                    repos_filtered_by_language = get_repos_list_by_language_filter(languages)
+                    filters.append(repos_filtered_by_language)
+
+                if 'num_pulls' in request.POST:
+                    num_pulls = filter_form.cleaned_data.get('num_pulls')
+                    if '+' in num_pulls[0]:
+                            lower_bound = int((num_pulls[0].split('+'))[0])
+                            repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
+                    else:
+                        lower_bound = int((num_pulls[0].split('-'))[0])
+                        upper_bound = int((num_pulls[0].split('-'))[1])
+                        repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+
+                    filters.append(repos_filtered_by_pulls)
+
+                if 'has_wiki' in request.POST:
+                    repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)
+                    filters.append(repos_that_have_a_wiki)
+
+                if len(filters) != 0:
+                    repos_list = get_filtered_repos_list(filters)
+
+                    for item in range(0, len(repos_list)):
+                        context.update({
+                            f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
+                        })
+
+                    return render(request, template_name, {"context":context, "filter":filter_form})
+
+        
     try:
-        for image in get_all_repos():
-            images.append(image["owner"]["avatar_url"])
         for item in range(0, len(mined_repos)):
             context.update({
-                f"repo{item}": [mined_repos[item], images[item]]
+                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]],
             })
-        return render(request, template_name, {"context":context})
-    except Exception:
-         return render(request, template_name, {})
+        
+        if message == '':
+            return render(request, template_name, {"context":context, "filter":filter_form})
+        else:
+            return render(request, template_name, {"context":context, "message":message, 
+                                                   "filter":filter_form})
+
+    except Exception as e:
+        return render(request, template_name, {"error":e})
+
+    
 
 
 # A function that will be used to generate interactive visualizations of 
 # mined JSON data for any repo.
 def get_repo_data(request, repo_owner, repo_name):
-    template_name = 'mined_repo_display.html'
+    template_name = 'mined_repo_display_2.html'
     original_repo = repo_owner.lower() + "/" + repo_name.lower()
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
     
@@ -179,4 +251,47 @@ def get_repo_data(request, repo_owner, repo_name):
 
     else:
         return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
- 
+
+
+def compare_two_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name2):
+    template_name = 'mined_repo_display_2.html'
+    repo_one_full_name = repo_owner1.lower() + "/" + repo_name1.lower()
+    repo_two_full_name = repo_owner2.lower() + "/" + repo_name2.lower()
+
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+
+    if repo_one_full_name in mined_repos and repo_two_full_name in mined_repos:
+        context = get_dual_repo_table_context(repo_one_full_name, repo_two_full_name)
+        context.update({
+            "repo_one_name":repo_one_full_name,
+            "repo_one_img":find_repo_main_page(repo_one_full_name)['owner']['avatar_url'],
+            "repo_two_name":repo_two_full_name,
+            "repo_two_img":find_repo_main_page(repo_two_full_name)['owner']['avatar_url'],
+        })
+        return render(request, template_name, context) 
+
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
+
+def compare_three_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name2, repo_owner3, repo_name3):
+    template_name = 'mined_repo_display_3.html'
+    repo_one_full_name = repo_owner1.lower() + "/" + repo_name1.lower()
+    repo_two_full_name = repo_owner2.lower() + "/" + repo_name2.lower()
+    repo_three_full_name = repo_owner3.lower() + "/" + repo_name3.lower()
+
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+
+    if repo_one_full_name in mined_repos and repo_two_full_name in mined_repos and repo_three_full_name in mined_repos:
+        context = get_three_repo_table_context(repo_one_full_name, repo_two_full_name, repo_three_full_name)
+        context.update({
+            "repo_one_name":repo_one_full_name,
+            "repo_one_img":find_repo_main_page(repo_one_full_name)['owner']['avatar_url'],
+            "repo_two_name":repo_two_full_name,
+            "repo_two_img":find_repo_main_page(repo_two_full_name)['owner']['avatar_url'],
+            "repo_three_name":repo_three_full_name,
+            "repo_three_img":find_repo_main_page(repo_three_full_name)['owner']['avatar_url'],
+        })
+        return render(request, template_name, context)
+
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')

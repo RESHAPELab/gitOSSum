@@ -94,6 +94,11 @@
     .link {
         color: black;
     }
+    
+    .whiteLink {
+        color: white;
+    }
+
 </style>
 
 </head>
@@ -116,54 +121,58 @@
                     <td>{{ description }}</td>
                 </tr> -->
                 <tr>
-                    <td>created_at</td>
+                    <td>Date Created</td>
                     <td>{{ created_at }}</td>
                 </tr>
                 <tr>
-                    <td>updated_at</td>
+                    <td>Date Last Updated</td>
                     <td>{{ updated_at }}</td>
                 </tr>
                 <tr>
-                    <td>clone_url</td>
+                    <td>Date Last Mined</td>
+                    <td>{{ last_mined_date }}</td>
+                </tr>
+                <tr>
+                    <td>Clone URL</td>
                     <td>{{ clone_url }}</td>
                 </tr>
                 {% if homepage != False %}
                 <tr>
-                    <td>homepage</td>
-                    <td><a class="link" href="{{ homepage }}"></a></td>
+                    <td>Repository Homepage</td>
+                    <td><a class="link" href="{{ homepage }}" target="blank">{{ homepage }}</a></td>
                 </tr>
                 {% endif %}
                 <tr>
         
-                    <td>stargazers_count</td>
+                    <td>Number of Stargazers</td>
                     <td>{{ stargazers_count }}</td>
                 </tr>
                 <tr>
-                    <td>language</td>
+                    <td>Programming Language</td>
                     <td>{{language }}</td>
                 </tr>
                 <tr>
-                    <td>has_wiki</td>
+                    <td>Has a Wiki Page</td>
                     <td>{{ has_wiki }}</td>
                 </tr>
                 <tr>
-                    <td>license_key</td>
-                    <td>{{ license_key }}</td>
+                    <td>Development License</td>
+                    {% if license_name == "Other" or license_name == "None" %}
+                        <td>{{ license_name }}</td>
+                    {% elif homepage != False and license_name != "Other" or license_name != None %}
+                        <td><a class='link' href="https://google.com/search?q=define {{license_name}}" target="blank">{{ license_name }}</td>
+                    {% endif %}
                 </tr>
                 <tr>
-                    <td>license_name</td>
-                    <td>{{ license_name }}</td>
-                </tr>
-                <tr>
-                    <td>open_issues</td>
+                    <td>Number of Open Issues</td>
                     <td>{{ open_issues }}</td>
                 </tr>
                 <tr>
-                    <td>network_count</td>
+                    <td>Number of Forks</td>
                     <td>{{ network_count }}</td>
                 </tr>
                 <tr>
-                    <td>subscribers_count</td>
+                    <td>Number of Watchers</td>
                     <td>{{ subscribers_count }}</td>
                 </tr>
             </table>
@@ -176,7 +185,6 @@
         </div>
         <div class="jumbotron bar2">
             <h3 class="jumboTitle"> </h3>
-            {{ bar_chart_html |safe }}
         </div>
     </div>
     <div class="row3">

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from celery.schedules import crontab   
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -25,7 +26,16 @@ SECRET_KEY = '1x1n@2p)h^@%0v7gckznov25z_m81#jb9q8e$vp#)@j&7*h%o('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    'gitossum.com',
+    '138.68.40.43', 
+    '127.0.0.1', 
+    'mongodb-s-3vcpu-1gb-sfo2-01',
+    'mongodb-s-3vcpu-1gb-sfo2-01:8080',
+    'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01',
+    'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01:8080',
+]
 
 
 # Application definition
@@ -40,6 +50,8 @@ INSTALLED_APPS = [
     'user_app',
     'bootstrap3', 
     'django_mysql',
+    'django_celery_beat',
+    'celerybeat_status',
 ]
 
 MIDDLEWARE = [
@@ -129,3 +141,18 @@ EMAIL_PORT = 587
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
+PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = 'static'
+
+# Stuff for celery
+BROKER_URL='amqp://guest@localhost//'
+CELERY_RESULT_BACKEND = 'rpc://'
+CELERY_RESULT_PERSISTENT = False
+CELERY_ACCEPT_CONTENT=['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'MST'
+CELERYD_MAX_TASKS_PER_CHILD = 2
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
+CELERY_BEAT_SCHEDULE = {}
