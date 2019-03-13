@@ -234,7 +234,7 @@ def mined_repos(request):
 # A function that will be used to generate interactive visualizations of 
 # mined JSON data for any repo.
 def get_repo_data(request, repo_owner, repo_name):
-    template_name = 'mined_repo_display_2.html'
+    template_name = 'mined_repo_display.html'
     original_repo = repo_owner.lower() + "/" + repo_name.lower()
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
     
