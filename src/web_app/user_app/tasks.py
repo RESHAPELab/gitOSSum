@@ -56,8 +56,7 @@ def all_tasks_completed(repo_name):
     
     if collected_batches == total_batches:
         return True
-        # else:
-        #     raise CeleryTaskFailedError("Celery Task Failed!!!")
+        
     else:
         return False 
 
@@ -77,29 +76,19 @@ def initialize_batch_json(batch_list, repo_name):
 
 # When the admin approves, go call the mining script asynchronously 
 @app.task(bind=True, name='tasks.mine_data_asynchronously', hard_time_limit=60*60*10)
-def mine_data_asynchronously(self, repo_name, username, user_email, queued_request):
-    # Update the log to show we started 
-    logger.info('Starting Mining Job with repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
-    
-    logger.info('Retrieving the pygit_repo from github for {0}'.format(repo_name))
+def mine_data_asynchronously(self, repo_name, username, user_email, queued_request):    
     pygit_repo = g.get_repo(repo_name)
-    logger.info('Successfully retrieved pygit_repo from github for {0}'.format(repo_name))
-
 
     # mine and store the main page josn
-    logger.info('Mining the  the landing page JSON from github for {0}'.format(repo_name))
     mine_repo_page(pygit_repo)
-    logger.info('Successfully mined the  the landing page JSON from github for {0}'.format(repo_name))
 
-    logger.info('Starting to BATCH JOBS for repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
     batch_data = batchify(repo_name)
-    logger.info('Successfully BATCHED JOBS for repo_name="{0}", username="{1}", and user_email="{2}".'.format(repo_name, username, user_email))
 
-    logger.info(f'TOTAL OF {len(batch_data)} BATCH JOBS OF SIZE {len(batch_data[0])} for repo_name="{repo_name}"')
+    # TODO: If there are no pull requests, just make a table, no graphs 
     
+    # Else, move on to mining the data 
     initialize_batch_json(batch_data, repo_name)
 
-    logger.info(f'Kicking off jobs for repo_name="{repo_name}"')
     for job in range(len(batch_data)):
         mine_pull_request_batch_asynchronously.delay(repo_name, job)
 
@@ -113,6 +102,51 @@ def mine_pull_request_batch_asynchronously(repo_name, job):
     mine_pulls_batch(pulls_batch, repo_name)
 
     return True
+
+@app.task(name='tasks.update_specific_repo')
+def update_specific_repo(repo_name):
+    pygit_repo = g.get_repo(repo_name)
+    mine_repo_page(pygit_repo) # update the landing page
+
+    # get a list of all the current pull requests 
+    num_current_pulls = count_all_pull_requests_from_a_specifc_repo(repo_name)
+
+    # get a paginated list of all the pull requests
+    pulls = pygit_repo.get_pulls('all')
+
+    # get the number of pulls that we can see now
+    total_pulls_as_of_now = 0
+    for item in pulls:
+        total_pulls_as_of_now += 1
+
+    # DO NOT CONTINUE IF THERE AREN'T NEW PULLS
+    if total_pulls_as_of_now == num_current_pulls:
+        return 
+
+    # IF THERE ARE NEW PULLS, MINE THEM...
+    new_pygit_pulls_list = [pulls[item] for item in range(num_current_pulls+2, total_pulls_as_of_now)]
+
+    for pygit_pull_obj in new_pygit_pulls_list:
+        mine_specific_pull(pygit_pull_obj)
+
+    mined_repo_model_obj = MinedRepo.objects.get(repo_name=repo_name)
+
+    visualization_data = extract_pull_request_model_data(pygit_repo)
+
+    mined_repo_model_obj.num_pulls=visualization_data["num_pulls"]
+    mined_repo_model_obj.num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"]
+    mined_repo_model_obj.num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"]
+    mined_repo_model_obj.num_open_pulls=visualization_data["num_open_pulls"]
+    mined_repo_model_obj.created_at_list=visualization_data["created_at_list"]
+    mined_repo_model_obj.closed_at_list=visualization_data["closed_at_list"]
+    mined_repo_model_obj.merged_at_list=visualization_data["merged_at_list"]
+    mined_repo_model_obj.num_newcomer_labels=visualization_data["num_newcomer_labels"]
+    mined_repo_model_obj.bar_chart_html=visualization_data["bar_chart"]
+    mined_repo_model_obj.pull_line_chart_html=visualization_data["line_chart"]
+    mined_repo_model_obj.completed_timestamp = str(datetime.now())
+    mined_repo_model_obj.save()
+
+    return True 
 
 @app.task(name='tasks.visualize_repo_data')
 def visualize_repo_data():

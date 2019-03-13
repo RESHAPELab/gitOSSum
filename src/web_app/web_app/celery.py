@@ -1,7 +1,6 @@
 from __future__ import absolute_import
-
+from kombu import Exchange, Queue
 import os
-
 from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
@@ -15,6 +14,18 @@ app = Celery('web_app')
 # pickle the object when using Windows.
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
+
+# Define queue settings 
+default_exchange = Exchange('default', type='direct')
+app.conf.task_queues = (
+    Queue('default', default_exchange, routing_key='default'),
+    Queue('mine', default_exchange, routing_key='default'),
+    Queue('visualize', default_exchange, routing_key='default'),
+    Queue('update', default_exchange, routing_key='default')
+)
+app.conf.task_default_queue = 'default'
+app.conf.task_default_exchange = 'default'
+app.conf.task_default_routing_key = 'default'
 
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 

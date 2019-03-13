@@ -63,6 +63,7 @@ def extract_pull_request_model_data(pygit_repo):
         print("ERROR ON CHARTS:", e)
     return extracted_info
 
+
 def produce_pull_type_bar_chart(extracted_info):
     num_closed_merged_pulls = extracted_info['num_closed_merged_pulls']
     num_closed_unmerged_pulls = extracted_info['num_closed_unmerged_pulls']
