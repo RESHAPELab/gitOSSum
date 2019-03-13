@@ -6,6 +6,11 @@
 
 
 <style>
+    html, body {
+        /* background-image:radial-gradient(gold, aquamarine, cyan);
+        background-repeat: no-repeat;
+        background-attachment: fixed; */
+    }
     li {
         list-style-type: none;
         margin: 100;
@@ -18,14 +23,16 @@
     }
     .search:hover {
         background-color: gold; 
+        transition: 0.5s;
     }
-    .compare {
+    .compare2 {
         background-color: rgb(0, 44, 126); 
         color: white;
-        float: left;
+        /* float: left; */
     }
-    .compare:hover {
+    .compare2:hover {
         background-color: gold; 
+        transition: 0.5s;
     }
 
     .repos {
@@ -33,6 +40,12 @@
     }
     .reposContent {
         display: flex;
+    }
+    .list-group {
+        max-height: 40%;
+        margin-bottom: 10px;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
     }
     .list-group-item {
         background-color: rgb(0, 44, 126);
@@ -44,6 +57,9 @@
     }
     .link:hover {
         color: gold;
+    }
+    .searchSection {
+        position: sticky;
     }
 
     .filter {
@@ -80,6 +96,14 @@
 {% endif %}
 
 <body>
+    <div class="searchSection">
+        <h1>Mined Repos</h1>
+        <form class="form-inline">
+            <input class="form-control" style="width: 25%;" type="text" placeholder="Search" aria-label="Search">
+            <button type="button" class="btn search"><i class="fas fa-search" aria-hidden="true"></i></button>
+            <button type="button" class="btn compare2">Compare</button>
+        </form>
+    </div>
     <h1>Mined Repos</h1>
     {{ error }}
     <hr>

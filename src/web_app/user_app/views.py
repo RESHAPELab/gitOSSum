@@ -122,32 +122,6 @@ def mining_request_form_view(request):
         form = MiningRequestForm()
         return render(request, template, {'form': form}) 
 
-@login_required
-def feedback_form(request):
-    context = {}
-    template = "feedbackForm.html"
-    form = FeedbackForm()
-
-    if request.method == 'POST':
-        form = FeedbackForm(request.POST)
-        if form.is_valid():
-            messages.success(request, 'Your message has been sent. Thank you for your feedback!')
-            obj = FeebackForm.objects.create(
-                subject = form.cleaned_data.get('subject'),
-                message = form.cleaned_data.get('message'),
-                sender_email = request.user.email,
-                requested_by = request.user.username
-            )
-            EmailMessage(obj.subject, obj.message, obj.sender_email, ['gitossum@gmail.com'])
-            return HttpResponseRedirect("")
-        return render(request, template, {'form': form})
-    else: 
-        form = FeedbackForm()
-        return render(request, template, {'form': form})
-    #return render(request, template, {'form': form}) 
-
-
-
 # A page accessible by anyone to see all mined repos (with hyperlinks)
 def mined_repos(request):
 
@@ -260,7 +234,7 @@ def mined_repos(request):
 # A function that will be used to generate interactive visualizations of 
 # mined JSON data for any repo.
 def get_repo_data(request, repo_owner, repo_name):
-    template_name = 'mined_repo_display.html'
+    template_name = 'mined_repo_display_2.html'
     original_repo = repo_owner.lower() + "/" + repo_name.lower()
     mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
     
