@@ -156,3 +156,8 @@ CELERY_TIMEZONE = 'MST'
 CELERYD_MAX_TASKS_PER_CHILD = 2
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {}
+CELERY_ROUTES = {
+    "web_app.tasks.mine_pull_request_batch_asynchronously": {"queue": "mine"},
+    "web_app.tasks.update_specific_repo": {"queue": "update"},
+    "web_app.tasks.visualize_repo_data": {"queue": "visualize"}
+}
