@@ -3,6 +3,11 @@
 
 {% extends "base.html" %} {% block content %}
 <style>
+    html, body {
+        /* background-image:radial-gradient(gold, aquamarine, cyan);
+        background-repeat: no-repeat;
+        background-attachment: fixed; */
+    }
     li {
         list-style-type: none;
         margin: 100;
@@ -15,6 +20,7 @@
     }
     .search:hover {
         background-color: gold; 
+        transition: 0.5s;
     }
     .compare2 {
         background-color: rgb(0, 44, 126); 
@@ -23,6 +29,7 @@
     }
     .compare2:hover {
         background-color: gold; 
+        transition: 0.5s;
     }
 
     .repos {
@@ -65,8 +72,9 @@
         margin-bottom: -10%;
     }
     .updateSearch:hover {
-        background-color: black;
-        color: white;
+        background-color: gold;
+        color: black;
+        transition: 0.5s;
     }
 </style>
 
@@ -123,7 +131,6 @@
     {% endfor %}
     </div>
     <br>
-    <!-- <button type="button" class="btn compare">Compare</button> -->
 </body>
 
 {% endblock content %}
