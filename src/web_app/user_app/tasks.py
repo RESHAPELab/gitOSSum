@@ -103,6 +103,16 @@ def mine_pull_request_batch_asynchronously(repo_name, job):
 
     return True
 
+@app.task(name='tasks.update_all_repos')
+def update_all_repos():
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+    
+    for repo in mined_repos:
+        update_specific_repo.delay(repo)
+
+    return True 
+
+
 @app.task(name='tasks.update_specific_repo')
 def update_specific_repo(repo_name):
     pygit_repo = g.get_repo(repo_name)
@@ -121,6 +131,9 @@ def update_specific_repo(repo_name):
 
     # DO NOT CONTINUE IF THERE AREN'T NEW PULLS
     if total_pulls_as_of_now == num_current_pulls:
+        mined_repo_model_obj = MinedRepo.objects.get(repo_name=repo_name)
+        mined_repo_model_obj.completed_timestamp = str(datetime.now())
+        mined_repo_model_obj.save()
         return 
 
     # IF THERE ARE NEW PULLS, MINE THEM...

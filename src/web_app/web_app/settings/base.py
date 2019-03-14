@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 from celery.schedules import crontab   
+from kombu import Queue, Exchange
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,7 +35,6 @@ ALLOWED_HOSTS = [
     'mongodb-s-3vcpu-1gb-sfo2-01',
     'mongodb-s-3vcpu-1gb-sfo2-01:8080',
     'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01',
-    'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01:8080',
 ]
 
 
@@ -156,8 +156,3 @@ CELERY_TIMEZONE = 'MST'
 CELERYD_MAX_TASKS_PER_CHILD = 2
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {}
-CELERY_ROUTES = {
-    "web_app.tasks.mine_pull_request_batch_asynchronously": {"queue": "mine"},
-    "web_app.tasks.update_specific_repo": {"queue": "update"},
-    "web_app.tasks.visualize_repo_data": {"queue": "visualize"}
-}
