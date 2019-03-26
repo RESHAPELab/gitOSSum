@@ -51,6 +51,18 @@ pull_requests = db.pullRequests # collection for storing all pull requests for a
 
 pull_batches = db.pullBatches
 
+def mongo_test_init():
+    global db 
+    global repos 
+    global pull_requests
+    global pull_batches 
+    db = client.test_db
+    repos = db.repos
+    pull_requests = db.pullRequests
+    pull_batches = db.pullBatches
+
+
+
 g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API 
 
 
@@ -279,6 +291,9 @@ def delete_all_contents_from_every_collection():
     delete_all_repos_from_repo_collection()
     delete_all_pulls_from_pull_request_collection()
     return 
+
+def delete_all_pull_requests_batches_from_batch_collection():
+    pull_batches.delete_many({})
 
 def delete_specific_repos_pull_request_batches(repo_name):
     pygit_repo = g.get_repo(repo_name)

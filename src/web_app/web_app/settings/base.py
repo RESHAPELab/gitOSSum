@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user_app',
+    'django_nose',
     'bootstrap3', 
     'django_mysql',
     'django_celery_beat',
@@ -144,6 +145,8 @@ STATIC_URL = '/static/'
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = 'static'
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 # Stuff for celery
 BROKER_URL='amqp://guest@localhost//'
