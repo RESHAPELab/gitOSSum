@@ -25,7 +25,7 @@ class MiningRequestForm(forms.Form):
     # Function used for validating the mining request form 
     def clean_repo_name(self):
         repo_name = self.cleaned_data['repo_name'].lower()  # This is the repo name we will be looking at 
-        valid_repo = re.compile('^((\w+)[-]*)+/+((\w+)[-]*)+\w+$') # Regex that defines a proper repo name 
+        valid_repo = re.compile('^(((\w+)[-]*)\w+)+/+((\w+)([-]|[.])*)+\w+$') # Regex that defines a proper repo name 
         mining_requests = list(MiningRequest.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         queued_repos = list(QueuedMiningRequest.objects.values_list("repo_name", flat=True))

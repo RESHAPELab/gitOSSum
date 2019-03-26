@@ -516,3 +516,114 @@ class EmailTestSuite(TestCase):
     def test_can_send_mining_blacklisted_email(self):
         success = send_repository_blacklist_email("UNIT TEST REPO", "ADMINISTRATOR", config.EMAIL_ADDRESS)
         self.assertTrue(success)
+
+class RepoNameTestSuite(TestCase):
+    valid_repo = re.compile('^(((\w+)[-]*)\w+)+/+((\w+)([-]|[.])*)+\w+$')
+
+    def test_invalid_repo_name_1(self):
+        repo_name = 'john'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+    
+    def test_invalid_repo_name_2(self):
+        repo_name = '/john/repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_3(self):
+        repo_name = '.john/repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_4(self):
+        repo_name = '$john/repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_5(self):
+        repo_name = '~john/repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_6(self):
+        repo_name = 'john-/repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_7(self):
+        repo_name = 'john/-repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+    
+    def test_invalid_repo_name_8(self):
+        repo_name = 'john/.repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_9(self):
+        repo_name = 'john/$repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_10(self):
+        repo_name = 'john/~repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_11(self):
+        repo_name = 'jo[hn]/repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_12(self):
+        repo_name = 'john/r[epo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_13(self):
+        repo_name = 'jo{hn/re}po'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_invalid_repo_name_14(self):
+        repo_name = 'jo+hn/repo'
+        self.assertFalse(self.valid_repo.fullmatch(repo_name))
+
+    def test_valid_repo_name_1(self):
+        repo_name = 'Swhite9478/OpenSourceDev'
+        self.assertTrue(self.valid_repo.fullmatch(repo_name))
+
+    def test_valid_repo_name_2(self):
+        repo_name = 'repo/repo.js'
+        self.assertTrue(self.valid_repo.fullmatch(repo_name))
+
+    def test_valid_repo_name_3(self):
+        repo_name = 'repo/another-valid-repo.swag'
+        self.assertTrue(self.valid_repo.fullmatch(repo_name))
+
+    def test_repo_exists_1(self):
+        repo_name = 'google/gumbo-parser'
+        self.assertNotIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_exists_2(self):
+        repo_name = 'jabref/jabref'
+        self.assertNotIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_exists_3(self):
+        repo_name = 'rails/rails'
+        self.assertNotIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_exists_4(self):
+        repo_name = 'swhite9478/opensourcedev'
+        self.assertNotIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_exists_5(self):
+        repo_name = 'torvalds/linux'
+        self.assertNotIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_does_not_exist_1(self):
+        repo_name = 'fake/repo'
+        self.assertIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_does_not_exist_2(self):
+        repo_name = 'thisis/not-a-real.repo'
+        self.assertIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_does_not_exist_3(self):
+        repo_name = '1234I-cant-believe/you-tried_to.fool-me'
+        self.assertIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_does_not_exist_4(self):
+        repo_name = 'here.we/go-again'
+        self.assertIsInstance(find_repo_main_page(repo_name), Exception)
+
+    def test_repo_does_not_exist_5(self):
+        repo_name = '1234/5678'
+        self.assertIsInstance(find_repo_main_page(repo_name), Exception)
