@@ -79,7 +79,7 @@ def mine_and_store_all_repo_data(repo_name, username, email, queued_request):
     # mine and store the main page josn
     logger.info('Mining the  the landing page JSON from github for {0}'.format(repo_name))
     mine_repo_page(pygit_repo)
-    logger.info('Successfully mined the  the landing page JSON from github for {0}'.format(repo_name))
+    logger.info('Successfully mined the landing page JSON from github for {0}'.format(repo_name))
 
     # mine and store all pulls for this repo 
     logger.info('Starting to mine pull requests from github for {0}'.format(repo_name))
@@ -290,6 +290,7 @@ def get_all_pull_requests():
 def delete_all_contents_from_every_collection():
     delete_all_repos_from_repo_collection()
     delete_all_pulls_from_pull_request_collection()
+    delete_all_pull_requests_batches_from_batch_collection()
     return 
 
 def delete_all_pull_requests_batches_from_batch_collection():
