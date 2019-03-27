@@ -16,7 +16,7 @@ from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
 from django.contrib.auth.models import User
 import sys
 import numpy as np
-
+from django.utils import timezone
 import os
 
 # Handle parallel processing not knowing about django apps
@@ -68,7 +68,7 @@ def initialize_batch_json(batch_list, repo_name):
         "total_batches": total_batches,
         "collected_batches": 0,
         "attempted_batches": 0,
-        "updated": str(datetime.now())
+        "updated": str(timezone.now())
     }
     db.pullBatches.update_one(batch_json_data, {"$set": batch_json_data}, upsert=True)
 
@@ -132,7 +132,7 @@ def update_specific_repo(repo_name):
     # DO NOT CONTINUE IF THERE AREN'T NEW PULLS
     if total_pulls_as_of_now == num_current_pulls:
         mined_repo_model_obj = MinedRepo.objects.get(repo_name=repo_name)
-        mined_repo_model_obj.completed_timestamp = str(datetime.now())
+        mined_repo_model_obj.completed_timestamp = str(timezone.now())
         mined_repo_model_obj.save()
         return 
 
@@ -156,7 +156,7 @@ def update_specific_repo(repo_name):
     mined_repo_model_obj.num_newcomer_labels=visualization_data["num_newcomer_labels"]
     mined_repo_model_obj.bar_chart_html=visualization_data["bar_chart"]
     mined_repo_model_obj.pull_line_chart_html=visualization_data["line_chart"]
-    mined_repo_model_obj.completed_timestamp = str(datetime.now())
+    mined_repo_model_obj.completed_timestamp = str(timezone.now())
     mined_repo_model_obj.save()
 
     return True 

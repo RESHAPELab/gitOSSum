@@ -18,6 +18,7 @@ from mining_scripts import config
 from mining_scripts.batchify import *
 from .filters import *
 from .models import *
+from django.utils import timezone
 import re
 
 
@@ -875,3 +876,148 @@ class FilterTestSuite(TestCase):
                                                          )
         self.assertTrue(len(filtered_repos_combined) == 1)
         self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in filtered_repos_combined)
+
+class ModelTestSuite(TestCase):
+
+    def tearDown(self):
+        MinedRepo.objects.all().delete()
+
+    def test_visualization_extraction_1(self):
+        visualization_data = extract_pull_request_model_data(PYGIT_TEST_REPO_4)
+        mined_repo = MinedRepo(
+            repo_name=PYGIT_TEST_REPO_4.full_name.lower(),
+            requested_by="Admin",
+            num_pulls=visualization_data["num_pulls"],
+            num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
+            num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
+            num_open_pulls=visualization_data["num_open_pulls"],
+            created_at_list=visualization_data["created_at_list"],
+            closed_at_list=visualization_data["closed_at_list"],
+            merged_at_list=visualization_data["merged_at_list"],
+            num_newcomer_labels=visualization_data["num_newcomer_labels"],
+            bar_chart_html=visualization_data["bar_chart"],
+            pull_line_chart_html=visualization_data["line_chart"],
+            accepted_timestamp=timezone.now(),
+            requested_timestamp=timezone.now()
+        ) 
+
+        mined_repo.save()
+        
+        sql_obj = MinedRepo.objects.get(repo_name=PYGIT_TEST_REPO_4.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "repo_name"), PYGIT_TEST_REPO_4.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "requested_by"), "Admin")
+        self.assertEqual(getattr(sql_obj, "num_pulls"), visualization_data['num_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_merged_pulls"), visualization_data['num_closed_merged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_unmerged_pulls"), visualization_data['num_closed_unmerged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_open_pulls"), visualization_data['num_open_pulls'])
+        self.assertEqual(getattr(sql_obj, "created_at_list"), visualization_data['created_at_list'])
+        self.assertEqual(getattr(sql_obj, "closed_at_list"), visualization_data['closed_at_list'])
+        self.assertEqual(getattr(sql_obj, "merged_at_list"), visualization_data['merged_at_list'])
+        self.assertEqual(getattr(sql_obj, "num_newcomer_labels"), visualization_data['num_newcomer_labels'])
+        self.assertEqual(getattr(sql_obj, "bar_chart_html"), visualization_data['bar_chart'])
+        self.assertEqual(getattr(sql_obj, "pull_line_chart_html"), visualization_data['line_chart'])
+
+    def test_visualization_extraction_2(self):
+        visualization_data = extract_pull_request_model_data(PYGIT_TEST_REPO_5)
+        mined_repo = MinedRepo(
+            repo_name=PYGIT_TEST_REPO_5.full_name.lower(),
+            requested_by="Admin",
+            num_pulls=visualization_data["num_pulls"],
+            num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
+            num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
+            num_open_pulls=visualization_data["num_open_pulls"],
+            created_at_list=visualization_data["created_at_list"],
+            closed_at_list=visualization_data["closed_at_list"],
+            merged_at_list=visualization_data["merged_at_list"],
+            num_newcomer_labels=visualization_data["num_newcomer_labels"],
+            bar_chart_html=visualization_data["bar_chart"],
+            pull_line_chart_html=visualization_data["line_chart"],
+            accepted_timestamp=timezone.now(),
+            requested_timestamp=timezone.now()
+        ) 
+
+        mined_repo.save()
+        
+        sql_obj = MinedRepo.objects.get(repo_name=PYGIT_TEST_REPO_5.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "repo_name"), PYGIT_TEST_REPO_5.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "requested_by"), "Admin")
+        self.assertEqual(getattr(sql_obj, "num_pulls"), visualization_data['num_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_merged_pulls"), visualization_data['num_closed_merged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_unmerged_pulls"), visualization_data['num_closed_unmerged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_open_pulls"), visualization_data['num_open_pulls'])
+        self.assertEqual(getattr(sql_obj, "created_at_list"), visualization_data['created_at_list'])
+        self.assertEqual(getattr(sql_obj, "closed_at_list"), visualization_data['closed_at_list'])
+        self.assertEqual(getattr(sql_obj, "merged_at_list"), visualization_data['merged_at_list'])
+        self.assertEqual(getattr(sql_obj, "num_newcomer_labels"), visualization_data['num_newcomer_labels'])
+        self.assertEqual(getattr(sql_obj, "bar_chart_html"), visualization_data['bar_chart'])
+        self.assertEqual(getattr(sql_obj, "pull_line_chart_html"), visualization_data['line_chart'])
+
+    def test_visualization_extraction_3(self):
+        visualization_data = extract_pull_request_model_data(PYGIT_TEST_REPO_6)
+        mined_repo = MinedRepo(
+            repo_name=PYGIT_TEST_REPO_6.full_name.lower(),
+            requested_by="Admin",
+            num_pulls=visualization_data["num_pulls"],
+            num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
+            num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
+            num_open_pulls=visualization_data["num_open_pulls"],
+            created_at_list=visualization_data["created_at_list"],
+            closed_at_list=visualization_data["closed_at_list"],
+            merged_at_list=visualization_data["merged_at_list"],
+            num_newcomer_labels=visualization_data["num_newcomer_labels"],
+            bar_chart_html=visualization_data["bar_chart"],
+            pull_line_chart_html=visualization_data["line_chart"],
+            accepted_timestamp=timezone.now(),
+            requested_timestamp=timezone.now()
+        ) 
+
+        mined_repo.save()
+        
+        sql_obj = MinedRepo.objects.get(repo_name=PYGIT_TEST_REPO_6.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "repo_name"), PYGIT_TEST_REPO_6.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "requested_by"), "Admin")
+        self.assertEqual(getattr(sql_obj, "num_pulls"), visualization_data['num_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_merged_pulls"), visualization_data['num_closed_merged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_unmerged_pulls"), visualization_data['num_closed_unmerged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_open_pulls"), visualization_data['num_open_pulls'])
+        self.assertEqual(getattr(sql_obj, "created_at_list"), visualization_data['created_at_list'])
+        self.assertEqual(getattr(sql_obj, "closed_at_list"), visualization_data['closed_at_list'])
+        self.assertEqual(getattr(sql_obj, "merged_at_list"), visualization_data['merged_at_list'])
+        self.assertEqual(getattr(sql_obj, "num_newcomer_labels"), visualization_data['num_newcomer_labels'])
+        self.assertEqual(getattr(sql_obj, "bar_chart_html"), visualization_data['bar_chart'])
+        self.assertEqual(getattr(sql_obj, "pull_line_chart_html"), visualization_data['line_chart'])
+
+    def test_visualization_extraction_4(self):
+        visualization_data = extract_pull_request_model_data(PYGIT_TEST_REPO_7)
+        mined_repo = MinedRepo(
+            repo_name=PYGIT_TEST_REPO_7.full_name.lower(),
+            requested_by="Admin",
+            num_pulls=visualization_data["num_pulls"],
+            num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
+            num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
+            num_open_pulls=visualization_data["num_open_pulls"],
+            created_at_list=visualization_data["created_at_list"],
+            closed_at_list=visualization_data["closed_at_list"],
+            merged_at_list=visualization_data["merged_at_list"],
+            num_newcomer_labels=visualization_data["num_newcomer_labels"],
+            bar_chart_html=visualization_data["bar_chart"],
+            pull_line_chart_html=visualization_data["line_chart"],
+            accepted_timestamp=timezone.now(),
+            requested_timestamp=timezone.now()
+        ) 
+
+        mined_repo.save()
+        
+        sql_obj = MinedRepo.objects.get(repo_name=PYGIT_TEST_REPO_7.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "repo_name"), PYGIT_TEST_REPO_7.full_name.lower())
+        self.assertEqual(getattr(sql_obj, "requested_by"), "Admin")
+        self.assertEqual(getattr(sql_obj, "num_pulls"), visualization_data['num_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_merged_pulls"), visualization_data['num_closed_merged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_closed_unmerged_pulls"), visualization_data['num_closed_unmerged_pulls'])
+        self.assertEqual(getattr(sql_obj, "num_open_pulls"), visualization_data['num_open_pulls'])
+        self.assertEqual(getattr(sql_obj, "created_at_list"), visualization_data['created_at_list'])
+        self.assertEqual(getattr(sql_obj, "closed_at_list"), visualization_data['closed_at_list'])
+        self.assertEqual(getattr(sql_obj, "merged_at_list"), visualization_data['merged_at_list'])
+        self.assertEqual(getattr(sql_obj, "num_newcomer_labels"), visualization_data['num_newcomer_labels'])
+        self.assertEqual(getattr(sql_obj, "bar_chart_html"), visualization_data['bar_chart'])
+        self.assertEqual(getattr(sql_obj, "pull_line_chart_html"), visualization_data['line_chart'])
