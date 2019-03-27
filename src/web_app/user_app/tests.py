@@ -136,6 +136,7 @@ class RepoLandingPageTestSuite(TestCase):
        self.assertEqual(number_of_repos, TWO)
 
     def test_can_find_all_repos_1(self):
+        delete_all_repos_from_repo_collection()
         mine_repo_page(PYGIT_TEST_REPO)
         repos = get_all_repos()
         count = ZERO
@@ -237,12 +238,13 @@ class PullRequestTestSuite(TestCase):
         delete_all_pull_requests_batches_from_batch_collection()
 
     def test_can_delete_all_from_pull_requests_collection(self):
+        delete_all_pulls_from_pull_request_collection()
         number_pull_requests = PULL_REQUESTS_COLLECTION.count_documents({})
         self.assertEqual(number_pull_requests, ZERO)
 
     def test_can_mine_pull_requests_from_repo(self):
         batch_data = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data, PYGIT_TEST_REPO.full_name.lower())
         for batch_job in range(len(batch_data)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
@@ -252,7 +254,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_mining_pull_requests_twice_from_repo_doesnt_count_as_separate_entries(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -266,7 +268,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_mine_two_separate_repos_pull_requests(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -274,7 +276,7 @@ class PullRequestTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
@@ -287,7 +289,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_pulls_belonging_to_specific_repo(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -295,7 +297,7 @@ class PullRequestTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
@@ -310,7 +312,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_pulls_belonging_to_specific_repo_2(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -318,7 +320,7 @@ class PullRequestTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
@@ -333,7 +335,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_all_pulls_1(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -348,7 +350,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_all_pulls_2(self):
         batch_data_one = batchify(PYGIT_TEST_REPO_2.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO_2.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO_2.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_2.full_name.lower(), batch_job)
@@ -363,7 +365,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_all_pulls_3(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -371,7 +373,7 @@ class PullRequestTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_2.full_name.lower())
-        self.initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_2.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_2.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_2.full_name.lower(), batch_job)
@@ -388,7 +390,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_and_delete_specifc_repos_pull_requests_1(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -396,7 +398,7 @@ class PullRequestTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
@@ -413,7 +415,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_and_delete_specifc_repos_pull_requests_2(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -421,7 +423,7 @@ class PullRequestTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
@@ -437,7 +439,7 @@ class PullRequestTestSuite(TestCase):
 
     def test_can_find_and_delete_specifc_repos_pull_requests_3(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -445,7 +447,7 @@ class PullRequestTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
@@ -464,8 +466,6 @@ class PullRequestTestSuite(TestCase):
 # Test suite for the combination of landing page and pull requests 
 class ExtraMiningTestSuite(TestCase):
 
-    init_batch = initialize_batch_json
-
     def tearDown(self):
         delete_all_repos_from_repo_collection()
         delete_all_pulls_from_pull_request_collection()
@@ -473,7 +473,7 @@ class ExtraMiningTestSuite(TestCase):
     
     def test_can_delete_all_repos_and_pulls_in_one_call(self):
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.init_batch(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -481,7 +481,7 @@ class ExtraMiningTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.init_batch(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
@@ -503,7 +503,7 @@ class ExtraMiningTestSuite(TestCase):
         mine_repo_page(PYGIT_TEST_REPO_3)
 
         batch_data_one = batchify(PYGIT_TEST_REPO.full_name.lower())
-        self.init_batch(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
+        initialize_batch_json(batch_data_one, PYGIT_TEST_REPO.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO.full_name.lower(), batch_job)
@@ -511,7 +511,7 @@ class ExtraMiningTestSuite(TestCase):
             mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO.full_name.lower())
 
         batch_data_two = batchify(PYGIT_TEST_REPO_3.full_name.lower())
-        self.init_batch(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
+        initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_3.full_name.lower())
 
         for batch_job in range(len(batch_data_one)):
             pulls_batch = get_batch_number(PYGIT_TEST_REPO_3.full_name.lower(), batch_job)
