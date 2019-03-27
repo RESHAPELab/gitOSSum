@@ -23,6 +23,18 @@ pull_requests = db.pullRequests # collection for storing all pull requests for a
 
 pull_batches = db.pullBatches
 
+
+# Function to be used in tests.py to ensure that we are not accessing the production database
+def mongo_filter_test_init():
+    global db 
+    global repos 
+    global pull_requests
+    global pull_batches 
+    db = client.test_db
+    repos = db.repos
+    pull_requests = db.pullRequests
+    pull_batches = db.pullBatches
+
 # Method to return a list of dictionaries containing each language
 # we have stored in mongo, and the corresponding count for each language
 def get_language_list_from_mongo():

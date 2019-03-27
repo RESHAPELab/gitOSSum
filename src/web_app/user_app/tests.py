@@ -1,8 +1,23 @@
+'''
+tests.py 
+
+Written by Stephen White 
+
+Created: 3/25/2019
+
+Last Updated: 3/26/2019
+
+A file which contains all relevant test suites that ensure the 
+integrity of Git-OSS-Um's backend services. 
+'''
+
 from django.test import TestCase
 from mining_scripts.send_email import * 
 from mining_scripts.mining import *
 from mining_scripts import config
 from mining_scripts.batchify import *
+from .filters import *
+from .models import *
 import re
 
 
@@ -15,19 +30,32 @@ PULL_REQUEST_BATCHES_COLLECTION = DB.pullBatches
 TEST_REPO = "Swhite9478/OpenSourceDev" # repo for testing purposes 
 TEST_REPO_2 = 'google/gumbo-parser'
 TEST_REPO_3 = 'Swhite9478/CS386-HoloLens-Project'
+TEST_REPO_4 = 'Microsoft/Calculator'
+TEST_REPO_5 = 'Samreay/WorkshopExample'
+TEST_REPO_6 = 'skeeto/endlessh'
+TEST_REPO_7 = 'Swhite9478/Github-Mining-Tool'
 GITHUB = Github("Githubfake01", "5RNsya*z#&aA", per_page=100) # authorization for the github API
 PYGIT_TEST_REPO = GITHUB.get_repo(TEST_REPO) # Pygit's interpretation of the repo 
 PYGIT_TEST_REPO_2 = GITHUB.get_repo(TEST_REPO_2)
 PYGIT_TEST_REPO_3 = GITHUB.get_repo(TEST_REPO_3)
+PYGIT_TEST_REPO_4 = GITHUB.get_repo(TEST_REPO_4)
+PYGIT_TEST_REPO_5 = GITHUB.get_repo(TEST_REPO_5)
+PYGIT_TEST_REPO_6 = GITHUB.get_repo(TEST_REPO_6)
+PYGIT_TEST_REPO_7 = GITHUB.get_repo(TEST_REPO_7)
 TEST_REPO_NUMBER_OF_PULLS = PYGIT_TEST_REPO.get_pulls('all').totalCount
 TEST_REPO_2_NUMBER_OF_PULLS = PYGIT_TEST_REPO_2.get_pulls('all').totalCount
 TEST_REPO_3_NUMBER_OF_PULLS = PYGIT_TEST_REPO_3.get_pulls('all').totalCount
 ZERO, ONE, TWO, THREE = 0, 1, 2, 3
 
-mongo_test_init() # Tell the mining script NOT to use the production mongo database
+LANGUAGES_LIST = [PYGIT_TEST_REPO_4.language, PYGIT_TEST_REPO_5.language, PYGIT_TEST_REPO_6.language, PYGIT_TEST_REPO_7.language]
+
+
+mongo_mining_test_init() # Tell the mining script NOT to use the production mongo database
+mongo_filter_test_init() # Tell the filter system NOT to use the production mongo database 
+
 
 # Utility function for testing 
-def initialize_batch_json(self, batch_list, repo_name):
+def initialize_batch_json(batch_list, repo_name):
         total_batches = len(batch_list)
         batch_json_data  = {
             "repo": f"{repo_name}",
@@ -627,3 +655,223 @@ class RepoNameTestSuite(TestCase):
     def test_repo_does_not_exist_5(self):
         repo_name = '1234/5678'
         self.assertIsInstance(find_repo_main_page(repo_name), Exception)
+
+# Setup class to initialize filter test suite 
+class Singleton(object):
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+
+            # Create the instance of this class
+            cls._instance = super(Singleton, cls).__new__(
+                            cls, *args, **kwargs)
+
+            # The following code will only be executed once:
+
+            # Mine all of the landing pages we want to test 
+            mine_repo_page(PYGIT_TEST_REPO_4)
+            mine_repo_page(PYGIT_TEST_REPO_5)
+            mine_repo_page(PYGIT_TEST_REPO_6)
+            mine_repo_page(PYGIT_TEST_REPO_7)
+
+            # Batch and initialize each repo for pull collection 
+            batch_data_one = batchify(PYGIT_TEST_REPO_4.full_name.lower())
+            batch_data_two = batchify(PYGIT_TEST_REPO_5.full_name.lower())
+            batch_data_three = batchify(PYGIT_TEST_REPO_6.full_name.lower())
+            batch_data_four = batchify(PYGIT_TEST_REPO_7.full_name.lower())
+
+            initialize_batch_json(batch_data_one, PYGIT_TEST_REPO_4.full_name.lower())
+            initialize_batch_json(batch_data_two, PYGIT_TEST_REPO_5.full_name.lower())
+            initialize_batch_json(batch_data_three, PYGIT_TEST_REPO_6.full_name.lower())
+            initialize_batch_json(batch_data_four, PYGIT_TEST_REPO_7.full_name.lower())
+
+            # Mine the pull requests for each test repo 
+            for batch_job in range(len(batch_data_one)):
+                pulls_batch = get_batch_number(PYGIT_TEST_REPO_4.full_name.lower(), batch_job)
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_4.full_name.lower())
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_4.full_name.lower())
+
+            for batch_job in range(len(batch_data_two)):
+                pulls_batch = get_batch_number(PYGIT_TEST_REPO_5.full_name.lower(), batch_job)
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_5.full_name.lower())
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_5.full_name.lower())
+
+            for batch_job in range(len(batch_data_three)):
+                pulls_batch = get_batch_number(PYGIT_TEST_REPO_6.full_name.lower(), batch_job)
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_6.full_name.lower())
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_6.full_name.lower())
+
+            for batch_job in range(len(batch_data_four)):
+                pulls_batch = get_batch_number(PYGIT_TEST_REPO_7.full_name.lower(), batch_job)
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_7.full_name.lower())
+                mine_pulls_batch(pulls_batch, PYGIT_TEST_REPO_7.full_name.lower())
+
+            # Set the setUpBool flag for this class to true so we dont go 
+            # setting all of this up again 
+            cls.setUpBool = True
+
+        return cls._instance
+
+class FilterTestSuite(TestCase):
+    def setUp(self):
+        # The first call initializes singleton, every additional call
+        # returns the instantiated reference.
+        if REPOS_COLLECTION.count_documents({}) == 0:
+            print(Singleton().setUpBool)
+
+    # Make sure that the language list is correct 
+    def test_can_get_language_list(self):
+        obtained_languages_list = get_language_list_from_mongo()
+        for language in obtained_languages_list:
+            self.assertTrue(language in LANGUAGES_LIST)
+
+    def test_can_filter_by_language_1(self):
+        language = PYGIT_TEST_REPO_4.language
+        obtained_repos_by_language = get_repos_list_by_language_filter([language])
+        self.assertTrue(PYGIT_TEST_REPO_4.full_name.lower() in obtained_repos_by_language)
+
+    def test_can_filter_by_language_2(self):
+        language = PYGIT_TEST_REPO_5.language
+        obtained_repos_by_language = get_repos_list_by_language_filter([language])
+        self.assertTrue(PYGIT_TEST_REPO_5.full_name.lower() in obtained_repos_by_language)
+
+    def test_can_filter_by_language_3(self):
+        language = PYGIT_TEST_REPO_6.language
+        obtained_repos_by_language = get_repos_list_by_language_filter([language])
+        self.assertTrue(PYGIT_TEST_REPO_6.full_name.lower() in obtained_repos_by_language)
+
+    def test_can_filter_by_language_4(self):
+        language = PYGIT_TEST_REPO_7.language
+        obtained_repos_by_language = get_repos_list_by_language_filter([language])
+        self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in obtained_repos_by_language)
+
+    def test_can_filter_by_pulls_less_than_1(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_4.full_name) for item in batch]) 
+        filtered_repos = get_repos_list_by_pulls_less_than_filter(num_pulls + 1)
+        self.assertTrue(PYGIT_TEST_REPO_4.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_less_than_2(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_5.full_name) for item in batch]) 
+        filtered_repos = get_repos_list_by_pulls_less_than_filter(num_pulls + 1)
+        self.assertTrue(PYGIT_TEST_REPO_5.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_less_than_3(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_6.full_name) for item in batch]) 
+        filtered_repos = get_repos_list_by_pulls_less_than_filter(num_pulls + 1)
+        self.assertTrue(PYGIT_TEST_REPO_6.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_less_than_4(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_7.full_name) for item in batch]) 
+        filtered_repos = get_repos_list_by_pulls_less_than_filter(num_pulls + 1)
+        self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in filtered_repos)
+        
+    def test_can_filter_by_pulls_greater_than_1(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_4.full_name) for item in batch]) - 1 
+        filtered_repos = get_repos_list_by_pulls_greater_than_filter(num_pulls - 1)
+        self.assertTrue(PYGIT_TEST_REPO_4.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_greater_than_2(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_5.full_name) for item in batch]) - 1
+        filtered_repos = get_repos_list_by_pulls_greater_than_filter(num_pulls - 1)
+        self.assertTrue(PYGIT_TEST_REPO_5.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_greater_than_3(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_6.full_name) for item in batch]) - 1
+        filtered_repos = get_repos_list_by_pulls_greater_than_filter(num_pulls - 1)
+        self.assertTrue(PYGIT_TEST_REPO_6.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_greater_than_4(self):
+        num_pulls = len([item for batch in batchify(PYGIT_TEST_REPO_7.full_name) for item in batch]) - 1
+        filtered_repos = get_repos_list_by_pulls_greater_than_filter(num_pulls - 1)
+        self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_bounded_1(self):
+        lower_bound = 0
+        upper_bound = 1000
+        filtered_repos = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+        self.assertTrue(len(filtered_repos) == 4)
+
+    def test_can_filter_by_pulls_bounded_2(self):
+        lower_bound = 0
+        upper_bound = 1
+        filtered_repos = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+        self.assertTrue(len(filtered_repos) == 0)
+
+    def test_can_filter_by_pulls_bounded_3(self):
+        lower_bound = 100
+        upper_bound = 100000
+        filtered_repos = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+        self.assertTrue(len(filtered_repos) == 1)
+        self.assertTrue(PYGIT_TEST_REPO_4.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_pulls_bounded_4(self):
+        lower_bound = 0
+        upper_bound = 10
+        filtered_repos = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+        self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_has_wiki_1(self):
+        filtered_repos = get_repos_list_has_wiki_filter(True)
+        self.assertTrue(PYGIT_TEST_REPO_4.full_name.lower() not in filtered_repos)
+
+    def test_can_filter_by_has_wiki_2(self):
+        filtered_repos = get_repos_list_has_wiki_filter(True)
+        self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_search_1(self):
+        filtered_repos = get_repos_search_query_filter(PYGIT_TEST_REPO_4.full_name.lower()[0:5])
+        self.assertTrue(PYGIT_TEST_REPO_4.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_search_2(self):
+        filtered_repos = get_repos_search_query_filter(PYGIT_TEST_REPO_5.full_name.lower()[0:5])
+        self.assertTrue(PYGIT_TEST_REPO_5.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_search_3(self):
+        filtered_repos = get_repos_search_query_filter(PYGIT_TEST_REPO_6.full_name.lower()[0:5])
+        self.assertTrue(PYGIT_TEST_REPO_6.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_search_4(self):
+        filtered_repos = get_repos_search_query_filter(PYGIT_TEST_REPO_7.full_name.lower()[0:5])
+        self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in filtered_repos)
+
+    def test_can_filter_by_search_5(self):
+        filtered_repos = get_repos_search_query_filter("ThisShould/Return-Nothing")
+        self.assertTrue(len(filtered_repos) == 0)
+
+    def test_can_filter_using_multiple_criteria_1(self):
+        lower_bound = 100
+        upper_bound = 1000
+        filtered_repos_bounded = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+        filtered_repos_search = get_repos_search_query_filter(PYGIT_TEST_REPO_4.full_name.lower()[0:5])
+        filtered_repos_wiki = get_repos_list_has_wiki_filter(False)
+        filtered_repos_combined = get_filtered_repos_list([filtered_repos_bounded,
+                                                           filtered_repos_search, 
+                                                           filtered_repos_wiki]
+                                                         )
+        self.assertTrue(len(filtered_repos_combined) == 1)
+        self.assertTrue(PYGIT_TEST_REPO_4.full_name.lower() in filtered_repos_combined)
+
+    def test_can_filter_using_multiple_criteria_2(self):
+        lower_bound = 0
+        upper_bound = 1000
+        filtered_repos_bounded = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+        filtered_repos_search = get_repos_search_query_filter(PYGIT_TEST_REPO_2.full_name.lower()[0:5])
+        filtered_repos_wiki = get_repos_list_has_wiki_filter(True)
+        filtered_repos_combined = get_filtered_repos_list([filtered_repos_bounded,
+                                                           filtered_repos_search, 
+                                                           filtered_repos_wiki]
+                                                         )
+        self.assertTrue(len(filtered_repos_combined) == 0)
+
+    def test_can_filter_using_multiple_criteria_3(self):
+        lower_bound = 0
+        upper_bound = 1000
+        filtered_repos_bounded = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+        filtered_repos_search = get_repos_search_query_filter(PYGIT_TEST_REPO_7.full_name.lower()[0:5])
+        filtered_repos_wiki = get_repos_list_has_wiki_filter(True)
+        filtered_repos_combined = get_filtered_repos_list([filtered_repos_bounded,
+                                                           filtered_repos_search, 
+                                                           filtered_repos_wiki]
+                                                         )
+        self.assertTrue(len(filtered_repos_combined) == 1)
+        self.assertTrue(PYGIT_TEST_REPO_7.full_name.lower() in filtered_repos_combined)

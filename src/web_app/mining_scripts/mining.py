@@ -51,7 +51,7 @@ pull_requests = db.pullRequests # collection for storing all pull requests for a
 
 pull_batches = db.pullBatches
 
-def mongo_test_init():
+def mongo_mining_test_init():
     global db 
     global repos 
     global pull_requests
