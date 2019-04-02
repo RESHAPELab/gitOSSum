@@ -181,17 +181,34 @@ def mined_repos(request):
                     repos_filtered_by_language = get_repos_list_by_language_filter(languages)
                     filters.append(repos_filtered_by_language)
 
-                if 'num_pulls' in request.POST:
-                    num_pulls = filter_form.cleaned_data.get('num_pulls')
-                    if '+' in num_pulls[0]:
-                            lower_bound = int((num_pulls[0].split('+'))[0])
-                            repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
-                    else:
-                        lower_bound = int((num_pulls[0].split('-'))[0])
-                        upper_bound = int((num_pulls[0].split('-'))[1])
-                        repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+                if 'min_pull_requests' in request.POST and not 'max_pull_requests' in request.POST:
+                    upper_bound = filter_form.cleaned_data.get('min_pull_requests')
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_less_than_filter(upper_bound)
+                    filters.append(repos_filtered_by_pulls)
+
+                elif 'max_pull_requests' in request.POST and not 'min_pull_requests' in request.POST:
+                    lower_bound = filter_form.cleaned_data.get('max_pull_requests')
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
+                    filters.append(repos_filtered_by_pulls)
+
+                else:
+                    lower_bound = filter_form.cleaned_data.get('min_pull_requests')
+                    upper_bound = filter_form.cleaned_data.get('max_pull_requests')
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
 
                     filters.append(repos_filtered_by_pulls)
+
+                # if 'num_pulls' in request.POST:
+                #     num_pulls = filter_form.cleaned_data.get('num_pulls')
+                #     if '+' in num_pulls[0]:
+                #             lower_bound = int((num_pulls[0].split('+'))[0])
+                #             repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
+                #     else:
+                #         lower_bound = int((num_pulls[0].split('-'))[0])
+                #         upper_bound = int((num_pulls[0].split('-'))[1])
+                #         repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+
+                #     filters.append(repos_filtered_by_pulls)
 
                 if 'has_wiki' in request.POST:
                     repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)
