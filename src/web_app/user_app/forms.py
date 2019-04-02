@@ -61,36 +61,12 @@ class MiningRequestForm(forms.Form):
         
         return repo_name
 
-class SignUpForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
-    last_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
-    email = forms.EmailField(max_length=254, required=True, help_text='*Required.')
-    github_oauth = forms.CharField(max_length=254, required=False, help_text="*Optional.")
-
-    def clean_github_oauth(self):
-        github_oauth = self.cleaned_data['github_oauth']
-
-        # Only try to authenticate of a token was passed in 
-        if github_oauth != "":
-            try:
-                g = Github(github_oauth)
-                authenticated_repo_test = [repo for repo in g.get_user().get_repos()]
-            except Exception: #github.GithubException.BadCredentialsException
-                raise ValidationError("Invalid Github OAuth Token.")
-
-        return github_oauth
-
-    def clean_user(self):
-        username = self.cleaned_data['username']
-        users = list(User.objects.values_list('username', flat=True))
-        if username in users:
-            raise ValidationError(f"The Username '{username}' Has Already Been Taken!") 
-       
+class SignupForm(UserCreationForm):
+    email = forms.EmailField(max_length=200, help_text='Required')
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'github_oauth', 'password1', 'password2', )
- 
-
+        fields = ('username', 'email', 'password1', 'password2')
+  
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=30, required=True)
     raw_password = forms.CharField(widget=forms.PasswordInput())

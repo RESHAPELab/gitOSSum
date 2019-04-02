@@ -18,7 +18,7 @@ from django.forms import ValidationError
 
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
-from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm, Filter
+from .forms import MiningRequestForm, LoginForm, FeedbackForm, Filter, SignupForm
 from mining_scripts.mining import *
 from .models import *
 from .tokens import account_activation_token
@@ -44,11 +44,10 @@ def about_us(request):
     template_name = 'about_us.html'
     return render(request, template_name, {})
 
-# Only allow people that are not signed in to access the signup page
 @login_forbidden
 def signup(request):
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
@@ -67,13 +66,9 @@ def signup(request):
             )
             email.send()
             return HttpResponse('Please  confirm your email address to complete the registration')
-        else:
-            form = SignUpForm()
-            error = "That username is already taken!" 
-            return render(request, 'signup.html', {'form': form, "error":error})
     else:
-        form = SignUpForm()
-        return render(request, 'signup.html', {'form': form})
+        form = SignupForm()
+    return render(request, 'signup.html', {'form': form})
 
 
 # Utility function taken from https://medium.com/@frfahim/django-registration-with-confirmation-email-bb5da011e4ef
@@ -87,8 +82,8 @@ def activate(request, uidb64, token):
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request, user)
-        return HttpResponse('Thank  you for your email confirmation. Now you can login your account.')
+        # login(request, user)
+        return HttpResponse('Thank  you for your email confirmation. Now you can <a href="http://gitossum.com/accounts/login/">login</a> your account.')
     else:
         return HttpResponse('Activation  link is invalid!')
 

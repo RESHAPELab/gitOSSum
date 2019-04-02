@@ -12,7 +12,7 @@ from mining_scripts.batchify import *
 import time 
 from datetime import datetime
 import json
-from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
+from user_app.models import QueuedMiningRequest, MinedRepo
 from django.contrib.auth.models import User
 import sys
 import numpy as np

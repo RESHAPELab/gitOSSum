@@ -33,7 +33,7 @@ except AppRegistryNotReady:
     django.setup()
 
 # Only import the models after we know django has been setup 
-from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
+from user_app.models import QueuedMiningRequest, MinedRepo
 
 # precent issues with forking 
 if os.getpid() == 0:

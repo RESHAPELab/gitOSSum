@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 
 
 # Register your models here.
-from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo, OAuthToken
+from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo
 from mining_scripts.send_email import *
 from mining_scripts.mining import *
 from mining_scripts.batchify import *
@@ -276,14 +276,9 @@ class MinedRepoAdmin(admin.ModelAdmin):
                                         'bar_chart_html', 'pull_line_chart_html',))
         return fieldsets
 
-class OAuthTokenAdmin(admin.ModelAdmin):
-    list_display = ["oauth_token", "owner"]
-    ordering = ["owner"]
-
 
 # Register all of the admin panels to their respective models 
 admin.site.register(MiningRequest, MiningRequestAdmin)
 admin.site.register(QueuedMiningRequest, QueuedMiningRequestAdmin)
 admin.site.register(BlacklistedMiningRequest, BlacklistedMiningRequestAdmin)
 admin.site.register(MinedRepo, MinedRepoAdmin)
-admin.site.register(OAuthToken, OAuthTokenAdmin)
