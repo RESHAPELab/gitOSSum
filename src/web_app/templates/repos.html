@@ -95,17 +95,17 @@
 
 <body>
     <h1>Mined Repos</h1>
-    {{ error }}
+    <!-- {{ error }} -->
     <hr>
 
     <form action="." method="post">
         {% csrf_token %}
         <div class="jumbotron filter">
-            <div class="feild wrapper">
+            <div class="field wrapper">
             {% for field in filter %}
                 <div class="field">
                     <h4>{{ field.label }}</h4> 
-                    <li><strong style="color:red;">{{ field.errors|escape }}</strong></li>
+                    <!-- <li><strong style="color:red;">{{ field.errors|escape }}</strong></li> -->
                     <!-- {{ field.errors }} -->
                     {{ field }}
                 </div>
