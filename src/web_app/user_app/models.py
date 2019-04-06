@@ -20,6 +20,7 @@ class QueuedMiningRequest(models.Model):
     requested_by            = models.CharField(max_length=240, null=False, blank=False)
     timestamp               = models.DateTimeField(auto_now_add=True)
     requested_timestamp     = models.DateTimeField(auto_now_add=False)
+    send_email              = models.BooleanField()
 
 class BlacklistedMiningRequest(models.Model):
     repo_name               = models.CharField(max_length=240, null=False, blank=False)
@@ -33,6 +34,7 @@ class BlacklistedMiningRequest(models.Model):
 class MinedRepo(models.Model):
     repo_name                    = models.CharField(max_length=240, null=False, blank=False)
     requested_by                 = models.CharField(max_length=240, null=False, blank=False)
+    send_email                   = models.BooleanField()
     num_pulls                    = models.IntegerField(validators=[MinValueValidator(0)])
     num_closed_merged_pulls      = models.IntegerField(validators=[MinValueValidator(0)])
     num_closed_unmerged_pulls    = models.IntegerField(validators=[MinValueValidator(0)])

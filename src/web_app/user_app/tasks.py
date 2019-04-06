@@ -183,6 +183,7 @@ def visualize_repo_data():
             mined_repo = MinedRepo(
                 repo_name=repo_name,
                 requested_by=username,
+                send_email = getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "send_email"),
                 num_pulls=visualization_data["num_pulls"],
                 num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
                 num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
@@ -202,4 +203,5 @@ def visualize_repo_data():
 
             QueuedMiningRequest.objects.get(repo_name=repo_name).delete()
 
-            send_confirmation_email(repo_name, username, getattr(User.objects.get(username=username), 'email'))
+            if getattr(MinedRepo.objects.get(repo_name=repo_name), "send_email") == True:
+                send_confirmation_email(repo_name, username, getattr(User.objects.get(username=username), 'email'))

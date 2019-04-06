@@ -157,7 +157,8 @@ def approve_mining_requests(modeladmin, request, queryset):
 
         # Move this repo into the Queue
         queued_request = QueuedMiningRequest(repo_name=repo_name, requested_by=username,
-                requested_timestamp=getattr(MiningRequest.objects.get(repo_name=repo_name), "timestamp")
+                requested_timestamp=getattr(MiningRequest.objects.get(repo_name=repo_name), "timestamp"),
+                send_email=getattr(MiningRequest.objects.get(repo_name=repo_name), "send_email")
             )
         
         queued_request.save()
@@ -254,7 +255,7 @@ class MiningRequestAdmin(admin.ModelAdmin):
 
 
 class QueuedMiningRequestAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]
+    list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp", "send_email"]
     ordering = ['timestamp']
 
     actions=[delete_selected]
@@ -264,7 +265,7 @@ class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
     ordering = ['timestamp']
 
 class MinedRepoAdmin(admin.ModelAdmin):
-    list_display = ['repo_name', "requested_by", "completed_timestamp", "accepted_timestamp", "requested_timestamp"]
+    list_display = ['repo_name', "requested_by", "completed_timestamp", "accepted_timestamp", "requested_timestamp", "send_email"]
     ordering = ['completed_timestamp']
     
     actions=[delete_selected]
