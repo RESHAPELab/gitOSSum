@@ -13,6 +13,7 @@ import plotly.graph_objs as go
 import plotly.tools as tls
 import pandas as pd
 import numpy as np
+import pytz
 
 # Example using mutli-bar chart 
 def multi_bar_chart():
@@ -58,14 +59,25 @@ def get_repo_table_context(repo_name):
     network_count = landing_page['network_count']
     subscribers_count = landing_page['subscribers_count']
 
+    # adjust the timezone of this landing page to be America/Phoenix
+    time_zone = pytz.timezone('America/Phoenix')
+    date_format = "%Y-%m-%dT%H:%M:%SZ"
+    unaware_created_date = datetime.datetime.strptime(str(created_at), date_format)
+    unaware_updated_date = datetime.datetime.strptime(str(updated_at), date_format)
+    
+    adjusted_created_date =  pytz.utc.localize(unaware_created_date).astimezone(time_zone)
+    adjusted_updated_date =  pytz.utc.localize(unaware_updated_date).astimezone(time_zone)
+
+
+
     return {
         "num_pulls":num_pulls,
         "num_closed_merged_pulls":num_closed_merged_pulls,
         "num_closed_unmerged_pulls":num_closed_unmerged_pulls, 
         "num_open_pulls":num_open_pulls,
         "description":str(description),
-        "created_at":datetime.datetime.strptime(str(created_at), "%Y-%m-%dT%H:%M:%SZ"),
-        "updated_at":datetime.datetime.strptime(str(updated_at), "%Y-%m-%dT%H:%M:%SZ"),
+        "created_at":adjusted_created_date,
+        "updated_at":adjusted_updated_date,
         "last_mined_date":last_mined_date,
         "clone_url":str(clone_url),
         "homepage":homepage,
