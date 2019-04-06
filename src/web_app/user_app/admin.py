@@ -257,6 +257,8 @@ class QueuedMiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp", "requested_timestamp"]
     ordering = ['timestamp']
 
+    actions=[delete_selected]
+
 class BlacklistedMiningRequestAdmin(admin.ModelAdmin):
     list_display = ['repo_name', "requested_by", "timestamp"]
     ordering = ['timestamp']

@@ -68,7 +68,6 @@ def initialize_batch_json(batch_list, repo_name):
         "total_batches": total_batches,
         "collected_batches": 0,
         "attempted_batches": 0,
-        "updated": str(timezone.now())
     }
     db.pullBatches.update_one(batch_json_data, {"$set": batch_json_data}, upsert=True)
 
@@ -77,11 +76,6 @@ def initialize_batch_json(batch_list, repo_name):
 # When the admin approves, go call the mining script asynchronously 
 @app.task(bind=True, name='tasks.mine_data_asynchronously', hard_time_limit=60*60*10)
 def mine_data_asynchronously(self, repo_name, username, user_email, queued_request):    
-    pygit_repo = g.get_repo(repo_name)
-
-    # mine and store the main page josn
-    mine_repo_page(pygit_repo)
-
     batch_data = batchify(repo_name)
 
     # TODO: If there are no pull requests, just make a table, no graphs 
@@ -115,8 +109,10 @@ def update_all_repos():
 
 @app.task(name='tasks.update_specific_repo')
 def update_specific_repo(repo_name):
+    delete_specific_repo_from_repo_collection(repo_name)
     pygit_repo = g.get_repo(repo_name)
     mine_repo_page(pygit_repo) # update the landing page
+    document = pull_batches.find_one({"repo":repo_name})
 
     # get a list of all the current pull requests 
     num_current_pulls = count_all_pull_requests_from_a_specifc_repo(repo_name)
@@ -170,6 +166,12 @@ def visualize_repo_data():
         for repo_name in repos_needing_rendering:
             if all_tasks_completed(repo_name) == False:
                 continue
+
+            pygit_repo = g.get_repo(repo_name)
+
+            # mine and store the main page josn
+            mine_repo_page(pygit_repo)
+            
             username = getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "requested_by")
             # It is finished, time to visualize it 
             logger.info('Extracting visualization data for {0}'.format(repo_name))

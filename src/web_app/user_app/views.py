@@ -125,7 +125,7 @@ def mined_repos(request):
             
     context = dict()
     message = ''
-    filter_form = Filter()
+    filter_form = Filter(get_language_list_from_mongo())
 
     if request.method == 'POST':
 
@@ -167,7 +167,7 @@ def mined_repos(request):
 
         else:
             filters = list()
-            filter_form = Filter(request.POST)
+            filter_form = Filter(get_language_list_from_mongo(), request.POST)
             
             if filter_form.is_valid():
                 if 'search' in request.POST:
@@ -195,26 +195,6 @@ def mined_repos(request):
                 elif lower_bound != None and upper_bound != None:
                     repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
                     filters.append(repos_filtered_by_pulls)
-
-
-                # if 'min_pull_requests' in request.POST and not 'max_pull_requests' in request.POST:
-                #     lower_bound = filter_form.cleaned_data.get('min_pull_requests')
-                #     if lower_bound != None:
-                #         repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
-                #         filters.append(repos_filtered_by_pulls)
-
-                # if 'max_pull_requests' in request.POST and not 'min_pull_requests' in request.POST:
-                #     upper_bound = filter_form.cleaned_data.get('max_pull_requests')
-                #     if upper_bound != None:
-                #         repos_filtered_by_pulls = get_repos_list_by_pulls_less_than_filter(upper_bound)
-                #         filters.append(repos_filtered_by_pulls)
-
-                # if 'min_pull_requests' in request.POST and 'max_pull_requests' in request.POST:
-                #     lower_bound = filter_form.cleaned_data.get('min_pull_requests')
-                #     upper_bound = filter_form.cleaned_data.get('max_pull_requests')
-                #     if lower_bound != None and upper_bound != None:
-                #         repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
-                #         filters.append(repos_filtered_by_pulls)
 
                 if 'has_wiki' in request.POST:
                     repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)

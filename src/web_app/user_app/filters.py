@@ -2,6 +2,7 @@
 from operator import and_
 from functools import reduce
 from mining_scripts.mining import *
+from .models import *
 import re
 import os
 
@@ -51,7 +52,13 @@ def get_repos_list_by_language_filter(languages_list):
     for language in languages_list:
         repos_list.append([item['full_name'] for item in repos.find({"language":language}, 
                           {'_id':0,"full_name":1})])
-    return set([item.lower() for sublist in repos_list for item in sublist])
+    default_set = set([item.lower() for sublist in repos_list for item in sublist])
+    set_to_be_returned = set()
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+    for repo in default_set:
+        if repo in mined_repos:
+            set_to_be_returned.add(repo)
+    return set_to_be_returned
 
 
 # Helper method to obtain a list of repos whose number of pull 

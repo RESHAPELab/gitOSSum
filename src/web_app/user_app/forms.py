@@ -102,6 +102,15 @@ class Filter(forms.Form):
         choices =[tuple(('True', 'True'))]
     )
 
+    # The form must be initialized by passing in the languages every time.
+    # This ensures the language checkboxes are up to date all the time 
+    def __init__(self, languages, *args, **kwargs):
+        super(Filter, self).__init__(*args, **kwargs)
+        self.fields['languages'] = forms.MultipleChoiceField(
+                                        required= False,
+                                        widget  = forms.CheckboxSelectMultiple,
+                                        choices = [tuple((language, language)) for language in languages]
+                                    )
 
     def selected_languages_labels(self):
         return [label for value, label in self.fields['languages'].choices if value in self['languages'].value()]
