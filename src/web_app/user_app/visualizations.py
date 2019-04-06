@@ -136,19 +136,29 @@ def get_dual_repo_table_context(repo_one_full_name, repo_two_full_name):
         'description_repo_one':description_repo_one,
         'description_repo_two':description_repo_two
     })
+    
+    # adjust the timezone of this landing page to be America/Phoenix
+    time_zone = pytz.timezone('America/Phoenix')
+    date_format = "%Y-%m-%dT%H:%M:%SZ"
 
-    created_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['created_at']), "%Y-%m-%dT%H:%M:%SZ")
-    created_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['created_at']), "%Y-%m-%dT%H:%M:%SZ")
+    unaware_created_date_one = datetime.datetime.strptime(str(landing_page_repo_one['created_at']), date_format)
+    unaware_updated_date_one = datetime.datetime.strptime(str(landing_page_repo_one['updated_at']), date_format)
+    unaware_created_date_two = datetime.datetime.strptime(str(landing_page_repo_two['created_at']), date_format)
+    unaware_updated_date_two = datetime.datetime.strptime(str(landing_page_repo_two['updated_at']), date_format)
+    
+    adjusted_created_date_one =  pytz.utc.localize(unaware_created_date_one).astimezone(time_zone)
+    adjusted_updated_date_one =  pytz.utc.localize(unaware_updated_date_one).astimezone(time_zone)
+    adjusted_created_date_two =  pytz.utc.localize(unaware_created_date_two).astimezone(time_zone)
+    adjusted_updated_date_two =  pytz.utc.localize(unaware_updated_date_two).astimezone(time_zone)
+
     context.update({
-        'created_at_repo_one':created_at_repo_one,
-        'created_at_repo_two':created_at_repo_two
+        'created_at_repo_one':adjusted_created_date_one,
+        'created_at_repo_two':adjusted_created_date_two
     })
 
-    updated_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
-    updated_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
     context.update({
-        'updated_at_repo_one':updated_at_repo_one,
-        'updated_at_repo_two':updated_at_repo_two
+        'updated_at_repo_one':adjusted_updated_date_one,
+        'updated_at_repo_two':adjusted_updated_date_two
     })
 
     last_mined_date_repo_one = getattr(MinedRepo.objects.get(repo_name=repo_one_full_name), "completed_timestamp")
@@ -302,22 +312,34 @@ def get_three_repo_table_context(repo_one_full_name, repo_two_full_name, repo_th
         'description_repo_three':description_repo_three
     })
 
-    created_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['created_at']), "%Y-%m-%dT%H:%M:%SZ")
-    created_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['created_at']), "%Y-%m-%dT%H:%M:%SZ")
-    created_at_repo_three = datetime.datetime.strptime(str(landing_page_repo_three['created_at']), "%Y-%m-%dT%H:%M:%SZ")
+    # adjust the timezone of this landing page to be America/Phoenix
+    time_zone = pytz.timezone('America/Phoenix')
+    date_format = "%Y-%m-%dT%H:%M:%SZ"
+
+    unaware_created_date_one = datetime.datetime.strptime(str(landing_page_repo_one['created_at']), date_format)
+    unaware_updated_date_one = datetime.datetime.strptime(str(landing_page_repo_one['updated_at']), date_format)
+    unaware_created_date_two = datetime.datetime.strptime(str(landing_page_repo_two['created_at']), date_format)
+    unaware_updated_date_two = datetime.datetime.strptime(str(landing_page_repo_two['updated_at']), date_format)
+    unaware_created_date_three = datetime.datetime.strptime(str(landing_page_repo_three['created_at']), date_format)
+    unaware_updated_date_three = datetime.datetime.strptime(str(landing_page_repo_three['updated_at']), date_format)
+    
+    adjusted_created_date_one =  pytz.utc.localize(unaware_created_date_one).astimezone(time_zone)
+    adjusted_updated_date_one =  pytz.utc.localize(unaware_updated_date_one).astimezone(time_zone)
+    adjusted_created_date_two =  pytz.utc.localize(unaware_created_date_two).astimezone(time_zone)
+    adjusted_updated_date_two =  pytz.utc.localize(unaware_updated_date_two).astimezone(time_zone)
+    adjusted_created_date_three =  pytz.utc.localize(unaware_created_date_three).astimezone(time_zone)
+    adjusted_updated_date_three =  pytz.utc.localize(unaware_updated_date_three).astimezone(time_zone)
+
     context.update({
-        'created_at_repo_one':created_at_repo_one,
-        'created_at_repo_two':created_at_repo_two,
-        'created_at_repo_three':created_at_repo_three
+        'created_at_repo_one':adjusted_created_date_one,
+        'created_at_repo_two':adjusted_created_date_two,
+        'created_at_repo_three':adjusted_created_date_three
     })
 
-    updated_at_repo_one = datetime.datetime.strptime(str(landing_page_repo_one['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
-    updated_at_repo_two = datetime.datetime.strptime(str(landing_page_repo_two['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
-    updated_at_repo_three = datetime.datetime.strptime(str(landing_page_repo_three['updated_at']), "%Y-%m-%dT%H:%M:%SZ")
     context.update({
-        'updated_at_repo_one':updated_at_repo_one,
-        'updated_at_repo_two':updated_at_repo_two,
-        'updated_at_repo_three':updated_at_repo_three
+        'updated_at_repo_one':adjusted_updated_date_one,
+        'updated_at_repo_two':adjusted_updated_date_two,
+        'updated_at_repo_three':adjusted_updated_date_three
     })
 
     last_mined_date_repo_one = getattr(MinedRepo.objects.get(repo_name=repo_one_full_name), "completed_timestamp")

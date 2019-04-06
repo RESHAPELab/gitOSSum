@@ -163,7 +163,7 @@ def mined_repos(request):
                     return HttpResponseRedirect(url)
 
             else:
-                message = "You must choose at least one page to compare!"
+                message = "You must choose at least two pages to compare!"
 
         else:
             filters = list()

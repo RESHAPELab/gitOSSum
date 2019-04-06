@@ -2,6 +2,7 @@ from django import forms
 from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo
 from django.forms import ValidationError, MultipleChoiceField, CheckboxSelectMultiple
 from mining_scripts.mining import *
+from mining_scripts.batchify import *
 import re
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -49,11 +50,22 @@ class MiningRequestForm(forms.Form):
         elif repo_name in mining_requests:
             errors.append("This repository has already been requested.")
 
+        # The repo cannot currently be mining
         elif repo_name in queued_repos:
             errors.append("This repository is currently being mined.")
 
+        # The repo cannot be blacklisted
         elif repo_name in black_listed_requests:
             errors.append("This repository has been blacklisted by the Administrator.")
+
+        # (if it exists, and matches valid repo regex) the repo cannot have 0 pull requests 
+        if not isinstance(find_repo_main_page(repo_name), Exception) and valid_repo.fullmatch(repo_name):
+            batches = batchify(repo_name)
+            
+            # If there are no batches, thats a problem!
+            if len(batches) == 0:
+                errors.append("This repository has no pull requests!")
+
 
         # Raise any errors found 
         if errors != []:
