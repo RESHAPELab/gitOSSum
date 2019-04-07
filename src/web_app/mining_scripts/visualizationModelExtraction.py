@@ -205,27 +205,48 @@ def produce_contributors_per_month_line_chart(extracted_info):
     people = extracted_info['people_list']
     created = extracted_info['created_at_list']
 
+    # We need this to refer back to rows 
+    raw_data = pd.DataFrame({
+        'person':people,
+        'month':pd.to_datetime(pd.Series(created), format="%Y-%m-%d %H:%M:%S")
+    })
+
     # Create a dataframe with people and month of contribution as the columns
-    df = pd.DataFrame({
+    filtered_df = pd.DataFrame({
         'person':people,
         'month':pd.to_datetime(pd.Series(created), format="%Y-%m-%d %H:%M:%S").dt.to_period('m')
     })
 
     # eliminate duplicate rows (people showing up more than once each month)
-    df = df.drop_duplicates()
+    filtered_df = filtered_df.drop_duplicates()
 
-    # Get a list of all of the months as a string 
-    months_indices = np.array(df['month'].sort_values().drop_duplicates().astype(str))
+    # Get the rows with their indexes 
+    dates = pd.Series(filtered_df['month'])
 
-    # Count the number of occurrences of each month 
-    months_df = pd.DataFrame({'month':df['month']})
-    months_freq =  np.array(months_df.groupby(months_df.columns.tolist(),as_index=False).size())
+    # refer back to the raw data by index
+    dates = raw_data.iloc[dates.index]['month']
+
+    # Convert this data it only look at the month 
+    dates.index = dates.dt.to_period('m')
+
+    # Group by the month and count the occurrences 
+    dates = dates.groupby(level=0).size()
+
+    # Fill in missing months with the vlaue '0'
+    dates = dates.reindex(pd.period_range(dates.index.min(),
+                                        dates.index.max(), freq='m'), fill_value=0)
+
+    # Get the months as a string for our x-axis
+    dates_indices = np.array(dates.index.astype(str))
+
+    # Get the frequency as a list for the y-axis 
+    dates_freq = np.array(dates)
 
     # Now all we need to do is plot this bad boy! 
     data = [
         go.Scatter(
-            x=months_indices, 
-            y=months_freq,
+            x=dates_indices, 
+            y=dates_freq,
             mode = 'lines+markers',
             name="Contribution"
         )
