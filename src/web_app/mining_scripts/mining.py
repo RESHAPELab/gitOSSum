@@ -160,7 +160,6 @@ def rate_limit_is_reached():
     if num_requests_remaining == 0:
         return True 
     else:
-        logger.info('NUMBER OF GITHUB REQUESTS REMAINING: {0}'.format(num_requests_remaining))
         return False 
 
 def get_number_of_remaining_requests():
@@ -187,13 +186,8 @@ def wait_for_request_rate_reset():
 # Method to download all pull requests of a given repo and 
 # put them within the db.pullRequests collection 
 def mine_pulls_from_repo(pygit_repo):
-    logger.info('Retrieving a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
-
     # Retrieve all pull request numbers associated with this repo 
     pulls = pygit_repo.get_pulls('all')
-    logger.info('Successfully retrieved a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
-
-    logger.info('Beginning to mine individual pull requests for "{0}".'.format(pygit_repo.full_name))
     
     for pull in pulls:
         
@@ -241,7 +235,6 @@ def mine_specific_pull(pull):
     except Exception as e:
         # if this repo doesn't exist, don't mine it 
         if e == 500 or e == 404:
-            logger.info('GITHUB EXCEPTION: {0} for PULL {1}. PULL INACCESSIBLE, PASSING.'.format(e, pull.number))
             pass
         # TODO: Else, send the administrator an email to alert them of an error
     
@@ -306,4 +299,5 @@ def delete_all_contents_of_specific_repo_from_every_collection(repo_name):
     delete_specifc_repos_pull_requests(repo_name)
     delete_specific_repos_pull_request_batches(repo_name)
     return
-    
+
+

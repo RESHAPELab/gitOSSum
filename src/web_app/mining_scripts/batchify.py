@@ -5,7 +5,7 @@ from mining_scripts.config import *
 
 # Global constants
 
-BATCH_SIZE = 500 # What size chunks we want 
+BATCH_SIZE = 1000 # What size chunks we want 
 NUM_OF_PREDEFINED_BATCH_SIZE = 0 # tuple index
 LAST_BATCH_SIZE = 1 # tuple index
 

@@ -121,7 +121,7 @@ class Filter(forms.Form):
         self.fields['languages'] = forms.MultipleChoiceField(
                                         required= False,
                                         widget  = forms.CheckboxSelectMultiple,
-                                        choices = [tuple((language, language)) for language in languages]
+                                        choices = [tuple((language[0], f'{language[0]} ({language[1]})')) for language in languages]
                                     )
 
     def selected_languages_labels(self):

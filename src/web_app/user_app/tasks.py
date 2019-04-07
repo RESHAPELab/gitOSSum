@@ -74,11 +74,9 @@ def initialize_batch_json(batch_list, repo_name):
 
 
 # When the admin approves, go call the mining script asynchronously 
-@app.task(bind=True, name='tasks.mine_data_asynchronously', hard_time_limit=60*60*10)
+@app.task(bind=True, name='tasks.mine_data_asynchronously')
 def mine_data_asynchronously(self, repo_name, username, user_email, queued_request):    
     batch_data = batchify(repo_name)
-
-    # TODO: If there are no pull requests, just make a table, no graphs 
     
     # Else, move on to mining the data 
     initialize_batch_json(batch_data, repo_name)
@@ -89,7 +87,7 @@ def mine_data_asynchronously(self, repo_name, username, user_email, queued_reque
     return True 
 
 
-@app.task(name='tasks.mine_pull_request_batch_asynchronously', hard_time_limit=60*60*3)
+@app.task(name='tasks.mine_pull_request_batch_asynchronously')
 def mine_pull_request_batch_asynchronously(repo_name, job):
     pulls_batch = get_batch_number(repo_name, job)
     
@@ -166,6 +164,10 @@ def visualize_repo_data():
         for repo_name in repos_needing_rendering:
             if all_tasks_completed(repo_name) == False:
                 continue
+
+            # Done allow us to continue if we hit the request rate 
+            if rate_limit_is_reached():
+                wait_for_request_rate_reset()
 
             pygit_repo = g.get_repo(repo_name)
 
