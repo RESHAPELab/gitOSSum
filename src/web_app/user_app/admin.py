@@ -202,7 +202,8 @@ class MinedRepoAdmin(admin.ModelAdmin):
                                         'num_open_pulls', 'num_closed_unmerged_pulls', 
                                         'created_at_list', 'closed_at_list', 
                                         'merged_at_list', 'num_newcomer_labels',
-                                        'bar_chart_html', 'pull_line_chart_html',))
+                                        'bar_chart_html', 'pull_line_chart_html',
+                                        'contribution_line_chart_html',))
         return fieldsets
 
 

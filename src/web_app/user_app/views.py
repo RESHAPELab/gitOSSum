@@ -243,7 +243,8 @@ def get_repo_data(request, repo_owner, repo_name):
             "repo_name":original_repo,
             "repo_img":find_repo_main_page(original_repo)['owner']['avatar_url'],
             "bar_chart_html":getattr(repo, "bar_chart_html"),
-            "pull_line_chart_html":getattr(repo, "pull_line_chart_html")
+            "pull_line_chart_html":getattr(repo, "pull_line_chart_html"), 
+            "contribution_line_chart_html": getattr(repo, "contribution_line_chart_html")
         })
         return render(request, template_name, context) 
 

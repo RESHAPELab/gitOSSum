@@ -39,6 +39,7 @@ def mongo_filter_test_init():
 # Method to return a list of dictionaries containing each language
 # we have stored in mongo, and the corresponding count for each language
 def get_language_list_from_mongo():
+    # Get a sorted list of all the languages in the form of a tuple (lanugage, count)
     return sorted([
         (item['_id'], item['count']) for item in repos.aggregate([{"$match":{"language":{"$ne":None}}},
         {"$group":{"_id":"$language", "count":{"$sum":1}}}])

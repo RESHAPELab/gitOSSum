@@ -45,6 +45,7 @@ class MinedRepo(models.Model):
     num_newcomer_labels          = models.IntegerField(validators=[MinValueValidator(0)])
     bar_chart_html               = models.TextField()
     pull_line_chart_html         = models.TextField()
+    contribution_line_chart_html = models.TextField()
     completed_timestamp          = models.DateTimeField(auto_now_add=True)
     accepted_timestamp           = models.DateTimeField(auto_now_add=False)
     requested_timestamp          = models.DateTimeField(auto_now_add=False)

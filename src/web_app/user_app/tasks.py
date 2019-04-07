@@ -150,6 +150,7 @@ def update_specific_repo(repo_name):
     mined_repo_model_obj.num_newcomer_labels=visualization_data["num_newcomer_labels"]
     mined_repo_model_obj.bar_chart_html=visualization_data["bar_chart"]
     mined_repo_model_obj.pull_line_chart_html=visualization_data["line_chart"]
+    mined_repo_model_obj.contribution_line_chart_html = visualization_data['contribution_line_chart_html']
     mined_repo_model_obj.completed_timestamp = str(timezone.now())
     mined_repo_model_obj.save()
 
@@ -196,6 +197,7 @@ def visualize_repo_data():
                 num_newcomer_labels=visualization_data["num_newcomer_labels"],
                 bar_chart_html=visualization_data["bar_chart"],
                 pull_line_chart_html=visualization_data["line_chart"],
+                contribution_line_chart_html = visualization_data['contribution_line_chart_html'],
                 accepted_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "timestamp"),
                 requested_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "requested_timestamp")
             ) 
