@@ -33,6 +33,13 @@
     .jumboTitle {
         margin-top: -5%;
         margin-bottom: 3%;
+        color:black;
+    }
+
+    .jumboTitle2 {
+        margin-top: -2%;
+        margin-bottom: 3%;
+        color:black;
     }
 
     .row1 {
@@ -99,6 +106,23 @@
         color: white;
     }
 
+    .hasTooltip span {
+    display: none;
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    padding: 3px;
+    z-index: 2;
+}
+
+.hasTooltip:hover span {
+    display: block;
+    position: absolute;
+    opacity: 1;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid #CCC;
+    margin: 2px 10px;
+    z-index: 2;
+}
 </style>
 
 </head>
@@ -121,42 +145,91 @@
                     <td>{{ description }}</td>
                 </tr> -->
                 <tr>
-                    <td>Date Created</td>
+                    <td>
+                        Date Created 
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px"/>
+                            <span>This is when the repository was created on GitHub!</span>
+                        </a>
+                    </td>
                     <td>{{ created_at }}</td>
                 </tr>
                 <tr>
-                    <td>Date Last Updated</td>
+                    <td>
+                        Date Last Updated
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is when the repository was last changed in any way on GitHub!</span>
+                        </a>
+                    </td>  
                     <td>{{ updated_at }}</td>
                 </tr>
                 <tr>
-                    <td>Date Last Mined</td>
+                    <td>
+                        Date Last Mined
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is when Git-OSS-um last obtained information about this repository!</span>
+                        </a>
+                    </td>
                     <td>{{ last_mined_date }}</td>
                 </tr>
                 <tr>
-                    <td>Clone URL</td>
+                    <td>
+                        Clone URL
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the url you would use to clone this repository!</span>
+                        </a>
+                    </td>
                     <td>{{ clone_url }}</td>
                 </tr>
                 {% if homepage != False %}
                 <tr>
-                    <td>Repository Homepage</td>
+                    <td>Repository Homepage
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the personal website for this repository! Click on it to visit their page!</span>
+                        </a>
+                    </td>
                     <td><a class="link" href="{{ homepage }}" target="blank">{{ homepage }}</a></td>
                 </tr>
                 {% endif %}
                 <tr>
         
-                    <td>Number of Stargazers</td>
+                    <td>Number of Stargazers
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of people who showed interest in this repository & starred it!</span>
+                        </a>
+                    </td>
                     <td>{{ stargazers_count }}</td>
                 </tr>
                 <tr>
-                    <td>Programming Language</td>
+                    <td>Programming Language
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the main programming language of this repository!</span>
+                        </a>
+                    </td>
                     <td>{{language }}</td>
                 </tr>
                 <tr>
-                    <td>Has a Wiki Page</td>
+                    <td>Has a Wiki Page
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>Does this repository have a listed wiki page to help you out?</span>
+                        </a>
+                    </td>
                     <td>{{ has_wiki }}</td>
                 </tr>
                 <tr>
-                    <td>Development License</td>
+                    <td>Development License
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the license this repository uses for development! Click on it to find out more!</span>
+                        </a>
+                    </td>
                     {% if license_name == "Other" or license_name == "None" %}
                         <td>{{ license_name }}</td>
                     {% elif homepage != False and license_name != "Other" or license_name != None %}
@@ -164,15 +237,30 @@
                     {% endif %}
                 </tr>
                 <tr>
-                    <td>Number of Open Issues</td>
+                    <td>Number of Open Issues
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of problems this repository has that need to be solved! Give it a shot!</span>
+                        </a>
+                    </td>
                     <td>{{ open_issues }}</td>
                 </tr>
                 <tr>
-                    <td>Number of Forks</td>
+                    <td>Number of Forks
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of people who have made a copy of this repository to help contribute!</span>
+                        </a>
+                    </td>
                     <td>{{ network_count }}</td>
                 </tr>
                 <tr>
-                    <td>Number of Watchers</td>
+                    <td>Number of Watchers
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of people who want updates on this repository</span>
+                        </a>
+                    </td>
                     <td>{{ subscribers_count }}</td>
                 </tr>
             </table>
@@ -180,16 +268,57 @@
     </div>
     <div class="row2">
         <div class="jumbotron bar1">
-            <h3 class="jumboTitle"> </h3>
+            <h3 class="jumboTitle">
+                <center>
+                    Here is how pull requests are distributed within {{ repo_name }}
+                    <a class="hasTooltip">
+                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" />
+                        <span>
+                            Pull requests can either be closed-merged (accepted by the project owner & merged 
+                            into the desired branch, closed-unmerged (denied by the project owner & therefore
+                            not merged into the desired branch), or open (a decision has not yet been made as
+                            to accept or deny this pull request)
+                        </span>
+                    </a>
+                </center>
+            </h3>
             {{ bar_chart_html |safe }}
         </div>
         <div class="jumbotron bar2">
-            <h3 class="jumboTitle"> </h3>
+            <h3 class="jumboTitle">
+                <center>
+                    Here are how many people are contributing to {{ repo_name }} per month
+                    <a class="hasTooltip">
+                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" />
+                        <span>
+                            This is how many unique individuals are contributing to {{ repo_name }} per month.
+                            Note that some months may be more popular than others. This graph should give you an 
+                            understanding as to how "alive" this repository is based on the number of people attempting
+                            to contribute to it!
+                        </span>
+                    </a>
+                </center>
+            </h3>
             {{ contribution_line_chart_html |safe }}
         </div>
     </div>
     <div class="row3">
         <div class="jumbotron prByMonth">
+            <h3 class="jumboTitle2">
+                <center>
+                    Here are how pull requests are being decided upon in {{ repo_name }} per month
+                    <a class="hasTooltip">
+                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" />
+                        <span>
+                           This is a line chart showing you the number of pull requests each month within one 
+                           of 3 categories (closed-merged, closed-unmerged, and open). Pull requests can either 
+                           be closed-merged (accepted by the project owner & merged into the desired branch, 
+                           closed-unmerged (denied by the project owner & therefore not merged into the desired 
+                           branch), or open (a decision has not yet been made as to accept or deny this pull request)
+                        </span>
+                    </a>
+                </center>
+            </h3>
             {{ pull_line_chart_html |safe }}
         </div>
     </div>
