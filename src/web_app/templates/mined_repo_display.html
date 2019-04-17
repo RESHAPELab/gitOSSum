@@ -108,7 +108,7 @@
 
     .hasTooltip span {
         display: none;
-        color: rgb(0, 0, 0);
+        color: black;
         text-decoration: none;
         padding: 3px;
         z-index: 2;
@@ -118,11 +118,31 @@
         display: block;
         position: absolute;
         opacity: 1;
-        background-color: rgb(255, 255, 255);
-        border: 1px solid #CCC;
+        background-color: white;
+        border: 1px solid black;
         margin: 2px 10px;
         z-index: 2;
     }
+
+    a.altTool span {
+        display: none;
+        color: black;
+        text-decoration: none;
+        padding: 3px;
+        z-index: 2;
+    }
+    a.altTool:hover span {
+        display: block;
+        position: absolute;
+        font-size: 12pt;
+        opacity: 1;
+        background-color: white;
+        width: 40%;
+        border: 1px solid black;
+        margin: 2px 10px;
+        z-index: 2;
+    }
+
 </style>
 
 </head>
@@ -149,7 +169,7 @@
                         Date Created 
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px"/>
-                            <span>This is when the repository was created on GitHub!</span>
+                            <span>This is when the repository was created on GitHub</span>
                         </a>
                     </td>
                     <td>{{ created_at }}</td>
@@ -159,7 +179,7 @@
                         Date Last Updated
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is when the repository was last changed in any way on GitHub!</span>
+                            <span>This is when the repository was last changed in any way on GitHub</span>
                         </a>
                     </td>  
                     <td>{{ updated_at }}</td>
@@ -169,7 +189,7 @@
                         Date Last Mined
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is when Git-OSS-um last obtained information about this repository!</span>
+                            <span>This is when Git-OSS-um last obtained information about this repository</span>
                         </a>
                     </td>
                     <td>{{ last_mined_date }}</td>
@@ -179,7 +199,7 @@
                         Clone URL
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is the url you would use to clone this repository!</span>
+                            <span>This is the url you would use to clone this repository</span>
                         </a>
                     </td>
                     <td>{{ clone_url }}</td>
@@ -189,7 +209,7 @@
                     <td>Repository Homepage
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is the personal website for this repository! Click on it to visit their page!</span>
+                            <span>This is the personal website for this repository! Click on it to visit their page</span>
                         </a>
                     </td>
                     <td><a class="link" href="{{ homepage }}" target="blank">{{ homepage }}</a></td>
@@ -200,7 +220,7 @@
                     <td>Number of Stargazers
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is the number of people who showed interest in this repository & starred it!</span>
+                            <span>This is the number of people who showed interest in this repository & starred it</span>
                         </a>
                     </td>
                     <td>{{ stargazers_count }}</td>
@@ -209,7 +229,7 @@
                     <td>Programming Language
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is the main programming language of this repository!</span>
+                            <span>This is the main programming language of this repository</span>
                         </a>
                     </td>
                     <td>{{language }}</td>
@@ -227,7 +247,7 @@
                     <td>Development License
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is the license this repository uses for development! Click on it to find out more!</span>
+                            <span>This is the license this repository uses for development. Click on it to find out more</span>
                         </a>
                     </td>
                     {% if license_name == "Other" or license_name == "None" %}
@@ -240,7 +260,7 @@
                     <td>Number of Open Issues
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is the number of problems this repository has that need to be solved! Give it a shot!</span>
+                            <span>This is the number of problems this repository has that need to be solved</span>
                         </a>
                     </td>
                     <td>{{ open_issues }}</td>
@@ -249,7 +269,7 @@
                     <td>Number of Forks
                         <a class="hasTooltip">
                             <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
-                            <span>This is the number of people who have made a copy of this repository to help contribute!</span>
+                            <span>This is the number of people who have made a copy of this repository to help contribute</span>
                         </a>
                     </td>
                     <td>{{ network_count }}</td>
@@ -271,8 +291,10 @@
             <h3 class="jumboTitle">
                 <center>
                     Here is how pull requests are distributed within {{ repo_name }}
-                    <a class="hasTooltip">
-                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" />
+                </center>
+                    <div id="tool tip">
+                    <a class="altTool">
+                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" ALIGN=”right” />
                         <span>
                             Pull requests can either be closed-merged (accepted by the project owner & merged 
                             into the desired branch, closed-unmerged (denied by the project owner & therefore
@@ -280,7 +302,7 @@
                             to accept or deny this pull request)
                         </span>
                     </a>
-                </center>
+                    </div>
             </h3>
             {{ bar_chart_html |safe }}
         </div>
@@ -288,16 +310,18 @@
             <h3 class="jumboTitle">
                 <center>
                     Here are how many people are contributing to {{ repo_name }} per month
-                    <a class="hasTooltip">
-                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" />
+                </center>
+                    <div id="tool tip">
+                    <a class="altTool">
+                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" ALIGN=”right”  />
                         <span>
                             This is how many unique individuals are contributing to {{ repo_name }} per month.
                             Note that some months may be more popular than others. This graph should give you an 
                             understanding as to how "alive" this repository is based on the number of people attempting
-                            to contribute to it!
+                            to contribute to it
                         </span>
                     </a>
-                </center>
+                    </div>
             </h3>
             {{ contribution_line_chart_html |safe }}
         </div>
@@ -307,8 +331,10 @@
             <h3 class="jumboTitle2">
                 <center>
                     Here are how pull requests are being decided upon in {{ repo_name }} per month
-                    <a class="hasTooltip">
-                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" />
+                </center>
+                    <div id="tool tip">
+                    <a class="altTool">
+                        <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="25px" ALIGN=”right”  />
                         <span>
                            This is a line chart showing you the number of pull requests each month within one 
                            of 3 categories (closed-merged, closed-unmerged, and open). Pull requests can either 
@@ -317,7 +343,7 @@
                            branch), or open (a decision has not yet been made as to accept or deny this pull request)
                         </span>
                     </a>
-                </center>
+                    </div>
             </h3>
             {{ pull_line_chart_html |safe }}
         </div>
