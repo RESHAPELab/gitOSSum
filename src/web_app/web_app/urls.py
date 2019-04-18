@@ -33,7 +33,7 @@ urlpatterns = [
         activate, name='activate'),
     url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
     url(r'^repos/$', mined_repos, name="repos"), # The list of all mined repos 
-    url(r'^repos/(?P<repo_owner>((\w+)[-]*))+/+(?P<repo_name>((\w+)[-]*)+\w+)/$', get_repo_data, name="visualization"), # Visualizations
-    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*))&(?P<repo_name1>((\w+)[-]*)+\w+)&(?P<repo_owner2>((\w+)[-]*))&(?P<repo_name2>((\w+)[-]*)+\w+)/$', compare_two_repos, name="compare_two"),
-    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*))&(?P<repo_name1>((\w+)[-]*)+\w+)&(?P<repo_owner2>((\w+)[-]*))&(?P<repo_name2>((\w+)[-]*)+\w+)&(?P<repo_owner3>((\w+)[-]*))&(?P<repo_name3>((\w+)[-]*)+\w+)/$', compare_three_repos, name="compare_three"),
+    url(r'^repos/(?P<repo_owner>((\w+)[-]*)\w+)+/+(?P<repo_name>((\w+)([-]|[.])*)+\w+)/$', get_repo_data, name="visualization"), # Visualizations
+    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*)\w+)&(?P<repo_name1>((\w+)([-]|[.])*)+\w+)&(?P<repo_owner2>((\w+)[-]*)\w+)&(?P<repo_name2>((\w+)([-]|[.])*)+\w+)/$', compare_two_repos, name="compare_two"),
+    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*)\w+)&(?P<repo_name1>((\w+)([-]|[.])*)+\w+)&(?P<repo_owner2>((\w+)[-]*)\w+)&(?P<repo_name2>((\w+)([-]|[.])*)+\w+)&(?P<repo_owner3>((\w+)[-]*)\w+)&(?P<repo_name3>((\w+)([-]|[.])*)+\w+)/$', compare_three_repos, name="compare_three"),
 ]
