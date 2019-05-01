@@ -131,7 +131,7 @@ def update_specific_repo(repo_name):
         return 
 
     # IF THERE ARE NEW PULLS, MINE THEM...
-    new_pygit_pulls_list = [pulls[item] for item in range(num_current_pulls+2, total_pulls_as_of_now)]
+    new_pygit_pulls_list = [pulls[item] for item in range(num_current_pulls, total_pulls_as_of_now)]
 
     for pygit_pull_obj in new_pygit_pulls_list:
         mine_specific_pull(pygit_pull_obj)

@@ -110,7 +110,8 @@
 <body>
     <div style="padding-top:15px;">
         <h1 style="display:inline;">Mined Repos</h1>
-        <h1 style="display: inline; padding-left: 60%;">Filters</h1>
+        <h2 style="display:inline;">({{ num_repos }})</h2>
+        <h1 style="display: inline; padding-left: 55%;">Filters</h1>
     </div>
     <hr>
 
@@ -155,13 +156,14 @@
             </div>
         {% endfor %}
     </div>
+    <div class="scroll-window-repo-list">
         {% buttons %}
-        
+        <center>
         <input type="submit" name="compare" value=" Compare Repos " style="font-size:12pt;color:white;
         background-color:rgb(71,158,71); border-radius: 18px; -moz-border-radius: 5px; -webkit-border-radius: 5px;">
-        <!-- <input type="submit" name="compare" value="Compare Repos" style="color:green"> -->
         {% endbuttons %}
-        </div>
+        </center>
+    </div>
     </form>
 </body>
 

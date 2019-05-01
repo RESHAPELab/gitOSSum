@@ -121,8 +121,10 @@ def mining_request_form_view(request):
 def mined_repos(request):
 
     template_name = 'repos.html'
-    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests          
-            
+
+    # Obtain all the mining requests 
+    mined_repos = sorted(list(MinedRepo.objects.values_list('repo_name', flat=True)))          
+    num_repos = len(mined_repos)
     context = dict()
     message = ''
     filter_form = Filter(get_language_list_from_mongo())
@@ -202,26 +204,26 @@ def mined_repos(request):
 
                 if len(filters) != 0:
                     repos_list = get_filtered_repos_list(filters)
-
+                    num_repos = len(repos_list)
                     for item in range(0, len(repos_list)):
                         context.update({
                             f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
                         })
 
-                    return render(request, template_name, {"context":context, "filter":filter_form})
+                    return render(request, template_name, {"context":context, "filter":filter_form, "num_repos":num_repos})
 
         
     try:
         for item in range(0, len(mined_repos)):
             context.update({
-                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]],
+                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]]
             })
         
         if message == '':
-            return render(request, template_name, {"context":context, "filter":filter_form})
+            return render(request, template_name, {"context":context, "filter":filter_form, "num_repos":num_repos})
         else:
             return render(request, template_name, {"context":context, "message":message, 
-                                                   "filter":filter_form})
+                                                   "filter":filter_form, "num_repos":num_repos})
 
     except Exception as e:
         return render(request, template_name, {"error":e})
