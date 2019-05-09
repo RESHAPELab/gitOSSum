@@ -36,7 +36,7 @@
     }
 
     .repos {
-        width: 60%;
+        width: 95%;
     }
     .reposContent {
         display: flex;
@@ -62,7 +62,6 @@
 
     .filter {
         float: right;
-        width: 25%;
         background-color: rgb(0, 44, 126);
         color: white;
     }
@@ -82,6 +81,21 @@
         display: inline-block;
         font-size: 16px;
     } 
+
+    .scroll-window-repo-list {
+        max-height: 60vh;
+        width:70%;
+        display: inline;
+        float: left;
+        overflow-y: auto;
+    }
+    .scroll-window-filter {
+        max-height: 60vh;
+        display: inline;
+        float: right;
+        overflow-y: auto;
+    }
+
 </style>
 
 <head>
@@ -94,56 +108,62 @@
 {% endif %}
 
 <body>
-    <h1>Mined Repos</h1>
-    {{ error }}
+    <div style="padding-top:15px;">
+        <h1 style="display:inline;">Mined Repos</h1>
+        <h2 style="display:inline;">({{ num_repos }})</h2>
+        <h1 style="display: inline; padding-left: 55%;">Filters</h1>
+    </div>
     <hr>
 
-    <form action="." method="post">
-        {% csrf_token %}
-        <div class="jumbotron filter">
-            <div class="feild wrapper">
-            {% for field in filter %}
-                <div class="field">
-                    <h4>{{ field.label }}</h4> 
-                    <li><strong style="color:red;">{{ field.errors|escape }}</strong></li>
-                    <!-- {{ field.errors }} -->
-                    {{ field }}
+    <div class="scroll-window-filter"> 
+        <form action="." method="post">
+            {% csrf_token %}
+            <div class="jumbotron filter">
+                <div class="field wrapper">
+                {% for field in filter %}
+                    <div class="field">
+                        <h4>{{ field.label }}</h4> 
+                        {{ field }}
+                    </div>
+                {% endfor %}
                 </div>
-            {% endfor %}
+                {% buttons %}
+                <button type="submit" class="btn btn-success btn-block">Filter</button>
+                {% endbuttons %}
             </div>
-            {% buttons %}
-            <button type="submit" class="btn btn-success btn-block">Filter</button>
-            {% endbuttons %}
-        </div>
-    </form>
+        </form>
+    </div>
         
 
-    <form name="form" method="POST" action=".">
-    {% csrf_token %}
+    <div class="scroll-window-repo-list">
+        <form name="form" method="POST" action=".">
+        {% csrf_token %}
         {% for value in context.values %}
-        <div class="repos">
-            <h4>
-                <ul class="list-group">
-                    <li class="list-group-item">
-                        <input type="checkbox" name="repo_checkbox" value="{{ value.0 }}">
-                        <img src= {{ value.1 }} 
-                            ALIGN=”right” 
-                            width="45px"
-                            height="45px"
-                        >
-                        <a class="link" href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
-                    </li>
-                </ul>
-            </h4>
-        </div>
+            <div class="repos">
+                <h4>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <input type="checkbox" name="repo_checkbox" value="{{ value.0 }}">
+                            <img src= {{ value.1 }} 
+                                ALIGN=”right” 
+                                width="45px"
+                                height="45px"
+                            >
+                            <a class="link" href="/repos/{{ value.0 }}/">{{ value.0 }}</a>
+                        </li>
+                    </ul>
+                </h4>
+            </div>
         {% endfor %}
+    </div>
+    <div class="scroll-window-repo-list">
         {% buttons %}
-        
+        <center>
         <input type="submit" name="compare" value=" Compare Repos " style="font-size:12pt;color:white;
         background-color:rgb(71,158,71); border-radius: 18px; -moz-border-radius: 5px; -webkit-border-radius: 5px;">
-        <!-- <input type="submit" name="compare" value="Compare Repos" style="color:green"> -->
         {% endbuttons %}
-        </div>
+        </center>
+    </div>
     </form>
 </body>
 

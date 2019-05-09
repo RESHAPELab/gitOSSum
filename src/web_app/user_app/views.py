@@ -18,7 +18,7 @@ from django.forms import ValidationError
 
 # Import all handwritten libraries
 from permissions.permissions import login_forbidden
-from .forms import MiningRequestForm, SignUpForm, LoginForm, FeedbackForm, Filter
+from .forms import MiningRequestForm, LoginForm, FeedbackForm, Filter, SignupForm
 from mining_scripts.mining import *
 from .models import *
 from .tokens import account_activation_token
@@ -44,11 +44,10 @@ def about_us(request):
     template_name = 'about_us.html'
     return render(request, template_name, {})
 
-# Only allow people that are not signed in to access the signup page
 @login_forbidden
 def signup(request):
     if request.method == 'POST':
-        form = SignUpForm(request.POST)
+        form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
@@ -67,13 +66,9 @@ def signup(request):
             )
             email.send()
             return HttpResponse('Please  confirm your email address to complete the registration')
-        else:
-            form = SignUpForm()
-            error = "That username is already taken!" 
-            return render(request, 'signup.html', {'form': form, "error":error})
     else:
-        form = SignUpForm()
-        return render(request, 'signup.html', {'form': form})
+        form = SignupForm()
+    return render(request, 'signup.html', {'form': form})
 
 
 # Utility function taken from https://medium.com/@frfahim/django-registration-with-confirmation-email-bb5da011e4ef
@@ -87,8 +82,8 @@ def activate(request, uidb64, token):
     if user is not None and account_activation_token.check_token(user, token):
         user.is_active = True
         user.save()
-        login(request, user)
-        return HttpResponse('Thank  you for your email confirmation. Now you can login your account.')
+        # login(request, user)
+        return HttpResponse('Thank  you for your email confirmation. Now you can <a href="http://gitossum.com/accounts/login/">login</a> your account.')
     else:
         return HttpResponse('Activation  link is invalid!')
 
@@ -126,11 +121,13 @@ def mining_request_form_view(request):
 def mined_repos(request):
 
     template_name = 'repos.html'
-    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests          
-            
+
+    # Obtain all the mining requests 
+    mined_repos = sorted(list(MinedRepo.objects.values_list('repo_name', flat=True)))          
+    num_repos = len(mined_repos)
     context = dict()
     message = ''
-    filter_form = Filter()
+    filter_form = Filter(get_language_list_from_mongo())
 
     if request.method == 'POST':
 
@@ -168,11 +165,11 @@ def mined_repos(request):
                     return HttpResponseRedirect(url)
 
             else:
-                message = "You must choose at least one page to compare!"
+                message = "You must choose at least two pages to compare!"
 
         else:
             filters = list()
-            filter_form = Filter(request.POST)
+            filter_form = Filter(get_language_list_from_mongo(), request.POST)
             
             if filter_form.is_valid():
                 if 'search' in request.POST:
@@ -186,16 +183,19 @@ def mined_repos(request):
                     repos_filtered_by_language = get_repos_list_by_language_filter(languages)
                     filters.append(repos_filtered_by_language)
 
-                if 'num_pulls' in request.POST:
-                    num_pulls = filter_form.cleaned_data.get('num_pulls')
-                    if '+' in num_pulls[0]:
-                            lower_bound = int((num_pulls[0].split('+'))[0])
-                            repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
-                    else:
-                        lower_bound = int((num_pulls[0].split('-'))[0])
-                        upper_bound = int((num_pulls[0].split('-'))[1])
-                        repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+                lower_bound = filter_form.cleaned_data.get('min_pull_requests')
+                upper_bound = filter_form.cleaned_data.get('max_pull_requests')
 
+                if lower_bound != None and upper_bound == None:
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
+                    filters.append(repos_filtered_by_pulls)
+
+                elif upper_bound != None and lower_bound == None:
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_less_than_filter(upper_bound)
+                    filters.append(repos_filtered_by_pulls)
+
+                elif lower_bound != None and upper_bound != None:
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
                     filters.append(repos_filtered_by_pulls)
 
                 if 'has_wiki' in request.POST:
@@ -204,26 +204,26 @@ def mined_repos(request):
 
                 if len(filters) != 0:
                     repos_list = get_filtered_repos_list(filters)
-
+                    num_repos = len(repos_list)
                     for item in range(0, len(repos_list)):
                         context.update({
                             f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
                         })
 
-                    return render(request, template_name, {"context":context, "filter":filter_form})
+                    return render(request, template_name, {"context":context, "filter":filter_form, "num_repos":num_repos})
 
         
     try:
         for item in range(0, len(mined_repos)):
             context.update({
-                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]],
+                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]]
             })
         
         if message == '':
-            return render(request, template_name, {"context":context, "filter":filter_form})
+            return render(request, template_name, {"context":context, "filter":filter_form, "num_repos":num_repos})
         else:
             return render(request, template_name, {"context":context, "message":message, 
-                                                   "filter":filter_form})
+                                                   "filter":filter_form, "num_repos":num_repos})
 
     except Exception as e:
         return render(request, template_name, {"error":e})
@@ -245,7 +245,8 @@ def get_repo_data(request, repo_owner, repo_name):
             "repo_name":original_repo,
             "repo_img":find_repo_main_page(original_repo)['owner']['avatar_url'],
             "bar_chart_html":getattr(repo, "bar_chart_html"),
-            "pull_line_chart_html":getattr(repo, "pull_line_chart_html")
+            "pull_line_chart_html":getattr(repo, "pull_line_chart_html"), 
+            "contribution_line_chart_html": getattr(repo, "contribution_line_chart_html")
         })
         return render(request, template_name, context) 
 

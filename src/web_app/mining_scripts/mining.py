@@ -33,7 +33,7 @@ except AppRegistryNotReady:
     django.setup()
 
 # Only import the models after we know django has been setup 
-from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
+from user_app.models import QueuedMiningRequest, MinedRepo
 
 # precent issues with forking 
 if os.getpid() == 0:
@@ -51,6 +51,18 @@ pull_requests = db.pullRequests # collection for storing all pull requests for a
 
 pull_batches = db.pullBatches
 
+def mongo_mining_test_init():
+    global db 
+    global repos 
+    global pull_requests
+    global pull_batches 
+    db = client.test_db
+    repos = db.repos
+    pull_requests = db.pullRequests
+    pull_batches = db.pullBatches
+
+
+
 g = Github(GITHUB_TOKEN, per_page=100) # authorization for the github API 
 
 
@@ -67,7 +79,7 @@ def mine_and_store_all_repo_data(repo_name, username, email, queued_request):
     # mine and store the main page josn
     logger.info('Mining the  the landing page JSON from github for {0}'.format(repo_name))
     mine_repo_page(pygit_repo)
-    logger.info('Successfully mined the  the landing page JSON from github for {0}'.format(repo_name))
+    logger.info('Successfully mined the landing page JSON from github for {0}'.format(repo_name))
 
     # mine and store all pulls for this repo 
     logger.info('Starting to mine pull requests from github for {0}'.format(repo_name))
@@ -148,7 +160,6 @@ def rate_limit_is_reached():
     if num_requests_remaining == 0:
         return True 
     else:
-        logger.info('NUMBER OF GITHUB REQUESTS REMAINING: {0}'.format(num_requests_remaining))
         return False 
 
 def get_number_of_remaining_requests():
@@ -175,13 +186,8 @@ def wait_for_request_rate_reset():
 # Method to download all pull requests of a given repo and 
 # put them within the db.pullRequests collection 
 def mine_pulls_from_repo(pygit_repo):
-    logger.info('Retrieving a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
-
     # Retrieve all pull request numbers associated with this repo 
     pulls = pygit_repo.get_pulls('all')
-    logger.info('Successfully retrieved a list of all pull requests for "{0}".'.format(pygit_repo.full_name))
-
-    logger.info('Beginning to mine individual pull requests for "{0}".'.format(pygit_repo.full_name))
     
     for pull in pulls:
         
@@ -229,7 +235,6 @@ def mine_specific_pull(pull):
     except Exception as e:
         # if this repo doesn't exist, don't mine it 
         if e == 500 or e == 404:
-            logger.info('GITHUB EXCEPTION: {0} for PULL {1}. PULL INACCESSIBLE, PASSING.'.format(e, pull.number))
             pass
         # TODO: Else, send the administrator an email to alert them of an error
     
@@ -278,7 +283,11 @@ def get_all_pull_requests():
 def delete_all_contents_from_every_collection():
     delete_all_repos_from_repo_collection()
     delete_all_pulls_from_pull_request_collection()
+    delete_all_pull_requests_batches_from_batch_collection()
     return 
+
+def delete_all_pull_requests_batches_from_batch_collection():
+    pull_batches.delete_many({})
 
 def delete_specific_repos_pull_request_batches(repo_name):
     pygit_repo = g.get_repo(repo_name)
@@ -290,4 +299,5 @@ def delete_all_contents_of_specific_repo_from_every_collection(repo_name):
     delete_specifc_repos_pull_requests(repo_name)
     delete_specific_repos_pull_request_batches(repo_name)
     return
-    
+
+

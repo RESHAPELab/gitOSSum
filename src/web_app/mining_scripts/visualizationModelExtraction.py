@@ -38,6 +38,10 @@ def extract_pull_request_model_data(pygit_repo):
         "num_open_pulls":pull_requests.count_documents({"url": {"$regex": pygit_repo.full_name}, 
                                                                 "state":"open", "merged_at":None}),
 
+        "people_list": [pull['user']['login'] for pull in pull_requests.find({"url": {"$regex": pygit_repo.full_name}})],
+        
+        "people_date_tuple":[(pull['user']['login'], datetime.datetime.strptime(str(pull["created_at"]), "%Y-%m-%dT%H:%M:%SZ")) for pull in pull_requests.find({"url": {"$regex": pygit_repo.full_name}})],
+
         "created_at_list":[datetime.datetime.strptime(str(pull["created_at"]), "%Y-%m-%dT%H:%M:%SZ") 
                             for pull in pull_requests.find({"url": {"$regex": pygit_repo.full_name}})],
 
@@ -56,7 +60,8 @@ def extract_pull_request_model_data(pygit_repo):
         extracted_info.update(
             {
                 "bar_chart": produce_pull_type_bar_chart(extracted_info),
-                "line_chart": produce_pull_requests_per_month_line_chart(extracted_info)
+                "line_chart": produce_pull_requests_per_month_line_chart(extracted_info),
+                "contribution_line_chart_html":produce_contributors_per_month_line_chart(extracted_info)
             }
         )
     except Exception as e:
@@ -183,6 +188,82 @@ def produce_pull_requests_per_month_line_chart(extracted_info):
         ),
         yaxis=dict(
             title='Number of Pull Requests',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        )
+    )
+
+    figure=go.Figure(data=data,layout=layout)
+
+    div = opy.plot(figure,  output_type='div')
+    return div
+
+def produce_contributors_per_month_line_chart(extracted_info):
+    people = extracted_info['people_list']
+    created = extracted_info['created_at_list']
+
+    # We need this to refer back to rows 
+    raw_data = pd.DataFrame({
+        'person':people,
+        'month':pd.to_datetime(pd.Series(created), format="%Y-%m-%d %H:%M:%S")
+    })
+
+    # Create a dataframe with people and month of contribution as the columns
+    filtered_df = pd.DataFrame({
+        'person':people,
+        'month':pd.to_datetime(pd.Series(created), format="%Y-%m-%d %H:%M:%S").dt.to_period('m')
+    })
+
+    # eliminate duplicate rows (people showing up more than once each month)
+    filtered_df = filtered_df.drop_duplicates()
+
+    # Get the rows with their indexes 
+    dates = pd.Series(filtered_df['month'])
+
+    # refer back to the raw data by index
+    dates = raw_data.iloc[dates.index]['month']
+
+    # Convert this data it only look at the month 
+    dates.index = dates.dt.to_period('m')
+
+    # Group by the month and count the occurrences 
+    dates = dates.groupby(level=0).size()
+
+    # Fill in missing months with the vlaue '0'
+    dates = dates.reindex(pd.period_range(dates.index.min(),
+                                        dates.index.max(), freq='m'), fill_value=0)
+
+    # Get the months as a string for our x-axis
+    dates_indices = np.array(dates.index.astype(str))
+
+    # Get the frequency as a list for the y-axis 
+    dates_freq = np.array(dates)
+
+    # Now all we need to do is plot this bad boy! 
+    data = [
+        go.Scatter(
+            x=dates_indices, 
+            y=dates_freq,
+            mode = 'lines+markers',
+            name="Contribution"
+        )
+    ]
+
+    layout = go.Layout(
+        title='Contribution Frequency by Month',
+        xaxis=dict(
+            title='Date',
+            titlefont=dict(
+                family='Courier New, monospace',
+                size=18,
+                color='#7f7f7f'
+            )
+        ),
+        yaxis=dict(
+            title='Number of People Contributing',
             titlefont=dict(
                 family='Courier New, monospace',
                 size=18,

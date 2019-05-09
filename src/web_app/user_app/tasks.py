@@ -12,11 +12,11 @@ from mining_scripts.batchify import *
 import time 
 from datetime import datetime
 import json
-from user_app.models import QueuedMiningRequest, MinedRepo, OAuthToken
+from user_app.models import QueuedMiningRequest, MinedRepo
 from django.contrib.auth.models import User
 import sys
 import numpy as np
-
+from django.utils import timezone
 import os
 
 # Handle parallel processing not knowing about django apps
@@ -68,23 +68,15 @@ def initialize_batch_json(batch_list, repo_name):
         "total_batches": total_batches,
         "collected_batches": 0,
         "attempted_batches": 0,
-        "updated": str(datetime.now())
     }
     db.pullBatches.update_one(batch_json_data, {"$set": batch_json_data}, upsert=True)
 
 
 
 # When the admin approves, go call the mining script asynchronously 
-@app.task(bind=True, name='tasks.mine_data_asynchronously', hard_time_limit=60*60*10)
+@app.task(bind=True, name='tasks.mine_data_asynchronously')
 def mine_data_asynchronously(self, repo_name, username, user_email, queued_request):    
-    pygit_repo = g.get_repo(repo_name)
-
-    # mine and store the main page josn
-    mine_repo_page(pygit_repo)
-
     batch_data = batchify(repo_name)
-
-    # TODO: If there are no pull requests, just make a table, no graphs 
     
     # Else, move on to mining the data 
     initialize_batch_json(batch_data, repo_name)
@@ -95,7 +87,7 @@ def mine_data_asynchronously(self, repo_name, username, user_email, queued_reque
     return True 
 
 
-@app.task(name='tasks.mine_pull_request_batch_asynchronously', hard_time_limit=60*60*3)
+@app.task(name='tasks.mine_pull_request_batch_asynchronously')
 def mine_pull_request_batch_asynchronously(repo_name, job):
     pulls_batch = get_batch_number(repo_name, job)
     
@@ -103,10 +95,22 @@ def mine_pull_request_batch_asynchronously(repo_name, job):
 
     return True
 
+@app.task(name='tasks.update_all_repos')
+def update_all_repos():
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+    
+    for repo in mined_repos:
+        update_specific_repo.delay(repo)
+
+    return True 
+
+
 @app.task(name='tasks.update_specific_repo')
 def update_specific_repo(repo_name):
+    delete_specific_repo_from_repo_collection(repo_name)
     pygit_repo = g.get_repo(repo_name)
     mine_repo_page(pygit_repo) # update the landing page
+    document = pull_batches.find_one({"repo":repo_name})
 
     # get a list of all the current pull requests 
     num_current_pulls = count_all_pull_requests_from_a_specifc_repo(repo_name)
@@ -121,10 +125,13 @@ def update_specific_repo(repo_name):
 
     # DO NOT CONTINUE IF THERE AREN'T NEW PULLS
     if total_pulls_as_of_now == num_current_pulls:
+        mined_repo_model_obj = MinedRepo.objects.get(repo_name=repo_name)
+        mined_repo_model_obj.completed_timestamp = str(timezone.now())
+        mined_repo_model_obj.save()
         return 
 
     # IF THERE ARE NEW PULLS, MINE THEM...
-    new_pygit_pulls_list = [pulls[item] for item in range(num_current_pulls+2, total_pulls_as_of_now)]
+    new_pygit_pulls_list = [pulls[item] for item in range(num_current_pulls, total_pulls_as_of_now)]
 
     for pygit_pull_obj in new_pygit_pulls_list:
         mine_specific_pull(pygit_pull_obj)
@@ -143,7 +150,8 @@ def update_specific_repo(repo_name):
     mined_repo_model_obj.num_newcomer_labels=visualization_data["num_newcomer_labels"]
     mined_repo_model_obj.bar_chart_html=visualization_data["bar_chart"]
     mined_repo_model_obj.pull_line_chart_html=visualization_data["line_chart"]
-    mined_repo_model_obj.completed_timestamp = str(datetime.now())
+    mined_repo_model_obj.contribution_line_chart_html = visualization_data['contribution_line_chart_html']
+    mined_repo_model_obj.completed_timestamp = str(timezone.now())
     mined_repo_model_obj.save()
 
     return True 
@@ -157,6 +165,16 @@ def visualize_repo_data():
         for repo_name in repos_needing_rendering:
             if all_tasks_completed(repo_name) == False:
                 continue
+
+            # Done allow us to continue if we hit the request rate 
+            if rate_limit_is_reached():
+                wait_for_request_rate_reset()
+
+            pygit_repo = g.get_repo(repo_name)
+
+            # mine and store the main page josn
+            mine_repo_page(pygit_repo)
+            
             username = getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "requested_by")
             # It is finished, time to visualize it 
             logger.info('Extracting visualization data for {0}'.format(repo_name))
@@ -168,6 +186,7 @@ def visualize_repo_data():
             mined_repo = MinedRepo(
                 repo_name=repo_name,
                 requested_by=username,
+                send_email = getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "send_email"),
                 num_pulls=visualization_data["num_pulls"],
                 num_closed_merged_pulls=visualization_data["num_closed_merged_pulls"],
                 num_closed_unmerged_pulls=visualization_data["num_closed_unmerged_pulls"],
@@ -178,6 +197,7 @@ def visualize_repo_data():
                 num_newcomer_labels=visualization_data["num_newcomer_labels"],
                 bar_chart_html=visualization_data["bar_chart"],
                 pull_line_chart_html=visualization_data["line_chart"],
+                contribution_line_chart_html = visualization_data['contribution_line_chart_html'],
                 accepted_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "timestamp"),
                 requested_timestamp=getattr(QueuedMiningRequest.objects.get(repo_name=repo_name), "requested_timestamp")
             ) 
@@ -187,4 +207,5 @@ def visualize_repo_data():
 
             QueuedMiningRequest.objects.get(repo_name=repo_name).delete()
 
-            send_confirmation_email(repo_name, username, getattr(User.objects.get(username=username), 'email'))
+            if getattr(MinedRepo.objects.get(repo_name=repo_name), "send_email") == True:
+                send_confirmation_email(repo_name, username, getattr(User.objects.get(username=username), 'email'))

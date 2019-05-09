@@ -2,6 +2,7 @@ from django import forms
 from .models import MiningRequest, QueuedMiningRequest, BlacklistedMiningRequest, MinedRepo
 from django.forms import ValidationError, MultipleChoiceField, CheckboxSelectMultiple
 from mining_scripts.mining import *
+from mining_scripts.batchify import *
 import re
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -25,7 +26,7 @@ class MiningRequestForm(forms.Form):
     # Function used for validating the mining request form 
     def clean_repo_name(self):
         repo_name = self.cleaned_data['repo_name'].lower()  # This is the repo name we will be looking at 
-        valid_repo = re.compile('^((\w+)[-]*)+/+((\w+)[-]*)+\w+$') # Regex that defines a proper repo name 
+        valid_repo = re.compile('^(((\w+)[-]*)\w+)+/+((\w+)([-]|[.])*)+\w+$') # Regex that defines a proper repo name 
         mining_requests = list(MiningRequest.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
         queued_repos = list(QueuedMiningRequest.objects.values_list("repo_name", flat=True))
@@ -49,11 +50,22 @@ class MiningRequestForm(forms.Form):
         elif repo_name in mining_requests:
             errors.append("This repository has already been requested.")
 
+        # The repo cannot currently be mining
         elif repo_name in queued_repos:
             errors.append("This repository is currently being mined.")
 
+        # The repo cannot be blacklisted
         elif repo_name in black_listed_requests:
             errors.append("This repository has been blacklisted by the Administrator.")
+
+        # (if it exists, and matches valid repo regex) the repo cannot have 0 pull requests 
+        if not isinstance(find_repo_main_page(repo_name), Exception) and valid_repo.fullmatch(repo_name):
+            batches = batchify(repo_name)
+            
+            # If there are no batches, thats a problem!
+            if len(batches) == 0:
+                errors.append("This repository has no pull requests!")
+
 
         # Raise any errors found 
         if errors != []:
@@ -61,36 +73,12 @@ class MiningRequestForm(forms.Form):
         
         return repo_name
 
-class SignUpForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
-    last_name = forms.CharField(max_length=30, required=True, help_text='*Required.')
-    email = forms.EmailField(max_length=254, required=True, help_text='*Required.')
-    github_oauth = forms.CharField(max_length=254, required=False, help_text="*Optional.")
-
-    def clean_github_oauth(self):
-        github_oauth = self.cleaned_data['github_oauth']
-
-        # Only try to authenticate of a token was passed in 
-        if github_oauth != "":
-            try:
-                g = Github(github_oauth)
-                authenticated_repo_test = [repo for repo in g.get_user().get_repos()]
-            except Exception: #github.GithubException.BadCredentialsException
-                raise ValidationError("Invalid Github OAuth Token.")
-
-        return github_oauth
-
-    def clean_user(self):
-        username = self.cleaned_data['username']
-        users = list(User.objects.values_list('username', flat=True))
-        if username in users:
-            raise ValidationError(f"The Username '{username}' Has Already Been Taken!") 
-       
+class SignupForm(UserCreationForm):
+    email = forms.EmailField(max_length=200, help_text='Required')
     class Meta:
         model = User
-        fields = ('username', 'first_name', 'last_name', 'email', 'github_oauth', 'password1', 'password2', )
- 
-
+        fields = ('username', 'email', 'password1', 'password2')
+  
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=30, required=True)
     raw_password = forms.CharField(widget=forms.PasswordInput())
@@ -114,13 +102,11 @@ class Filter(forms.Form):
         choices = [tuple((item, item)) for item in get_language_list_from_mongo()]
     )
 
-    num_pulls = forms.MultipleChoiceField(
-        required= False,
-        widget = forms.CheckboxSelectMultiple,
-        choices =[tuple(('0-50', '0-50')), tuple(('51-100', '51-100')), 
-                  tuple(('100-500', '100-500')), tuple(('500-999', '500-999')),
-                  tuple(('1000+', '1000+'))]
-    )
+    min_pull_requests = forms.IntegerField(required=False,
+        widget = forms.NumberInput(attrs={'min':1, 'placeholder':'min number of pulls', 'class': 'filter-input'}))
+
+    max_pull_requests = forms.IntegerField(required=False,
+        widget = forms.NumberInput(attrs={'min':2, 'placeholder':'max number of pulls', 'class': 'filter-input'}))
 
     has_wiki = forms.MultipleChoiceField(
         required= False,
@@ -128,13 +114,15 @@ class Filter(forms.Form):
         choices =[tuple(('True', 'True'))]
     )
 
-
-    def clean_num_pulls(self):
-        num_pulls = self.cleaned_data['num_pulls']
-        if len(num_pulls) > 1:
-            raise ValidationError("Only select 1")
-        
-        return num_pulls
+    # The form must be initialized by passing in the languages every time.
+    # This ensures the language checkboxes are up to date all the time 
+    def __init__(self, languages, *args, **kwargs):
+        super(Filter, self).__init__(*args, **kwargs)
+        self.fields['languages'] = forms.MultipleChoiceField(
+                                        required= False,
+                                        widget  = forms.CheckboxSelectMultiple,
+                                        choices = [tuple((language[0], f'{language[0]} ({language[1]})')) for language in languages]
+                                    )
 
     def selected_languages_labels(self):
         return [label for value, label in self.fields['languages'].choices if value in self['languages'].value()]

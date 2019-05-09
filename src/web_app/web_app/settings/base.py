@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 from celery.schedules import crontab   
+from kombu import Queue, Exchange
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SECRET_KEY = '1x1n@2p)h^@%0v7gckznov25z_m81#jb9q8e$vp#)@j&7*h%o('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -34,7 +35,6 @@ ALLOWED_HOSTS = [
     'mongodb-s-3vcpu-1gb-sfo2-01',
     'mongodb-s-3vcpu-1gb-sfo2-01:8080',
     'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01',
-    'git_oss_um_worker@mongodb-s-3vcpu-1gb-sfo2-01:8080',
 ]
 
 
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user_app',
+    'django_nose',
     'bootstrap3', 
     'django_mysql',
     'django_celery_beat',
@@ -145,6 +146,8 @@ STATIC_URL = '/static/'
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = 'static'
 
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
 # Stuff for celery
 BROKER_URL='amqp://guest@localhost//'
 CELERY_RESULT_BACKEND = 'rpc://'
@@ -156,8 +159,3 @@ CELERY_TIMEZONE = 'MST'
 CELERYD_MAX_TASKS_PER_CHILD = 2
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers.DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {}
-CELERY_ROUTES = {
-    "web_app.tasks.mine_pull_request_batch_asynchronously": {"queue": "mine"},
-    "web_app.tasks.update_specific_repo": {"queue": "update"},
-    "web_app.tasks.visualize_repo_data": {"queue": "visualize"}
-}

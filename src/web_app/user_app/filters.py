@@ -2,6 +2,7 @@
 from operator import and_
 from functools import reduce
 from mining_scripts.mining import *
+from .models import *
 import re
 import os
 
@@ -23,13 +24,26 @@ pull_requests = db.pullRequests # collection for storing all pull requests for a
 
 pull_batches = db.pullBatches
 
+
+# Function to be used in tests.py to ensure that we are not accessing the production database
+def mongo_filter_test_init():
+    global db 
+    global repos 
+    global pull_requests
+    global pull_batches 
+    db = client.test_db
+    repos = db.repos
+    pull_requests = db.pullRequests
+    pull_batches = db.pullBatches
+
 # Method to return a list of dictionaries containing each language
 # we have stored in mongo, and the corresponding count for each language
 def get_language_list_from_mongo():
-    return [
-        item['_id'] for item in repos.aggregate([{"$match":{"language":{"$ne":None}}},
+    # Get a sorted list of all the languages in the form of a tuple (lanugage, count)
+    return sorted([
+        (item['_id'], item['count']) for item in repos.aggregate([{"$match":{"language":{"$ne":None}}},
         {"$group":{"_id":"$language", "count":{"$sum":1}}}])
-    ]
+    ])
 
 
 # Helper method to return a flat list of all repos whose language
@@ -39,7 +53,13 @@ def get_repos_list_by_language_filter(languages_list):
     for language in languages_list:
         repos_list.append([item['full_name'] for item in repos.find({"language":language}, 
                           {'_id':0,"full_name":1})])
-    return set([item.lower() for sublist in repos_list for item in sublist])
+    default_set = set([item.lower() for sublist in repos_list for item in sublist])
+    set_to_be_returned = set()
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+    for repo in default_set:
+        if repo in mined_repos:
+            set_to_be_returned.add(repo)
+    return set_to_be_returned
 
 
 # Helper method to obtain a list of repos whose number of pull 
