@@ -1,294 +1,298 @@
-import json
-from django.http import HttpResponse, HttpResponseRedirect
+# Import necessary django libraries
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
 from django.db import IntegrityError
+from django.views.generic import TemplateView
 from django.shortcuts import render
-from user_app.mine import make_request
-from pymongo import MongoClient
-import plotly
-import plotly.offline as opy
-import plotly.graph_objs as go
-from django.views import View 
-from django.views.generic import TemplateView, ListView
-import re
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.forms import ValidationError
 
+
+# Import all handwritten libraries
+from permissions.permissions import login_forbidden
+from .forms import MiningRequestForm, LoginForm, FeedbackForm, Filter, SignupForm
+from mining_scripts.mining import *
 from .models import *
-from .forms import MiningRequestCreateForm, AdminApprovalForm
-
-# MongoDB information 
-client = MongoClient('localhost', 27017)
-db = client.test_database
-pull_requests = db.pullRequests
-valid_repo = re.compile('^((\w+)[-]*)+/\w+$')
+from .tokens import account_activation_token
+from .visualizations import *
+from .filters import *
 
 
-def mining_request_create_view(request):
-    # if request.method == 'GET':
-    #     print(request.GET)
-    
-    if request.method == 'POST':
-        try:
-            form = MiningRequestCreateForm(request.POST)
-
-            # Only create a database object if what is being passed matches our DB form
-            if form.is_valid():
-
-                if not valid_repo.fullmatch(form.cleaned_data.get('repo_name')):
-                    return render(request, "mining_requests/form.html", {"invalid_repo_name":True})
-
-                mongo_files = pull_requests.find()
-                for file in mongo_files:
-                    if file["base"]["repo"]["full_name"] == form.cleaned_data.get('repo_name') and \
-                    file["number"] == form.cleaned_data.get('pull_request_number'):
-                         return render(request, "mining_requests/form.html", {"mongo_exists": True})    
-                
+# Import external libraries
+from nvd3 import multiBarHorizontalChart
+import random 
+import json
+from io import BytesIO
+from PIL import Image
 
 
-                obj = MiningRequest.objects.create(
-                    repo_name=form.cleaned_data.get('repo_name'),
-                    pull_request_number=form.cleaned_data.get('pull_request_number')
-                )
-                
-                # what was passed in was valid, so redirect to the mining requests page 
-                return HttpResponseRedirect("/mining_requests")
 
-        
-            # if what is passed in is incorrect, log it
-            if form.errors:
-                print(form.errors)
-        except IntegrityError as e:
-            return render(request, "mining_requests/form.html", {"error": True})    
-    
-    # Handle the GET request by returning the form HTML page 
-    template_name = 'mining_requests/form.html'
-    context = {}
-    return render(request, template_name, context)
+# Begin views
 
-def admin_approve_mining_requests(request):
-
-    if request.method == 'POST':
-        if 'approve' in request.POST:
-            try:
-                form = AdminApprovalForm(request.POST)
-
-                # Only create a database object if what is being passed matches our DB form
-                if form.is_valid():
-                    print(request.POST)
-                    repo_info = [info for info in request.POST][1:-1]
-                    print(repo_info)
-                    repo_names = [info.split(':')[0] for info in repo_info]
-                    repo_nums = [info.split(':')[1] for info in repo_info]
-                    print("REPOS:", repo_names)
-                    print("PR NUMS:", repo_nums)
-                    
-
-                    for item in range(0, len(repo_names)):
-                        # Place the item in the database
-                        repo_name = repo_names[item]
-                        pull_request_number = repo_nums[item]
-                        json_file = make_request(repo_name, pull_request_number)
-
-                        pull_requests.insert_one(json_file)
-
-                        # Delete the request, since it has been mined
-                        MiningRequest.objects.filter(repo_name=repo_names[item], pull_request_number=repo_nums[item]).delete()
-                    
-                    
-                    
-                    # what was passed in was valid, so redirect to the mining requests page 
-                    return HttpResponseRedirect("/database")
-
-            
-                # if what is passed in is incorrect, log it
-                if form.errors:
-                    print(form.errors)
-            except IntegrityError as e:
-                return render(request, "mining_requests/admin_approval.html", {"error": True})
-        elif 'disapprove' in request.POST:
-            print(request.POST)
-            repo_info = [info for info in request.POST][1:-1]
-            repo_names = [info.split(':')[0] for info in repo_info]
-            repo_nums = [info.split(':')[1] for info in repo_info]
-            print("REPOS:", repo_names)
-            print("PR NUMS:", repo_nums)
-            
-
-            for item in range(0, len(repo_names)):
-                # Place the item in the database
-                repo_name = repo_names[item]
-                pull_request_number = repo_nums[item]
-
-                # Delete the request, since it has been mined
-                MiningRequest.objects.filter(repo_name=repo_names[item], pull_request_number=repo_nums[item]).delete()
-            
-            
-            
-            # what was passed in was valid, so redirect to the mining requests page 
-            return HttpResponseRedirect("/mining_requests")
-
-    
-    template_name = 'mining_requests/admin_approval.html'
-    objects = MiningRequest.objects.all()
-    context = {"objects": objects}
-    return render(request, template_name, context  )
-
-
-# Create your views here.
-
-# function based view. THIS IS THE ORIGINAL (BAD WAY) OF RETURNING HTML
-def home_old(request):
-    html_var = 'f strings'
-    html_ = f"""<!DOCTYPE html>
-    <html lang=en>
-    <head>
-    </head>
-    <body>
-    <h1>Hello World!</h1>
-    <p>This is {html_var} coming through</p>
-    </body>
-    </html>
-    """
-    #return HttpResponse("hello") # Another way to return the same thing 
-    return HttpResponse(html_)
-    #return render(request, "home.html", {})# response
-
-# function based view. This is the BETTER way of returning an html page
-def chart(request):
-    # The third parameter specifies something that we want to pass 
-    # to the html page page (base.html) 
-    bool_item = False # turn to false to not print a rand number 
-
-    pulls = pull_requests.find()
-    additions = []
-    pull_nums = []
-    for pull in pulls:
-        additions.append(pull['additions'])
-        pull_nums.append(pull['number'])
-
-    if len(pull_nums) != 0:
-        trace1 = go.Pie(labels=pull_nums, values=additions, name='Additions Pie Chart')
-        data=go.Data([trace1])
-        layout=go.Layout(title="Additions Pie Chart")
-        figure=go.Figure(data=data,layout=layout)
-        div = opy.plot(figure, auto_open=False, output_type='div')
-        context = {"graph":div}
-    else:
-        context = {"noGraph":True}
-
-    # response
-    return render(request, "chart.html", context) 
-
-
-# Class-based view. Allows for some extra functionality!
-class HomeViewOld(View):
-    def get(self, request, *args, **kwargs):
-        context = {}
-        return render(request, "home.html", context) 
-
-    # def post(self, request, *args, **kwargs):
-    #     context = {}
-    #     return render(request, "home.html", context) 
-
-    # def put(self, request, *args, **kwargs):
-    #     context = {}
-    #     return render(request, "home.html", context) 
-
-# ANOTHER way of rendering A Page using template views 
 class HomeView(TemplateView):
     template_name = 'home.html'
 
-class ChartView(TemplateView):
-    template_name = 'chart.html'
-    def get_context_data(self, *args, **kwargs):
-        context = super(ChartView, self).get_context_data(*args, **kwargs)
-        pulls = pull_requests.find()
-        additions = []
-        pull_nums = []
-        for pull in pulls:
-            additions.append(pull['additions'])
-            pull_nums.append(pull['number'])
+def about_us(request):
+    template_name = 'about_us.html'
+    return render(request, template_name, {})
 
-        if len(pull_nums) != 0:
-            trace1 = go.Pie(labels=pull_nums, values=additions, name='Additions Pie Chart')
-            data=go.Data([trace1])
-            layout=go.Layout(title="Additions Pie Chart")
-            figure=go.Figure(data=data,layout=layout)
-            div = opy.plot(figure, auto_open=False, output_type='div')
-            context = {"graph":div}
-        else:
-            context = {"noGraph":True}
-        return context
-
-class DatabaseView(TemplateView):
-    template_name = 'database.html'
-    def get_context_data(self, *args, **kwargs):
-        context = super(DatabaseView, self).get_context_data(*args, **kwargs)
-        pulls = pull_requests.find()
-        if not pulls is None:
-            context = {"bool_item":True, "pulls":pulls}
-        else: 
-            context = {}
-
-        return context 
-
-class CleanDatabaseView(TemplateView):
-    template_name = 'clean_database.html'
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(CleanDatabaseView, self).get_context_data(*args, **kwargs)
-        pulls = pull_requests.find()
-        if not pulls is None:
-            pull_requests.remove( { } )
-            context = {"bool_item":True}
-        else:
-            context = {}
-        return context 
+@login_forbidden
+def signup(request):
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your Git-OSS-um account.'
+            message = render_to_string('registration/acc_active_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+                'token':account_activation_token.make_token(user),
+            })
+            to_email = form.cleaned_data.get('email')
+            email = EmailMessage(
+                        mail_subject, message, to=[to_email]
+            )
+            email.send()
+            return HttpResponse('Please  confirm your email address to complete the registration')
+    else:
+        form = SignupForm()
+    return render(request, 'signup.html', {'form': form})
 
 
-class MineView(TemplateView):
-    template_name = 'mine.html'
+# Utility function taken from https://medium.com/@frfahim/django-registration-with-confirmation-email-bb5da011e4ef
+# That will allow a user to activate their account 
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        # login(request, user)
+        return HttpResponse('Thank  you for your email confirmation. Now you can <a href="http://gitossum.com/accounts/login/">login</a> your account.')
+    else:
+        return HttpResponse('Activation  link is invalid!')
 
-    def get_context_data(self, *args, **kwargs):
-        context = super(MineView, self).get_context_data(*args, **kwargs)
-        mined_jsons = [
-        download_api_page_json(15).json(),
-        download_api_page_json(17).json(),
-        download_api_page_json(20).json(),
-        download_api_page_json(21).json(),
-        download_api_page_json(22).json()
-        ]
+
+# Only allow people that are logged in to access the mining request form 
+@login_required
+def mining_request_form_view(request):
+    context = {}
+    requests = MiningRequest.objects.all()
+    template = "form.html"
     
-        addition_list = [
-            mined_jsons[0]["additions"],
-            mined_jsons[1]["additions"],
-            mined_jsons[2]["additions"],
-            mined_jsons[3]["additions"],
-            mined_jsons[4]["additions"]
-        ]
+    if request.method == 'POST':
+        form = MiningRequestForm(request.POST)
+        if form.is_valid():
+            messages.success(request, 'Your request has been submitted!') 
 
-        pull_requests.insert_many(mined_jsons)
-        context = {"mined_jsons":mined_jsons, "addition_list":addition_list}
+                # Only create a database object if what is being passed matches our DB form
+            obj = MiningRequest.objects.create(
+                repo_name=form.cleaned_data.get('repo_name'),
+                email=request.user.email,
+                send_email=form.cleaned_data.get("email"),
+                requested_by=request.user.username
+            )
 
-        return context 
+            form = MiningRequestForm()
+            return render(request, template, {'form': form})
+        
+        return render(request, template, {'form': form})
 
-# Function-based view to see all of the mining requests 
-def mining_request_listview(request):
-    template_name = 'mining_requests/mining_requests_list.html'
-    queryset = MiningRequest.objects.all()
-    context = {
-        "object_list": queryset
-    }
-    return render(request, template_name, context)
+    else:
+        form = MiningRequestForm()
+        return render(request, template, {'form': form}) 
 
-# Will display the contents of the mining requests database!
-class MiningRequestListView(ListView):
-    template_name = 'mining_requests/mining_requests_list.html' 
-    queryset = MiningRequest.objects.all()
+# A page accessible by anyone to see all mined repos (with hyperlinks)
+def mined_repos(request):
+
+    template_name = 'repos.html'
+
+    # Obtain all the mining requests 
+    mined_repos = sorted(list(MinedRepo.objects.values_list('repo_name', flat=True)))          
+    num_repos = len(mined_repos)
+    context = dict()
+    message = ''
+    filter_form = Filter(get_language_list_from_mongo())
+
+    if request.method == 'POST':
+
+        if request.POST.get('compare'):
+            if "repo_checkbox" in request.POST:
+                checked_repos = request.POST.getlist("repo_checkbox")
+                
+                if len(checked_repos) < 2 or len(checked_repos) > 3:
+                    message = "You can only compare 2-3 repos"
+
+                elif len(checked_repos) == 2:
+                    repo_owner1 = checked_repos[0].split('/')[0]
+                    repo_owner2 = checked_repos[1].split('/')[0]
+
+                    repo_name1 = checked_repos[0].split('/')[1]
+                    repo_name2 = checked_repos[1].split('/')[1]
+
+                    url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}/"
+
+                    return HttpResponseRedirect(url)
 
 
-# Will delete the contents of the mining requests database!
-def clean_mining_requests(request):
-    template_name = 'mining_requests/clean_mining_requests.html'
-    context = {} 
-    MiningRequest.objects.all().delete()
-    return render(request, template_name, context)
+                else:
+                    repo_owner1 = checked_repos[0].split('/')[0]
+                    repo_owner2 = checked_repos[1].split('/')[0]
+                    repo_owner3 = checked_repos[2].split('/')[0]
 
+                    repo_name1 = checked_repos[0].split('/')[1]
+                    repo_name2 = checked_repos[1].split('/')[1]
+                    repo_name3 = checked_repos[2].split('/')[1]
+                    
+
+                    url = f"/repos/compare/{repo_owner1}&{repo_name1}&{repo_owner2}&{repo_name2}&{repo_owner3}&{repo_name3}/"
+
+                    return HttpResponseRedirect(url)
+
+            else:
+                message = "You must choose at least two pages to compare!"
+
+        else:
+            filters = list()
+            filter_form = Filter(get_language_list_from_mongo(), request.POST)
+            
+            if filter_form.is_valid():
+                if 'search' in request.POST:
+                    search_query = filter_form.cleaned_data.get('search')
+                    if search_query.strip() != '':
+                        repos_filtered_by_search = get_repos_search_query_filter(search_query)
+                        filters.append(repos_filtered_by_search)
+
+                if 'languages' in request.POST:
+                    languages = filter_form.cleaned_data.get('languages')
+                    repos_filtered_by_language = get_repos_list_by_language_filter(languages)
+                    filters.append(repos_filtered_by_language)
+
+                lower_bound = filter_form.cleaned_data.get('min_pull_requests')
+                upper_bound = filter_form.cleaned_data.get('max_pull_requests')
+
+                if lower_bound != None and upper_bound == None:
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_greater_than_filter(lower_bound)
+                    filters.append(repos_filtered_by_pulls)
+
+                elif upper_bound != None and lower_bound == None:
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_less_than_filter(upper_bound)
+                    filters.append(repos_filtered_by_pulls)
+
+                elif lower_bound != None and upper_bound != None:
+                    repos_filtered_by_pulls = get_repos_list_by_pulls_bounded_filter(lower_bound, upper_bound)
+                    filters.append(repos_filtered_by_pulls)
+
+                if 'has_wiki' in request.POST:
+                    repos_that_have_a_wiki = get_repos_list_has_wiki_filter(True)
+                    filters.append(repos_that_have_a_wiki)
+
+                if len(filters) != 0:
+                    repos_list = get_filtered_repos_list(filters)
+                    num_repos = len(repos_list)
+                    for item in range(0, len(repos_list)):
+                        context.update({
+                            f"repo{item}": [repos_list[item], find_repo_main_page(repos_list[item])["owner"]["avatar_url"]]
+                        })
+
+                    return render(request, template_name, {"context":context, "filter":filter_form, "num_repos":num_repos})
+
+        
+    try:
+        for item in range(0, len(mined_repos)):
+            context.update({
+                f"repo{item}": [mined_repos[item], find_repo_main_page(mined_repos[item])["owner"]["avatar_url"]]
+            })
+        
+        if message == '':
+            return render(request, template_name, {"context":context, "filter":filter_form, "num_repos":num_repos})
+        else:
+            return render(request, template_name, {"context":context, "message":message, 
+                                                   "filter":filter_form, "num_repos":num_repos})
+
+    except Exception as e:
+        return render(request, template_name, {"error":e})
+
+    
+
+
+# A function that will be used to generate interactive visualizations of 
+# mined JSON data for any repo.
+def get_repo_data(request, repo_owner, repo_name):
+    template_name = 'mined_repo_display.html'
+    original_repo = repo_owner.lower() + "/" + repo_name.lower()
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+    
+    if original_repo in mined_repos:
+        repo = mined_repo_sql_obj = MinedRepo.objects.get(repo_name=original_repo)
+        context = get_repo_table_context(original_repo)
+        context.update({
+            "repo_name":original_repo,
+            "repo_img":find_repo_main_page(original_repo)['owner']['avatar_url'],
+            "bar_chart_html":getattr(repo, "bar_chart_html"),
+            "pull_line_chart_html":getattr(repo, "pull_line_chart_html"), 
+            "contribution_line_chart_html": getattr(repo, "contribution_line_chart_html")
+        })
+        return render(request, template_name, context) 
+
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
+
+
+def compare_two_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name2):
+    template_name = 'mined_repo_display_2.html'
+    repo_one_full_name = repo_owner1.lower() + "/" + repo_name1.lower()
+    repo_two_full_name = repo_owner2.lower() + "/" + repo_name2.lower()
+
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+
+    if repo_one_full_name in mined_repos and repo_two_full_name in mined_repos:
+        context = get_dual_repo_table_context(repo_one_full_name, repo_two_full_name)
+        context.update({
+            "repo_one_name":repo_one_full_name,
+            "repo_one_img":find_repo_main_page(repo_one_full_name)['owner']['avatar_url'],
+            "repo_two_name":repo_two_full_name,
+            "repo_two_img":find_repo_main_page(repo_two_full_name)['owner']['avatar_url'],
+        })
+        return render(request, template_name, context) 
+
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')
+
+def compare_three_repos(request, repo_owner1, repo_name1, repo_owner2, repo_name2, repo_owner3, repo_name3):
+    template_name = 'mined_repo_display_3.html'
+    repo_one_full_name = repo_owner1.lower() + "/" + repo_name1.lower()
+    repo_two_full_name = repo_owner2.lower() + "/" + repo_name2.lower()
+    repo_three_full_name = repo_owner3.lower() + "/" + repo_name3.lower()
+
+    mined_repos = list(MinedRepo.objects.values_list('repo_name', flat=True)) # Obtain all the mining requests
+
+    if repo_one_full_name in mined_repos and repo_two_full_name in mined_repos and repo_three_full_name in mined_repos:
+        context = get_three_repo_table_context(repo_one_full_name, repo_two_full_name, repo_three_full_name)
+        context.update({
+            "repo_one_name":repo_one_full_name,
+            "repo_one_img":find_repo_main_page(repo_one_full_name)['owner']['avatar_url'],
+            "repo_two_name":repo_two_full_name,
+            "repo_two_img":find_repo_main_page(repo_two_full_name)['owner']['avatar_url'],
+            "repo_three_name":repo_three_full_name,
+            "repo_three_img":find_repo_main_page(repo_three_full_name)['owner']['avatar_url'],
+        })
+        return render(request, template_name, context)
+
+    else:
+        return HttpResponseNotFound('<h1>404 Repo Not Found</h1>')

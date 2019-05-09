@@ -14,23 +14,26 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url
+from django.conf.urls import include
 from django.contrib import admin
 from django.views.generic import TemplateView
-from user_app.views import ( HomeView, ChartView, DatabaseView, CleanDatabaseView,
-                               MineView, mining_request_listview, MiningRequestListView,
-                               mining_request_create_view, clean_mining_requests, 
-                               admin_approve_mining_requests
+from user_app.views import ( HomeView, about_us, mining_request_form_view, 
+                            get_repo_data, mined_repos, signup, activate,
+                            compare_two_repos, compare_three_repos
                              )
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^$', HomeView.as_view()),
-    url(r'^chart/$', ChartView.as_view()),
-    url(r'^database/$', DatabaseView.as_view()),
-    url(r'^mining_requests_form/$', mining_request_create_view),
-    url(r'^mining_requests/$', MiningRequestListView.as_view()),
-    url(r'^clean_mining_requests/$', clean_mining_requests),
-    url(r'^admin_approve_mining_requests/$', admin_approve_mining_requests),
-    url(r'^clean_database/$', CleanDatabaseView.as_view()),
-    url(r'^mine/$', MineView.as_view()),
+    url(r'^admin/', admin.site.urls), # allow access to the admin portal
+    url(r'^admin/statuscheck/', include('celerybeat_status.urls')),
+    url(r'^$', HomeView.as_view()),   # The home page 
+    url(r'^about_us/$', about_us, name="about_us"),
+    url(r'^accounts/', include('django.contrib.auth.urls')), # Login/Logout controls
+    url(r'^signup/$', signup, name='signup'), # The signup page 
+    url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        activate, name='activate'),
+    url(r'^mining_requests_form/$', mining_request_form_view, name="mining_form"), # The mining request form 
+    url(r'^repos/$', mined_repos, name="repos"), # The list of all mined repos 
+    url(r'^repos/(?P<repo_owner>((\w+)[-]*)\w+)+/+(?P<repo_name>((\w+)([-]|[.])*)+\w+)/$', get_repo_data, name="visualization"), # Visualizations
+    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*)\w+)&(?P<repo_name1>((\w+)([-]|[.])*)+\w+)&(?P<repo_owner2>((\w+)[-]*)\w+)&(?P<repo_name2>((\w+)([-]|[.])*)+\w+)/$', compare_two_repos, name="compare_two"),
+    url(r'^repos/compare/(?P<repo_owner1>((\w+)[-]*)\w+)&(?P<repo_name1>((\w+)([-]|[.])*)+\w+)&(?P<repo_owner2>((\w+)[-]*)\w+)&(?P<repo_name2>((\w+)([-]|[.])*)+\w+)&(?P<repo_owner3>((\w+)[-]*)\w+)&(?P<repo_name3>((\w+)([-]|[.])*)+\w+)/$', compare_three_repos, name="compare_three"),
 ]

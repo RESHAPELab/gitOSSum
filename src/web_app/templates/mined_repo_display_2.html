@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang=en>
+
+{% extends "base.html" %} {% block content %}
+<head>
+<style>
+    html, body {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .jumboTitle {
+        margin-top: -3%;
+        margin-bottom: 2%;
+    }
+
+    .link {
+        color: black;
+    }
+/* -----------------------<Table>-----------------------*/
+    table {
+        font-family: arial, sans-serif;
+        background-color: white;
+        color: black;
+        width: 100%;
+    }
+    td,
+    th {
+        text-align: center;
+        padding: 8px;
+        min-width: 50px;
+        width: auto;
+        border: 1px solid black;
+    }
+/* -----------------------<Row 1>-----------------------*/
+    .row1 {
+        display: flex;
+    }
+    .vs {
+        margin-top: 10%;
+        margin-left: 1%;
+        margin-right: 1%;
+    }
+
+    .card {
+        width: 50%; 
+        margin-top: 1%; 
+        text-align: center;
+    }
+    .card-img-top {
+        margin-top: 5%;
+    }
+    .card-title {
+        color: black;
+        word-wrap: break-word;
+    }
+    .card-text {
+        color: slategrey;
+    }
+    .card-link {
+        color: rgb(0, 44, 126);
+        margin-bottom: 5%;
+    }
+    .hasTooltip span {
+        display: none;
+        color: rgb(255, 255, 255);
+        text-decoration: none;
+        padding: 3px;
+        z-index: 2;
+    }
+
+    .hasTooltip:hover span {
+        display: block;
+        position: absolute;
+        opacity: 1;
+        background-color: rgb(0, 0, 0);
+        border: 1px solid #CCC;
+        margin: 2px 10px;
+        z-index: 2;
+    }
+/* -----------------------<Row 2>-----------------------*/
+    .table1 {
+        margin-bottom: 1%;
+        margin-right: 1%;
+        background-color: rgb(0, 44, 126);
+        color: white;
+        width: 100%;
+        text-align: center;
+    }
+</style>
+
+</head>
+
+<body>
+    <div class="row1">
+        <div class="card">
+            <img class="card-img-top" src="{{ repo_one_img }}" style="width: 160px; height: 160px;" alt="">
+            <div class="card-body">
+                <h2><a class="card-title" href="https://github.com/{{ repo_one_name }}" target="blank"><u>{{ repo_one_name }}</u></a></h2>
+                <a class="card-link" href="http://gitossum.com/repos/{{ repo_one_name }}/"><u>Details Page</u></a>
+                <p class="card-text" style="font-size: 12pt;">{{ description_repo_one }}</p>
+            </div>
+        </div>
+        <h2 class="vs">VS</h2>
+        <div class="card">
+            <img class="card-img-top" src="{{ repo_two_img }}" style="width: 160px; height: 160px;" alt="">
+            <div class="card-body">
+                <h2><a class="card-title" href="https://github.com/{{ repo_two_name }}" target="blank"><u>{{ repo_two_name }}</u></a></h2>
+                <a class="card-link" href="http://gitossum.com/repos/{{ repo_two_name }}/"><u>Details Page</u></a>
+                <p class="card-text" style="font-size: 12pt;">{{ description_repo_two }}</p>
+            </div>
+        </div>  
+    </div>
+    <hr>
+    <div class="row2">
+    <div class="jumbotron table1">
+            <h3 class="jumboTitle">Comparison Overview</h3>
+            <table>
+                <tr>
+                    <th>Item</th>
+                    <th><img src="{{ repo_one_img }}" style="width: 30px; height: 30px;" alt=""> {{repo_one_name}}</th>
+                    <th><img src="{{ repo_two_img }}" style="width: 30px; height: 30px;" alt=""> {{repo_two_name}}</th>
+                </tr>
+                <tr>
+                    <td>Date Created
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is when the repository was created on GitHub</span>
+                        </a>
+                    </td>
+                    <td>{{ created_at_repo_one }}</td>
+                    <td>{{ created_at_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Date Last Updated
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is when the repository was last changed in any way on GitHub</span>
+                        </a>
+                    </td>
+                    <td>{{ updated_at_repo_one }}</td>
+                    <td>{{ updated_at_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Date Last Mined
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is when Git-OSS-um last obtained information about this repository</span>
+                        </a>
+                    </td>
+                    <td>{{ last_mined_date_repo_one }}</td>
+                    <td>{{ last_mined_date_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Clone URL
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the url you would use to clone this repository</span>
+                        </a>
+                    </td>
+                    <td>{{ clone_url_repo_one }}</td>
+                    <td>{{ clone_url_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Repository Homepage
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the personal website for this repository. Click on it to visit their page</span>
+                        </a>
+                    </td>
+                    {% if homepage_repo_one != "None" %}
+                        <td><a class="link" href="{{ homepage_repo_one }}" target="blank">{{ homepage_repo_one }}</a></td>
+                    {% else %}
+                        <td>{{ homepage_repo_one }}</td>
+                    {% endif %}{% if homepage_repo_two != "None" %}
+                        <td><a class="link" href="{{ homepage_repo_two }}" target="blank">{{ homepage_repo_two }}</a></td>
+                    {% else %}
+                        <td>{{ homepage_repo_two }}</td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    <td>Number of Stargazers
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of people who showed interest in this repository & starred it</span>
+                        </a>
+                    </td>
+                    <td>{{ stargazers_count_repo_one }}</td>
+                    <td>{{ stargazers_count_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Programming Language
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the main programming language of this repository</span>
+                        </a>
+                    </td>
+                    <td>{{language_repo_one }}</td>
+                    <td>{{language_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Has a Wiki Page
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>Does this repository have a listed wiki page to help you out?</span>
+                        </a>
+                    </td>
+                    <td>{{ has_wiki_repo_one }}</td>
+                    <td>{{ has_wiki_repo_two }}</td>
+                </tr>    
+                <tr>
+                    <td>Development License
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the license this repository uses for development. Click on it to find out more</span>
+                        </a>
+                    </td>
+                    {% if license_name_repo_one == "Other" or license_name == "None" or license_name_repo_one == False %}
+                        <td>{{ license_name_repo_one }}</td>
+                    {% else %}
+                        <td><a class='link' href="https://google.com/search?q=define {{license_name_repo_one}}" target="blank">{{ license_name_repo_one }}</td>
+                    {% endif %}
+
+                    {% if license_name_repo_two == "Other" or license_name_repo_two == "None" or license_name_repo_two == False %}
+                        <td>{{ license_name_repo_two }}</td>
+                    {% else %}
+                        <td><a class='link' href="https://google.com/search?q=define {{license_name_repo_two}}" target="blank">{{ license_name_repo_two }}</td>
+                    {% endif %}
+
+                </tr>
+                <tr>
+                    <td>Number of Open Issues
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of problems this repository has that need to be solved. Give it a shot</span>
+                        </a>
+                    </td>
+                    <td>{{ open_issues_repo_one }}</td>
+                    <td>{{ open_issues_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Number of Forks
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of people who have made a copy of this repository to help contribute</span>
+                        </a>
+                    </td>
+                    <td>{{ network_count_repo_one }}</td>
+                    <td>{{ network_count_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Number of Watchers
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number of people who want updates on this repository</span>
+                        </a>
+                    </td>
+                    <td>{{ subscribers_count_repo_one }}</td>
+                    <td>{{ subscribers_count_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Total Pull Requests
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number pull requests that comprise this repository</span>
+                        </a>
+                    </td>
+                    <td>{{ num_pulls_repo_one }}</td>
+                    <td>{{ num_pulls_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Number of Open Pull Requests
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number pull requests that still need to be decided upon</span>
+                        </a>
+                    </td>
+                    <td>{{ num_open_pulls_repo_one }}</td>
+                    <td>{{ num_open_pulls_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Number of Accepted Pull Requests
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number pull requests that have been accepted and merged within this repository</span>
+                        </a>
+                    </td>
+                    <td>{{ num_closed_merged_pulls_repo_one }}</td>
+                    <td>{{ num_closed_merged_pulls_repo_two }}</td>
+                </tr>
+                <tr>
+                    <td>Number of Denied Pull Requests
+                        <a class="hasTooltip">
+                            <img src="https://shots.jotform.com/kade/Screenshots/blue_question_mark.png" height="13px" />
+                            <span>This is the number pull requests that have been denied & have not been merged within this repository</span>
+                        </a>
+                    </td>
+                    <td>{{ num_closed_unmerged_pulls_repo_one }}</td>
+                    <td>{{ num_closed_unmerged_pulls_repo_two }}</td>
+                </tr>
+            </table>
+        </div>
+            </div>
+</body>
+
+{% endblock content %}
+
+</html>

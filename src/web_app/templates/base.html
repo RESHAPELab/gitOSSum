@@ -1,18 +1,46 @@
+{% load bootstrap3 %}
+
 <!DOCTYPE html>
 <html lang="en">
-</style>
+
 
 <title>Git-OSS-um.com</title>
 {% include 'snippets/css.html' %}
 
-<head> </head>
+<head>  
+  <!-- {% bootstrap_css %}
+  {% bootstrap_javascript %} -->
+</head>
 
+<style>
+  .productName {
+    background-color: rgb(0, 0, 175);
+  }
+</style>
+  <div class="productName"> 
+    <h3 style="float: left; margin-left: 1%;">Git OSS-um</h3>
+  </div>  
+
+  <!-- {% if user.is_authenticated %}
+  <div class="head" style="background-color: rgb(0, 0, 175); width: 100%;"> 
+    <h3 style="float: left; margin-left: 1%;">Git OSS-um</h3>
+  </div>
+  <h3 style="float: right; padding-right: 75px">
+    Welcome {{ user.get_username }} <a href="{% url 'logout' %}">(logout)</a>
+  </h3>
+  {% else %}
+  <h4 style="float: right; padding-right: 75px">
+    New here? <a href="{% url 'signup' %}">Sign Up</a> or <a href="{% url 'login' %}">Login</a>
+  </h4>
+  {% endif %} -->
+    
 <body>
-  <h1>Git-OSS-um.com</h1>
-  {% include 'snippets/nav.html/' %}
+   {% include 'snippets/nav.html' %}
+
   <div class="container">{% block content %}{% endblock content %}</div>
 
   {% include 'snippets/js.html' %}
 </body>
 
+  {% include 'snippets/footer.html/' %}
 </html>

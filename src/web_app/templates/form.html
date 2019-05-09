@@ -1,0 +1,38 @@
+{% extends "base.html" %} {% block content %}
+{% load bootstrap3 %}
+
+<html>
+<head>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+
+<style>
+    html, body {
+        /* background-image:radial-gradient(gold, aquamarine, cyan);
+        background-repeat: no-repeat;
+        background-attachment: fixed; */
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-offset-3 col-sm-6">
+                <br><br><br>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    {% buttons %}
+                    <button type="submit" class="btn btn-success btn-block">Submit Request</button>
+                    {% endbuttons %}
+                </form>
+                    <center>{% bootstrap_messages %}</center>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+</html>
+{% endblock content %}

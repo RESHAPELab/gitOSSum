@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <title>About Us</title>
+    </head>
+
+    <style>
+        * {
+        box-sizing: border-box;
+        }
+        
+        /* Create three unequal columns that floats next to each other */
+        .column {
+            float: left;
+            padding: 10px;
+        }
+        
+        .left, .middle, .right {
+            width: 33%;
+
+        }
+
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            /* background-image:radial-gradient(gold, aquamarine, cyan);
+            background-repeat: no-repeat;
+            background-attachment: fixed; */
+        }
+
+        .trons {
+            display: inline-flex;
+            width: 100%;
+            margin-top: -1.5%;
+        }
+
+        .feedback {
+            width: 100%;
+            background-color: rgb(0, 44, 126);
+            color: white;
+            margin-top: -1.5%;
+        }
+
+        .members {
+            display: flex;
+            margin-top: 1%;
+        }
+        .gary {
+            width: 33%;
+            margin-right: 0.5%;
+            background-color: rgb(0, 169, 221);
+            color: white;
+        }
+        .van {
+            width: 33%;
+            margin-right: 0.5%;
+            margin-left: 0.5%;
+            background-color: rgb(0, 169, 221);
+            color: white;
+        }
+        .stephen {
+            width: 33%;
+            margin-left: 0.5%;
+            background-color: rgb(0, 169, 221);
+            color: white;
+        }
+
+        .memberContact {
+            background-color: rgb(216, 81, 81);
+            color: white;
+            text-align: center;
+            width: inherit;
+            margin-bottom: 1%;
+            margin-right: 1%;
+        }
+
+        .sponsor-mentor {
+            background-color: rgb(1, 170, 133);
+            color: white;
+            margin-bottom: 1%;
+            text-align: center;
+            width: inherit;
+        }
+
+        .memberPic {
+            float: left;
+            margin-right: 1%;
+            width: 100px; 
+            height: 120px;
+        }
+
+        .memberInfo {
+            text-align: center;
+            font-size: 8pt;
+        }
+
+        /* Clear floats after the columns */
+        .row:after {
+        content: "";
+        display: table;
+        clear: both;
+        }
+
+        /* @media screen and (max-width: 320px) { @viewport { width: 320px; } } */
+        </style>
+
+    <body>
+        <div class="members">
+            <div class="jumbotron gary">
+                <img src="https://avatars2.githubusercontent.com/u/33642748?v=4" class="memberPic"/>
+                <div class="memberInfo">
+                    <h4>Gary Baker</h4>
+                    <p style="font-size: 14px;">Semester 2 Team Lead, Recorder, Frontend-Architect, Programmer</p>
+                </div> 
+            </div>
+            <div class="jumbotron van">
+                <img src="https://avatars0.githubusercontent.com/u/32231518?v=4" class="memberPic"/>
+                <div class="memberInfo">
+                    <h4>Van Steinbrenner</h4>
+                    <p style="font-size: 14px;">Editor, Web Manager, Co-Architect, Programmer</p>
+                </div> 
+            </div>
+            <div class="jumbotron stephen">
+                <img src="https://avatars0.githubusercontent.com/u/23506621?v=4" class="memberPic"/>
+                <div class="memberInfo">
+                    <h4>Stephen White</h4>
+                    <p style="font-size: 14px;">Semester 1 Team Lead, Backend-Architect, Release Manger, Programmer</p>
+                </div> 
+            </div>
+        </div>
+
+        <div class="jumbotron feedback">
+            <center>
+                <h2>Leave us Feedback!</h2>
+                <p>
+                    If you have a bug to report or any other comments that you would like to share
+                    with us, please click the email below and tell us about it. Thank you in advance
+                    for your input! :)
+                </p>
+                <h4><a href="mailto: gitossum@gmail.com" style="color: gold;"><u>gitossum@gmail.com</u></a></h4>
+            </center>
+        </div>
+
+        <div class="trons">
+            <div class="jumbotron memberContact">
+                <h2 class="header1">Team Contact Information</h2>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px">Gary Baker: <a href="mailto:gpb27@nau.edu" style="color: black;">gpb27@nau.edu</a></p>
+                </div>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px">Stephen White: <a href="mailto:smw44@nau.edu" style="color: black;">smw444@nau.edu</a></p>
+                </div>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px">Van Steinbrenner: <a href="mailto:vws2@nau.edu" style="color: black;">vws2@nau.edu</a></p>
+                </div>
+            </div>
+            <div class="jumbotron sponsor-mentor">
+                <h2 class="header1">Sponsor & Mentor Information</h2>
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px"><u>Sponsor</u> <br>Igor Steinmacher: <a href="mailto:igor.steinmacher@nau.edu" style="color: black;">igor.steinmacher@nau.edu</a></p>
+                </div>
+
+                <div class="selection">
+                    <p class="nameContent" style="font-size: 16px"><u>Mentor</u> <br>Ana Paula Chaves: <a href="mailto:acs549@nau.edu" style="color: black;">acs549@nau.edu</a></p>
+                </div>
+            </div>
+        </div>
+                
+        </div>
+    </div>
+</body>
+</html>
+{% endblock %}
