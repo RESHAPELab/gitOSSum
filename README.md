@@ -6,3 +6,5 @@ Mining data for specific repositories directly from GitHub.
 Displaying data in easy to read data and graphics for users to interpret.
 Filtering through mined repositories.
 Allowing administrators to manage repositories mined as well as user accounts.
+
+* Adding just a small change
