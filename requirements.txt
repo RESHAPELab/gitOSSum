@@ -58,7 +58,7 @@ psycopg2==2.7.7
 psycopg2-binary==2.7.6.1
 ptyprocess==0.6.0
 PyGithub==1.43.4
-Pygments==2.3.1
+Pygments==2.7.4
 PyJWT==1.7.1
 pymongo==3.7.2
 python-dateutil==2.7.5
